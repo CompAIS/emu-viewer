@@ -16,3 +16,7 @@ setup-dev: setup
 .phony: venv-clean
 venv-clean:
 	rm -rf venv
+
+.phony: test
+test:
+	$(PYTHON) -m pytest tests
