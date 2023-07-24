@@ -1,13 +1,18 @@
+VENV_NAME?=venv
+PYTHON=$(VENV_NAME)/bin/python
 
+.phony: setup
+setup:
+	sudo apt-get update
+	sudo apt-get install python3 python3-venv
+	python3 -m venv venv
+	$(PYTHON) -m pip install --upgrade pip
+	$(PYTHON) -m pip install -r requirements.txt
 
+.phony: setup-dev
+setup-dev: setup
+	$(PYTHON) -m pip install -r requirements-dev.txt
 
-.phony setup-py
-setup-py:
-	python -m venv venv
-	# assuming windows
-	venv\Scripts\activate.bat
-	python -m pip install -r requirements.txt
-
-.phony venv-deactivate:
-venv-deactivate:
-	venv\Scripts\deactivate.bat
+.phony: venv-clean
+venv-clean:
+	rm -rf venv
