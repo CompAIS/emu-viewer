@@ -9,3 +9,7 @@ This README currently assumes you are on a unix based environment.
 3. Run `python main.py` to run the python program.
 
 To leave the virtual environment, run `deactivate`.
+
+## Troubleshooting
+
+https://stackoverflow.com/a/31299142

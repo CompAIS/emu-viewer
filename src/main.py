@@ -1,15 +1,16 @@
-import sys
-import os
+import tkinter as tk
 
-from PyQt6.QtGui import QGuiApplication
-from PyQt6.QtQml import QQmlApplicationEngine
-from PyQt6.QtQuick import QQuickWindow
+window = tk.Tk()
+window.title("Hello World")
 
-QQuickWindow.setSceneGraphBackend('software')
-app = QGuiApplication(sys.argv)
 
-engine = QQmlApplicationEngine()
-engine.quit.connect(app.quit)
-engine.load('./main.qml')
+def handle_button_press(event):
+    window.destroy()
 
-sys.exit(app.exec())
+
+button = tk.Button(text="My simple app.")
+button.bind("<Button-1>", handle_button_press)
+button.pack()
+
+# Start the event loop.
+window.mainloop()
