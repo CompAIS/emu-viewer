@@ -1,0 +1,72 @@
+name: Create release
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+    - uses: actions/checkout@v3
+    - id: commit
+      uses: pr-mpt/actions-commit-hash@v2
+    - uses: actions/setup-python@v4
+      with:
+        cache: 'pip'
+    - run: make setup-dev
+    - run: make lint
+    - run: make test
+    - run: make build
+    - name: zip for ${{ matrix.os }}-${{ steps.commit.outputs.short }}
+      uses: thedoctor0/zip-release@0.7.1
+      with:
+        filename: 'emu-viewer-${{ matrix.os }}-${{ steps.commit.outputs.short }}.zip'
+        path: './dist/'
+    - name: Upload .zip as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.os }}-${{ steps.commit.outputs.short }}
+        path: emu-viewer-${{ matrix.os }}-${{ steps.commit.outputs.short }}.zip
+
+  release:
+    name: Create a release from artifacts
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+    - name: Combine artifacts
+      run: |
+        mkdir combined_artifacts
+        cp -R */* combined_artifacts/
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.sha }}
+        release_name: Release ${{ github.sha }}
+        draft: true
+
+    - name: Upload Release Assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./combined_artifacts/emu-viewer-ubuntu-${{ steps.commit.outputs.short }}.zip
+        asset_name: emu-viewer-ubuntu-${{ steps.commit.outputs.short }}.zip
+        asset_content_type: application/zip
+
+    - name: Upload Release Assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./combined_artifacts/emu-viewer-macos-${{ steps.commit.outputs.short }}.zip
+        asset_name: emu-viewer-macos-${{ steps.commit.outputs.short }}.zip
+        asset_content_type: application/zip

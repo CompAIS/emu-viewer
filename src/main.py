@@ -6,7 +6,7 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
 # Read the .fits file
-image_file = './data/sample/Optical_r.fits'
+image_file = "./data/sample/Optical_r.fits"
 hdu_list = fits.open(image_file)
 image_data = hdu_list[0].data
 
@@ -23,7 +23,7 @@ fig = Figure(figsize=(5, 5), dpi=100)
 ax = fig.add_subplot(111)
 
 # Render the scaled image data onto the figure
-cax = ax.imshow(scaled_data, cmap='gray', origin='lower')
+cax = ax.imshow(scaled_data, cmap="gray", origin="lower")
 
 # Add a colorbar
 fig.colorbar(cax)

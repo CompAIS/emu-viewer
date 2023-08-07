@@ -24,6 +24,23 @@ setup-dev: setup
 venv-clean:
 	rm -rf venv
 
+.phony: clean
+clean:
+	rm -rf build
+	rm -rf dist
+
+.phony: build
+build: clean
+	$(PYTHON) -m PyInstaller ./src/main.py
+
+.phony: lint
+lint:
+	$(PYTHON) -m black . --check
+
+.phony: fmt
+fmt:
+	$(PYTHON) -m black .
+
 .phony: test
 test:
 	$(PYTHON) -m pytest tests
