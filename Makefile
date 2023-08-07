@@ -26,11 +26,11 @@ venv-clean:
 
 .phony: lint
 lint:
-	black . --check
+	$(PYTHON) -m black . --check
 
 .phony: fmt
 fmt:
-	black .
+	$(PYTHON) -m black .
 
 .phony: test
 test:
