@@ -24,6 +24,14 @@ setup-dev: setup
 venv-clean:
 	rm -rf venv
 
+.phony: lint
+lint:
+	black . --check
+
+.phony: fmt
+fmt:
+	black .
+
 .phony: test
 test:
 	$(PYTHON) -m pytest tests

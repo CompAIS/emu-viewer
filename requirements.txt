@@ -1,3 +1,2 @@
 astropy==5.3.1
 numpy==1.25.2
-pyinstaller==5.13.0
