@@ -20,3 +20,21 @@ jobs:
       uses: montudor/action-zip@v1
       with:
         args: zip -qq -r emu-viewer-ubuntu-${{ steps.commit.outputs.short }}.zip dist
+
+  macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - id: commit
+      uses: pr-mpt/actions-commit-hash@v2
+    - uses: actions/setup-python@v4
+      with:
+        cache: 'pip'
+    - run: make setup-dev
+    - run: make lint
+    - run: make test
+    - run: make build
+    - name: zip for ${{ steps.commit.outputs.short }}
+      uses: montudor/action-zip@v1
+      with:
+        args: zip -qq -r emu-viewer-macos-${{ steps.commit.outputs.short }}.zip dist
