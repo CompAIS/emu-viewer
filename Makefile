@@ -31,7 +31,7 @@ clean:
 
 .phony: build
 build: clean
-	pyinstaller ./src/main.py
+	$(PYTHON) -m PyInstaller ./src/main.py
 
 .phony: lint
 lint:
