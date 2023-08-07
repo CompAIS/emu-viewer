@@ -4,13 +4,20 @@ on: push
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-python@v4
-      with:
-        cache: 'pip'
-    - run: make setup-dev
+    - name: Setup Dependencies
+      shell: bash
+      run: |
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          choco install make
+        fi
+        make setup-dev
     - run: make lint
     - run: make build
     - run: make test

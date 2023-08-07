@@ -1,5 +1,17 @@
-VENV_NAME?=venv
-PYTHON=$(VENV_NAME)/bin/python
+VENV_NAME ?= venv
+
+ifeq ($(OS),Windows_NT)
+    # Windows-specific settings
+    PATH_SEPARATOR := \\
+    PYTHON := $(VENV_NAME)\\Scripts\\python.exe
+    ENTRY := src\\main.py
+else
+    # Unix-like systems settings
+    PATH_SEPARATOR := /
+    PYTHON := $(VENV_NAME)/bin/python
+    ENTRY := ./src/main.py
+endif
+
 
 .phony: setup-py-wsl
 setup-py-wsl:
@@ -31,7 +43,7 @@ clean:
 
 .phony: build
 build: clean
-	$(PYTHON) -m PyInstaller ./src/main.py
+	$(PYTHON) -m PyInstaller $(ENTRY)
 
 .phony: lint
 lint:
