@@ -1,0 +1,2 @@
+# the script will look for Optical_r.fits in this folder
+*.fits
