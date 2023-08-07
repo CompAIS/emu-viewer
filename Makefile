@@ -24,6 +24,15 @@ setup-dev: setup
 venv-clean:
 	rm -rf venv
 
+.phony: clean
+clean:
+	rm -rf build
+	rm -rf dist
+
+.phony: build
+build: clean
+	pyinstaller ./src/main.py
+
 .phony: lint
 lint:
 	$(PYTHON) -m black . --check
