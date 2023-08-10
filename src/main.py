@@ -20,14 +20,15 @@ class MainWindow(tk.Tk):
         self.config(menu=self.menu_controller.menu)
 
     # Main run function for app
+    # Place all functions of the app here
     def run(self):
         if self.menu_controller.file_name != "":
-            print(self.menu_controller.file_name)
             file_name = self.menu_controller.file_name
             self.image_controller.open_image(file_name)
             self.menu_controller.file_name = ""
 
         # Do not remove or edit, required for run loop to function
+        self.update()
         self.after(0, self.run)
 
 
@@ -56,8 +57,10 @@ class MenuBar(tk.Frame):
     def open(self):
         self.file_opened = True
 
-        self.file_name = filedialog.askopenfilename(title="Select .fits file", initialdir="/",
-                                                filetypes=(('Fits files', '*.fits'), ('All files', '*.*')))
+        self.file_name = filedialog.askopenfilename(
+            title="Select .fits file",
+            filetypes=(("Fits files", "*.fits"), ("All files", "*.*")),
+        )
 
 
 # Create Image Controller Frame
@@ -102,7 +105,7 @@ class ImageFrame(tk.Frame):
         text.grid(column=0, row=0)
 
 
-# Run the main tkinter window
+# Run the main app
 main_app = MainWindow()
 
 main_app.after(1000, main_app.run)
