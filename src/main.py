@@ -51,6 +51,9 @@ class MenuBar(ttk.Frame):
             filetypes=(("Fits files", "*.fits"), ("All files", "*.*")),
         )
 
+        if file_name == "":
+            return
+
         for listener in self.open_file_event_listeners:
             listener(file_name)
 
