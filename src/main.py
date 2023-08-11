@@ -65,15 +65,49 @@ class MenuBar(tk.Frame):
 
 # Create Image Controller Frame
 class ImageController(tk.Frame):
+    gridX = 0
+    gridY = 0
+
+    open_images = []
+
     def __init__(self, parent):
-        tk.Frame.__init__(self, parent)
+        tk.Frame.__init__(self, parent, bd=4, width=250, height=250)
         self.grid(column=0, row=1)
+
+        button = tk.Button(
+            self, text="Check open images", command=self.print_open_images
+        )
+        button.grid(column=2, row=0)
 
     # Open image file based on path selected
     def open_image(self, file_path):
+        new_image = ImageFrame(self, file_path, self.gridX, self.gridY)
+        self.open_images.append(new_image)
+
+        if self.gridX > self.gridY:
+            self.gridY += 1
+            self.gridX = 0
+        else:
+            self.gridX += 1
+
+    def print_open_images(self):
+        print(len(self.open_images))
+
+
+# Create an Image Frame
+class ImageFrame(tk.Frame):
+    image_file = None
+
+    def __init__(self, parent, file_path, x, y):
+        tk.Frame.__init__(self, parent)
+        self.parent = parent
+        self.image_file = file_path
+        self.grid(column=x, row=y)
+        self.handle_image()
+
+    def handle_image(self):
         # Read the .fits file
-        image_file = file_path
-        hdu_list = fits.open(image_file)
+        hdu_list = fits.open(self.image_file)
         image_data = hdu_list[0].data
 
         # Apply logarithmic scaling to the image data
@@ -87,22 +121,13 @@ class ImageController(tk.Frame):
         # Render the scaled image data onto the figure
         cax = ax.imshow(scaled_data, cmap="gray", origin="lower")
 
-        # Add a colorbar
+        # Add a colourbar
         fig.colorbar(cax)
 
         # Embed the matplotlib figure in the tkinter window
         canvas = FigureCanvasTkAgg(fig, master=self)
         canvas.draw()
         canvas.get_tk_widget().grid(column=0, row=0)
-
-
-# Create an Image Frame
-class ImageFrame(tk.Frame):
-    def __init__(self, parent, file_path):
-        tk.Frame.__init__(self, parent)
-        self.parent = parent
-        text = tk.Label(self, text=file_path)
-        text.grid(column=0, row=0)
 
 
 # Run the main app
