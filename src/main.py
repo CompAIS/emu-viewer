@@ -1,4 +1,3 @@
-import tkinter as tk
 import ttkbootstrap as ttk
 from tkinter import filedialog
 
@@ -9,7 +8,7 @@ from src.widgets import image_controller as ic
 # Create Main Tkinter Window
 class MainWindow(ttk.Window):
     def __init__(self):
-        tk.Tk.__init__(self)
+        ttk.Window.__init__(self)
         self.title("FITS Image Viewer")
         self.geometry("250x250")
 
