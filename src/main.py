@@ -11,12 +11,15 @@ class MainWindow(tb.Window):
     def __init__(self):
         tb.Window.__init__(self, themename="superhero")
         self.title("FITS Image Viewer")
-        self.geometry("1000x1000")
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
 
         self.menu_controller = MenuBar(self)
         self.image_controller = ic.ImageController(self)
-        self.data_controller_test = dc.DataController(self, 1, 0)
-        self.data_controller_test2 = dc.DataController(self, 0, 1)
+        self.data_controller_test1 = dc.DataController(self, 0, 0, 1, 2, 50, 250)
+        self.data_controller_test2 = dc.DataController(self, 2, 0, 1, 1, 50, 250)
+        self.data_controller_test3 = dc.DataController(self, 1, 1, 3, 1, 250, 50)
 
         self.config(menu=self.menu_controller.menu)
 

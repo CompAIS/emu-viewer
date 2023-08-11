@@ -14,9 +14,9 @@ class ImageController(tb.Frame):
     open_images = []
 
     def __init__(self, parent):
-        tb.Frame.__init__(self, parent)
-        self.grid(column=0, row=0)
-        self.config(width=100)
+        tb.Frame.__init__(self, parent, bootstyle="light")
+        self.grid(column=1, row=0, padx=10, pady=10)
+        self.columnconfigure(1, weight=4)
 
         # Add open_image as an event listener to open file
         parent.menu_controller.open_file.add(self.open_image)
@@ -41,7 +41,7 @@ class ImageFrame(tb.Frame):
         tb.Frame.__init__(self, parent)
         self.parent = parent
         self.image_file = file_path
-        self.grid(column=x, row=y)
+        self.grid(column=x, row=y, padx=10, pady=10)
         self.handle_image()
 
     def handle_image(self):
