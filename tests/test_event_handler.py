@@ -15,7 +15,7 @@ class EventHandlerTest(TestCase):
         my_handler.add(listener_2)
         my_handler.add(listener_3)
 
-        my_handler.invoke_listeners("foo", bar="baz")
+        my_handler.invoke("foo", bar="baz")
 
         listener_1.assert_called_once_with("foo", bar="baz")
         listener_2.assert_called_once_with("foo", bar="baz")

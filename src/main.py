@@ -53,7 +53,7 @@ class MenuBar(ttk.Frame):
             filetypes=(("Fits files", "*.fits"), ("All files", "*.*")),
         )
 
-        self.open_file.invoke_listeners(file_name)
+        self.open_file.invoke(file_name)
 
 
 if __name__ == "__main__":
