@@ -19,6 +19,9 @@ class ImageController(ttk.Frame):
         test_label = ttk.Button(self, text="Button 1", bootstyle="success")
         test_label.grid(column=2, row=0)
 
+        # Add open_image as an event listener to open file
+        parent.menu_controller.open_file_event_listeners.append(self.open_image)
+
     # Open image file based on path selected
     def open_image(self, file_path):
         new_image = ImageFrame(self, file_path, self.gridX, self.gridY)
