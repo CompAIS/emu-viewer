@@ -19,12 +19,6 @@ class MainWindow(tk.Tk):
     # Main run function for app
     # Place all functions of the app here
     def run(self):
-        if self.menu_controller.file_opened and self.menu_controller.file_name != "":
-            file_name = self.menu_controller.file_name
-            self.image_controller.open_image(file_name)
-            self.menu_controller.file_name = ""
-            self.menu_controller.file_opened = False
-
         # Do not remove or edit, required for run loop to function
         self.update()
         self.after(100, self.run)
@@ -32,8 +26,7 @@ class MainWindow(tk.Tk):
 
 # Create Menu bar for tkinter window
 class MenuBar(ttk.Frame):
-    file_opened = False
-    file_name = ""
+    open_file_event_listeners = []
 
     def __init__(self, parent):
         ttk.Frame.__init__(self, parent)
@@ -53,12 +46,13 @@ class MenuBar(ttk.Frame):
 
     # Open command for option in menu
     def open(self):
-        self.file_opened = True
-
-        self.file_name = filedialog.askopenfilename(
+        file_name = filedialog.askopenfilename(
             title="Select .fits file",
             filetypes=(("Fits files", "*.fits"), ("All files", "*.*")),
         )
+
+        for listener in self.open_file_event_listeners:
+            listener(file_name)
 
 
 # Run the main app
