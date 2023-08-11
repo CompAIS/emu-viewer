@@ -74,11 +74,6 @@ class ImageController(tk.Frame):
         tk.Frame.__init__(self, parent, bd=4, width=250, height=250)
         self.grid(column=0, row=1)
 
-        button = tk.Button(
-            self, text="Check open images", command=self.print_open_images
-        )
-        button.grid(column=2, row=0)
-
     # Open image file based on path selected
     def open_image(self, file_path):
         new_image = ImageFrame(self, file_path, self.gridX, self.gridY)
@@ -89,9 +84,6 @@ class ImageController(tk.Frame):
             self.gridX = 0
         else:
             self.gridX += 1
-
-    def print_open_images(self):
-        print(len(self.open_images))
 
 
 # Create an Image Frame
