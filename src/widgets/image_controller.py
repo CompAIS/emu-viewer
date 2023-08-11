@@ -1,4 +1,4 @@
-import ttkbootstrap as ttk
+import ttkbootstrap as tb
 from astropy.io import fits
 from astropy.visualization import LogStretch
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -7,17 +7,16 @@ import matplotlib.pyplot as plt
 
 
 # Create Image Controller Frame
-class ImageController(ttk.Frame):
+class ImageController(tb.Frame):
     gridX = 0
     gridY = 0
 
     open_images = []
 
     def __init__(self, parent):
-        ttk.Frame.__init__(self, parent)
-        self.grid(column=1, row=0)
-        test_label = ttk.Button(self, text="Button 1", bootstyle="success")
-        test_label.grid(column=2, row=0)
+        tb.Frame.__init__(self, parent)
+        self.grid(column=0, row=0)
+        self.config(width=100)
 
         # Add open_image as an event listener to open file
         parent.menu_controller.open_file.add(self.open_image)
@@ -35,11 +34,11 @@ class ImageController(ttk.Frame):
 
 
 # Create an Image Frame
-class ImageFrame(ttk.Frame):
+class ImageFrame(tb.Frame):
     image_file = None
 
     def __init__(self, parent, file_path, x, y):
-        ttk.Frame.__init__(self, parent)
+        tb.Frame.__init__(self, parent)
         self.parent = parent
         self.image_file = file_path
         self.grid(column=x, row=y)

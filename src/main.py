@@ -1,19 +1,22 @@
-import ttkbootstrap as ttk
+import ttkbootstrap as tb
 from tkinter import filedialog
 
-from src.lib.event_handler import EventHandler
-from src.widgets import image_controller as ic
+from lib.event_handler import EventHandler
+from widgets import image_controller as ic
+from widgets import data_controller as dc
 
 
 # Create Main Tkinter Window
-class MainWindow(ttk.Window):
+class MainWindow(tb.Window):
     def __init__(self):
-        ttk.Window.__init__(self)
+        tb.Window.__init__(self, themename="superhero")
         self.title("FITS Image Viewer")
-        self.geometry("250x250")
+        self.geometry("1000x1000")
 
         self.menu_controller = MenuBar(self)
         self.image_controller = ic.ImageController(self)
+        self.data_controller_test = dc.DataController(self, 1, 0)
+        self.data_controller_test2 = dc.DataController(self, 0, 1)
 
         self.config(menu=self.menu_controller.menu)
 
@@ -26,21 +29,21 @@ class MainWindow(ttk.Window):
 
 
 # Create Menu bar for tkinter window
-class MenuBar(ttk.Frame):
+class MenuBar(tb.Frame):
     open_file = EventHandler()
 
     def __init__(self, parent):
-        ttk.Frame.__init__(self, parent)
+        tb.Frame.__init__(self, parent)
         self.parent = parent
         self.grid(column=0, row=0)
 
-        self.menu = ttk.Menu(self.parent)
+        self.menu = tb.Menu(self.parent)
 
         self.file_menu_creation()
 
     # Create file menu options
     def file_menu_creation(self):
-        file_menu = ttk.Menu(self.menu, tearoff=0)
+        file_menu = tb.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label="File", menu=file_menu)
         file_menu.add_command(label="Open", command=self.open)
         file_menu.add_command(label="Exit", command=self.parent.quit)
