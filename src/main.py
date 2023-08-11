@@ -1,4 +1,5 @@
 import tkinter as tk
+import ttkbootstrap as ttk
 from tkinter import filedialog
 from astropy.io import fits
 from astropy.visualization import LogStretch
@@ -33,22 +34,22 @@ class MainWindow(tk.Tk):
 
 
 # Create Menu bar for tkinter window
-class MenuBar(tk.Frame):
+class MenuBar(ttk.Frame):
     file_opened = False
     file_name = ""
 
     def __init__(self, parent):
-        tk.Frame.__init__(self, parent)
+        ttk.Frame.__init__(self, parent)
         self.parent = parent
         self.grid(column=0, row=0)
 
-        self.menu = tk.Menu(self.parent)
+        self.menu = ttk.Menu(self.parent)
 
         self.file_menu_creation()
 
     # Create file menu options
     def file_menu_creation(self):
-        file_menu = tk.Menu(self.menu, tearoff=0)
+        file_menu = ttk.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label="File", menu=file_menu)
         file_menu.add_command(label="Open", command=self.open)
         file_menu.add_command(label="Exit", command=self.parent.quit)
@@ -64,15 +65,17 @@ class MenuBar(tk.Frame):
 
 
 # Create Image Controller Frame
-class ImageController(tk.Frame):
+class ImageController(ttk.Frame):
     gridX = 0
     gridY = 0
 
     open_images = []
 
     def __init__(self, parent):
-        tk.Frame.__init__(self, parent, bd=4, width=250, height=250)
+        ttk.Frame.__init__(self, parent)
         self.grid(column=0, row=1)
+        test_label = ttk.Button(self, text="Button 1", bootstyle="success")
+        test_label.grid(column=2, row=0)
 
     # Open image file based on path selected
     def open_image(self, file_path):
@@ -87,11 +90,11 @@ class ImageController(tk.Frame):
 
 
 # Create an Image Frame
-class ImageFrame(tk.Frame):
+class ImageFrame(ttk.Frame):
     image_file = None
 
     def __init__(self, parent, file_path, x, y):
-        tk.Frame.__init__(self, parent)
+        ttk.Frame.__init__(self, parent)
         self.parent = parent
         self.image_file = file_path
         self.grid(column=x, row=y)
