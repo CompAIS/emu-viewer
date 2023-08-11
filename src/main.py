@@ -7,7 +7,7 @@ from src.widgets import image_controller as ic
 
 
 # Create Main Tkinter Window
-class MainWindow(tk.Tk):
+class MainWindow(ttk.Window):
     def __init__(self):
         tk.Tk.__init__(self)
         self.title("FITS Image Viewer")

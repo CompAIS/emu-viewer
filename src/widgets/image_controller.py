@@ -15,7 +15,7 @@ class ImageController(ttk.Frame):
 
     def __init__(self, parent):
         ttk.Frame.__init__(self, parent)
-        self.grid(column=0, row=1)
+        self.grid(column=1, row=0)
         test_label = ttk.Button(self, text="Button 1", bootstyle="success")
         test_label.grid(column=2, row=0)
 
