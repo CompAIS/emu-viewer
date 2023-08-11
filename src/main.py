@@ -1,6 +1,8 @@
 import tkinter as tk
 import ttkbootstrap as ttk
 from tkinter import filedialog
+
+from src.lib.event_handler import EventHandler
 from src.widgets import image_controller as ic
 
 
@@ -26,7 +28,7 @@ class MainWindow(tk.Tk):
 
 # Create Menu bar for tkinter window
 class MenuBar(ttk.Frame):
-    open_file_event_listeners = []
+    open_file = EventHandler()
 
     def __init__(self, parent):
         ttk.Frame.__init__(self, parent)
@@ -51,13 +53,13 @@ class MenuBar(ttk.Frame):
             filetypes=(("Fits files", "*.fits"), ("All files", "*.*")),
         )
 
-        for listener in self.open_file_event_listeners:
-            listener(file_name)
+        self.open_file.invoke_listeners(file_name)
 
 
-# Run the main app
-main_app = MainWindow()
+if __name__ == "__main__":
+    # Run the main app
+    main_app = MainWindow()
 
-main_app.after(1000, main_app.run)
+    main_app.after(1000, main_app.run)
 
-main_app.mainloop()
+    main_app.mainloop()
