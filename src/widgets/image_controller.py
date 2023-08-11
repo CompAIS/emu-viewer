@@ -20,7 +20,7 @@ class ImageController(ttk.Frame):
         test_label.grid(column=2, row=0)
 
         # Add open_image as an event listener to open file
-        parent.menu_controller.open_file_event_listeners.append(self.open_image)
+        parent.menu_controller.open_file.add(self.open_image)
 
     # Open image file based on path selected
     def open_image(self, file_path):

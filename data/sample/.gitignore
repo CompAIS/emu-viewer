@@ -1,2 +1,2 @@
-# the script will look for Optical_r.fits in this folder
+# use this folder to store your own example data
 *.fits
