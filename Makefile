@@ -15,14 +15,11 @@ endif
 
 .PHONY: setup-tk
 setup-tk:
-ifeq ($(OS_TYPE),Windows)
-	@echo Nothing to do for Windows
-else ifeq ($(OS_TYPE),Darwin)
-	brew install python-tk
-else
-	echo $(OS_TYPE)
+ifeq ($(OS_TYPE),Linux)
 	sudo apt-get update
 	sudo apt-get install python3 python3-venv python3-tk python3-tk tk-dev
+else ifeq ($(OS_TYPE),Darwin)
+	brew install python-tk
 endif
 
 .phony: setup
