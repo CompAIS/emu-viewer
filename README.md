@@ -16,7 +16,10 @@ You have `make` installed:
 - Linux / WSL: `sudo apt install make`
 - Mac: `brew install make`
 
-You have [pyenv](https://github.com/pyenv/pyenv) installed (a Python version manager).
+You have [pyenv](https://github.com/pyenv/pyenv) installed. ([pyenv-win](https://github.com/pyenv-win/pyenv-win) for Windows).
+- See also: common build problems for pyenv https://github.com/pyenv/pyenv/wiki/Common-build-problems
+
+If you're on WSL, you will probably need to do what this answer says: https://stackoverflow.com/a/48304920. It's probably not worth it, just develop on local Windows.
 
 ### Setup the project
 
