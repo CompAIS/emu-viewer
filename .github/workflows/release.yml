@@ -25,6 +25,7 @@ jobs:
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           choco install make
         fi
+        make venv
         make setup-dev
     - run: make lint
     - run: make test
