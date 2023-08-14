@@ -2,8 +2,8 @@ import tkinter as tk
 import ttkbootstrap as ttk
 from tkinter import filedialog
 
-from src.lib.event_handler import EventHandler
-from src.widgets import image_controller as ic
+from lib.event_handler import EventHandler
+from widgets import image_controller as ic
 
 
 # Create Main Tkinter Window
