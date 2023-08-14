@@ -2,12 +2,16 @@ VENV_NAME ?= venv
 
 ifeq ($(OS),Windows_NT)
 	OS_TYPE := Windows
-	PYTHON := $(VENV_NAME)\\Scripts\\python.exe
+	BIN := $(VENV_NAME)\\Scripts
+	PYTHON := $(BIN)\\python.exe
+	PRECOMMIT := $(BIN)\\pre-commit.exe
 	ENTRY := src\\main.py
 	RM := rmdir /s /q
 else
 	OS_TYPE := $(shell uname -s)
-	PYTHON := $(VENV_NAME)/bin/python
+	BIN := $(VENV_NAME)/bin
+	PYTHON := $(BIN)/python
+	PRECOMMIT := $(BIN)/pre-commit
 	ENTRY := ./src/main.py
 	RM := rm -rf
 endif
@@ -33,7 +37,7 @@ setup:
 .PHONY: setup-dev
 setup-dev: setup
 	$(PYTHON) -m pip install -r requirements-dev.txt
-	pre-commit install
+	$(PRECOMMIT) install
 
 .PHONY: venv-clean
 venv-clean:
