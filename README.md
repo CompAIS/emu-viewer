@@ -29,8 +29,9 @@ count as being "on windows".
 1. If you have Python 3.11.4 already installed and you are not on windows, you should first uninstall that version. If you are on Windows, skip to step 3.
 2. Install the tk headers with `make setup-tk`. Python needs to install after these headers are installed so it can compile with them. It's weird, I don't know.
 3. Then install python 3.11.4 with `pyenv install 3.11.4`, and set your local python version with `pyenv local 3.11.4`. Confirm with `python --version`.
-4. Run `make setup-dev`. This sets up your python virtual environment and installs the pip requirements in it.
-5. Activate the virtual environment in your terminal:
+4. Run `make venv` to create the virtual environment.
+5. Run `make setup-dev`. This sets up your python virtual environment and installs the pip requirements in it.
+6. Activate the virtual environment in your terminal:
    1. Windows: `.\venv\Scripts\activate`
    2. Mac / Linux: `source venv/bin/activate`
 
@@ -42,7 +43,31 @@ Build the program with `make build`.
 
 ### Code Style, Formatting, and Tests
 
-!TODO
+This repository has custom workflows setup in `./github/workflows`. Specifically,
+on every push, tests will automatically run to determine if your changes are OK to merge.
+
+Namely, it [lints](https://en.wikipedia.org/wiki/Lint_(software)) the code to make sure
+it follows the defined code style. Additionally, it will automatically run the tests in
+`./tests` to ensure you do not introduce any errors into the codebase.
+
+To automatically fix code-style errors, make sure to run `make fmt`.
+
+The lints will also be run in pre-commit hooks and automatically fixed.
+
+See the following example run:
+```
+>git cam "Test pre-commit"
+black....................................................................Failed
+- hook id: black
+- files were modified by this hook
+
+reformatted src\widgets\image_controller.py
+
+All done! ✨ 🍰 ✨
+1 file reformatted.
+```
+
+You would need to re-run the commit in this instance.
 
 ## Troubleshooting
 

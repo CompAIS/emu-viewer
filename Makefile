@@ -22,15 +22,19 @@ else ifeq ($(OS_TYPE),Darwin)
 	brew install python-tk
 endif
 
+.phony: venv
+venv:
+	python -m venv venv
+
 .phony: setup
 setup:
-	python -m venv venv
 	$(PYTHON) -m pip install --upgrade pip
 	$(PYTHON) -m pip install -r requirements.txt
 
 .phony: setup-dev
 setup-dev: setup
 	$(PYTHON) -m pip install -r requirements-dev.txt
+	pre-commit install
 
 .phony: venv-clean
 venv-clean:
