@@ -2,29 +2,32 @@ VENV_NAME ?= venv
 
 ifeq ($(OS),Windows_NT)
     # Windows-specific settings
-    PATH_SEPARATOR := \\
+    OS_TYPE := Windows
     PYTHON := $(VENV_NAME)\\Scripts\\python.exe
     ENTRY := src\\main.py
 else
     # Unix-like systems settings
-    PATH_SEPARATOR := /
+	OS_TYPE := $(shell uname -s)
     PYTHON := $(VENV_NAME)/bin/python
     ENTRY := ./src/main.py
 endif
 
 
-.phony: setup-py-wsl
-setup-py-wsl:
+.PHONY: setup-tk
+setup-tk:
+ifeq ($(OS_TYPE),Windows)
+	@echo Nothing to do for Windows
+else ifeq ($(OS_TYPE),Darwin)
+	brew install python-tk
+else
+	echo $(OS_TYPE)
 	sudo apt-get update
 	sudo apt-get install python3 python3-venv python3-tk python3-tk tk-dev
-
-.phony: setup-py-mac
-setup-py-mac:
-	brew install python-tk
+endif
 
 .phony: setup
 setup:
-	python3 -m venv venv
+	python -m venv venv
 	$(PYTHON) -m pip install --upgrade pip
 	$(PYTHON) -m pip install -r requirements.txt
 
@@ -40,6 +43,10 @@ venv-clean:
 clean:
 	rm -rf build
 	rm -rf dist
+
+.phony: start
+start:
+	$(PYTHON) $(ENTRY)
 
 .phony: build
 build: clean
