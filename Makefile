@@ -1,58 +1,69 @@
 VENV_NAME ?= venv
 
 ifeq ($(OS),Windows_NT)
-    # Windows-specific settings
-    PATH_SEPARATOR := \\
-    PYTHON := $(VENV_NAME)\\Scripts\\python.exe
-    ENTRY := src\\main.py
+	OS_TYPE := Windows
+	BIN := $(VENV_NAME)\\Scripts
+	PYTHON := $(BIN)\\python.exe
+	PRECOMMIT := $(BIN)\\pre-commit.exe
+	ENTRY := src\\main.py
+	RM := rmdir /s /q
 else
-    # Unix-like systems settings
-    PATH_SEPARATOR := /
-    PYTHON := $(VENV_NAME)/bin/python
-    ENTRY := ./src/main.py
+	OS_TYPE := $(shell uname -s)
+	BIN := $(VENV_NAME)/bin
+	PYTHON := $(BIN)/python
+	PRECOMMIT := $(BIN)/pre-commit
+	ENTRY := ./src/main.py
+	RM := rm -rf
 endif
 
-
-.phony: setup-py-wsl
-setup-py-wsl:
+.PHONY: setup-tk
+setup-tk:
+ifeq ($(OS_TYPE),Linux)
 	sudo apt-get update
 	sudo apt-get install python3 python3-venv python3-tk python3-tk tk-dev
-
-.phony: setup-py-mac
-setup-py-mac:
+else ifeq ($(OS_TYPE),Darwin)
 	brew install python-tk
+endif
 
-.phony: setup
+.PHONY: venv
+venv:
+	python -m venv $(VENV_NAME)
+
+.PHONY: setup
 setup:
-	python3 -m venv venv
 	$(PYTHON) -m pip install --upgrade pip
 	$(PYTHON) -m pip install -r requirements.txt
 
-.phony: setup-dev
+.PHONY: setup-dev
 setup-dev: setup
 	$(PYTHON) -m pip install -r requirements-dev.txt
+	$(PRECOMMIT) install
 
-.phony: venv-clean
+.PHONY: venv-clean
 venv-clean:
-	rm -rf venv
+	-$(RM) $(VENV_NAME)
 
-.phony: clean
+.PHONY: clean
 clean:
-	rm -rf build
-	rm -rf dist
+	-$(RM) build
+	-$(RM) dist
 
-.phony: build
-build: clean
+.PHONY: start
+start:
+	$(PYTHON) $(ENTRY)
+
+.PHONY: build
+build:
 	$(PYTHON) -m PyInstaller $(ENTRY)
 
-.phony: lint
+.PHONY: lint
 lint:
 	$(PYTHON) -m black . --check
 
-.phony: fmt
+.PHONY: fmt
 fmt:
 	$(PYTHON) -m black .
 
-.phony: test
+.PHONY: test
 test:
 	$(PYTHON) -m pytest tests
