@@ -1,9 +1,10 @@
 import ttkbootstrap as tb
-from tkinter import filedialog
 
-from lib.event_handler import EventHandler
-from widgets import image_controller as ic
-from widgets import data_controller as dc
+
+from widgets import menu_bar as menu_bar
+from widgets import tool_bar as tool_bar
+import image_controller as ic
+import data_controller as dc
 
 
 # Create Main Tkinter Window
@@ -11,15 +12,17 @@ class MainWindow(tb.Window):
     def __init__(self):
         tb.Window.__init__(self, themename="superhero")
         self.title("FITS Image Viewer")
+        self.geometry("500x500")
+        self.state("zoomed")
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
-        self.menu_controller = MenuBar(self)
-        self.image_controller = ic.ImageController(self)
-        self.data_controller_test1 = dc.DataController(self, 0, 0, 1, 2, 50, 250)
-        self.data_controller_test2 = dc.DataController(self, 2, 0, 1, 1, 50, 250)
-        self.data_controller_test3 = dc.DataController(self, 1, 1, 3, 1, 250, 50)
+        self.menu_controller = menu_bar.MenuBar(self)
+
+        self.toolbar = tool_bar.ToolBar(self)
+
+        self.contentWindow = ContentWindow(self)
 
         self.config(menu=self.menu_controller.menu)
 
@@ -31,37 +34,28 @@ class MainWindow(tb.Window):
         self.after(100, self.run)
 
 
-# Create Menu bar for tkinter window
-class MenuBar(tb.Frame):
-    open_file = EventHandler()
-
+class ContentWindow:
     def __init__(self, parent):
-        tb.Frame.__init__(self, parent)
-        self.parent = parent
-        self.grid(column=0, row=0)
-
-        self.menu = tb.Menu(self.parent)
-
-        self.file_menu_creation()
-
-    # Create file menu options
-    def file_menu_creation(self):
-        file_menu = tb.Menu(self.menu, tearoff=0)
-        self.menu.add_cascade(label="File", menu=file_menu)
-        file_menu.add_command(label="Open", command=self.open)
-        file_menu.add_command(label="Exit", command=self.parent.quit)
-
-    # Open command for option in menu
-    def open(self):
-        file_name = filedialog.askopenfilename(
-            title="Select .fits file",
-            filetypes=(("Fits files", "*.fits"), ("All files", "*.*")),
+        self.vertical = tb.PanedWindow(
+            parent,
+            orient="vertical",
+            bootstyle="light",
         )
+        self.vertical.grid(column=1, row=0, sticky="w" + "e" + "n" + "s")
 
-        if file_name == "":
-            return
+        self.horizontal = tb.PanedWindow(
+            self.vertical, orient="horizontal", bootstyle="light"
+        )
+        self.vertical.add(self.horizontal, weight=1)
 
-        self.open_file.invoke(file_name)
+        self.data_test_1 = dc.DataController(self.vertical, parent, 250, 50)
+        self.vertical.add(self.data_test_1, weight=0)
+
+        self.image_controller = ic.ImageController(self.horizontal, parent)
+        self.horizontal.add(self.image_controller, weight=1)
+
+        self.data_test_2 = dc.DataController(self.horizontal, parent, 250, 250)
+        self.horizontal.add(self.data_test_2, weight=0)
 
 
 if __name__ == "__main__":
