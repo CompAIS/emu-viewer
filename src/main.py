@@ -1,10 +1,8 @@
 import ttkbootstrap as tb
 
-
 from widgets import menu_bar as menu_bar
 from widgets import tool_bar as tool_bar
-import image_controller as ic
-import data_controller as dc
+from src.controllers import data_controller as dc, image_controller as ic
 
 
 # Create Main Tkinter Window
