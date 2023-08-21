@@ -50,7 +50,7 @@ clean:
 
 .PHONY: start
 start:
-	$(PYTHON) $(ENTRY)
+	$(PYTHON) -m src.main
 
 .PHONY: build
 build:
