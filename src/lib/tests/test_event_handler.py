@@ -21,3 +21,17 @@ class EventHandlerTest(TestCase):
         listener_1.assert_called_once_with("foo", bar="baz")
         listener_2.assert_called_once_with("foo", bar="baz")
         listener_3.assert_called_once_with("foo", bar="baz")
+
+    @staticmethod
+    def test_clear():
+        my_handler = EventHandler()
+        listener = mock.Mock()
+        my_handler.add(listener)
+
+        my_handler.invoke("test")
+        listener.assert_called_once_with("test")
+
+        my_handler.clear()
+        my_handler.invoke("test2")
+        # not called an additional time
+        listener.assert_called_once()

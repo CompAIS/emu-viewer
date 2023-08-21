@@ -70,4 +70,4 @@ fmt:
 
 .PHONY: test
 test:
-	$(PYTHON) -m pytest tests
+	$(PYTHON) -m pytest

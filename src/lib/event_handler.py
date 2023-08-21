@@ -7,3 +7,6 @@ class EventHandler:
     def invoke(self, *args, **kwargs):
         for listener in self.event_listeners:
             listener(*args, **kwargs)
+
+    def clear(self):
+        self.event_listeners.clear()
