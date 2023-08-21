@@ -1,4 +1,5 @@
-import ttkbootstrap as ttk
+import ttkbootstrap as tb
+
 from astropy.io import fits
 from astropy.visualization import LogStretch
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -6,43 +7,15 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
 
-# Create Image Controller Frame
-class ImageController(ttk.Frame):
-    gridX = 0
-    gridY = 0
-
-    open_images = []
-
-    def __init__(self, parent):
-        ttk.Frame.__init__(self, parent)
-        self.grid(column=0, row=1)
-        test_label = ttk.Button(self, text="Button 1", bootstyle="success")
-        test_label.grid(column=2, row=0)
-
-        # Add open_image as an event listener to open file
-        parent.menu_controller.open_file.add(self.open_image)
-
-    # Open image file based on path selected
-    def open_image(self, file_path):
-        new_image = ImageFrame(self, file_path, self.gridX, self.gridY)
-        self.open_images.append(new_image)
-
-        if self.gridX > self.gridY:
-            self.gridY += 1
-            self.gridX = 0
-        else:
-            self.gridX += 1
-
-
 # Create an Image Frame
-class ImageFrame(ttk.Frame):
+class ImageFrame(tb.Frame):
     image_file = None
 
     def __init__(self, parent, file_path, x, y):
-        ttk.Frame.__init__(self, parent)
+        tb.Frame.__init__(self, parent)
         self.parent = parent
         self.image_file = file_path
-        self.grid(column=x, row=y)
+        self.grid(column=x, row=y, padx=10, pady=10)
         self.handle_image()
 
     def handle_image(self):

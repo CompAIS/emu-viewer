@@ -1,20 +1,26 @@
-import tkinter as tk
-import ttkbootstrap as ttk
-from tkinter import filedialog
+import ttkbootstrap as tb
 
-from lib.event_handler import EventHandler
-from widgets import image_controller as ic
+from widgets import menu_bar as menu_bar
+from widgets import tool_bar as tool_bar
+from src.controllers import data_controller as dc, image_controller as ic
 
 
 # Create Main Tkinter Window
-class MainWindow(tk.Tk):
+class MainWindow(tb.Window):
     def __init__(self):
-        tk.Tk.__init__(self)
+        tb.Window.__init__(self, themename="superhero")
         self.title("FITS Image Viewer")
-        self.geometry("250x250")
+        self.geometry("500x500")
+        self.state("zoomed")
 
-        self.menu_controller = MenuBar(self)
-        self.image_controller = ic.ImageController(self)
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
+
+        self.menu_controller = menu_bar.MenuBar(self)
+
+        self.toolbar = tool_bar.ToolBar(self)
+
+        self.contentWindow = ContentWindow(self)
 
         self.config(menu=self.menu_controller.menu)
 
@@ -26,37 +32,28 @@ class MainWindow(tk.Tk):
         self.after(100, self.run)
 
 
-# Create Menu bar for tkinter window
-class MenuBar(ttk.Frame):
-    open_file = EventHandler()
-
+class ContentWindow:
     def __init__(self, parent):
-        ttk.Frame.__init__(self, parent)
-        self.parent = parent
-        self.grid(column=0, row=0)
-
-        self.menu = ttk.Menu(self.parent)
-
-        self.file_menu_creation()
-
-    # Create file menu options
-    def file_menu_creation(self):
-        file_menu = ttk.Menu(self.menu, tearoff=0)
-        self.menu.add_cascade(label="File", menu=file_menu)
-        file_menu.add_command(label="Open", command=self.open)
-        file_menu.add_command(label="Exit", command=self.parent.quit)
-
-    # Open command for option in menu
-    def open(self):
-        file_name = filedialog.askopenfilename(
-            title="Select .fits file",
-            filetypes=(("Fits files", "*.fits"), ("All files", "*.*")),
+        self.vertical = tb.PanedWindow(
+            parent,
+            orient="vertical",
+            bootstyle="light",
         )
+        self.vertical.grid(column=1, row=0, sticky="w" + "e" + "n" + "s")
 
-        if file_name == "":
-            return
+        self.horizontal = tb.PanedWindow(
+            self.vertical, orient="horizontal", bootstyle="light"
+        )
+        self.vertical.add(self.horizontal, weight=1)
 
-        self.open_file.invoke(file_name)
+        self.data_test_1 = dc.DataController(self.vertical, parent, 250, 50)
+        self.vertical.add(self.data_test_1, weight=0)
+
+        self.image_controller = ic.ImageController(self.horizontal, parent)
+        self.horizontal.add(self.image_controller, weight=1)
+
+        self.data_test_2 = dc.DataController(self.horizontal, parent, 250, 250)
+        self.horizontal.add(self.data_test_2, weight=0)
 
 
 if __name__ == "__main__":
