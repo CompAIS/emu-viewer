@@ -1,10 +1,8 @@
 import ttkbootstrap as tb
-
 from astropy.io import fits
 from astropy.visualization import LogStretch
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
 
 
 # Create an Image Frame

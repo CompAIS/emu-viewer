@@ -1,4 +1,5 @@
-from unittest import mock, TestCase
+from unittest import TestCase, mock
+
 from src.lib.event_handler import EventHandler
 
 

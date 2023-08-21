@@ -1,2 +1,9 @@
 [tool.black]
 target-version = ['py311']
+
+[tool.autoflake]
+exclude = ['venv', '\.git', 'build', 'dist']
+in-place = true
+quiet = true
+recursive = true
+remove-all-unused-imports = true
