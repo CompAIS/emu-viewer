@@ -1,4 +1,5 @@
 import ttkbootstrap as tb
+
 from src.widgets import image_widget as iw
 
 

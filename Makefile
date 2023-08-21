@@ -50,7 +50,7 @@ clean:
 
 .PHONY: start
 start:
-	$(PYTHON) $(ENTRY)
+	$(PYTHON) -m src.main
 
 .PHONY: build
 build:
@@ -59,10 +59,14 @@ build:
 .PHONY: lint
 lint:
 	$(PYTHON) -m black . --check
+	$(PYTHON) -m autoflake . --check
+	$(PYTHON) -m isort . --check
 
 .PHONY: fmt
 fmt:
 	$(PYTHON) -m black .
+	$(PYTHON) -m autoflake .
+	$(PYTHON) -m isort .
 
 .PHONY: test
 test:

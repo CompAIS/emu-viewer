@@ -1,5 +1,7 @@
-import ttkbootstrap as tb
 from tkinter import filedialog
+
+import ttkbootstrap as tb
+
 from src.lib.event_handler import EventHandler
 
 
