@@ -8,6 +8,9 @@ from matplotlib.figure import Figure
 # Create an Image Frame
 class ImageFrame(tb.Frame):
     image_file = None
+    is_dragging = False
+    prev_mouse_x = 0
+    prev_mouse_y = 0
 
     def __init__(self, parent, file_path, x, y):
         tb.Frame.__init__(self, parent)
@@ -16,6 +19,7 @@ class ImageFrame(tb.Frame):
         self.grid(column=x, row=y, padx=10, pady=10)
 
         fig, ax = ImageFrame.render_fig(file_path)
+        self.fig = fig
         self.ax = ax
 
         # Embed the matplotlib figure in the tkinter window
@@ -25,13 +29,56 @@ class ImageFrame(tb.Frame):
         self.canvas_widget.grid(column=0, row=0)
 
         # Listen to mouse events
-        # self.canvas.mpl_connect("scroll_event", self.zoom) # TODO this may be windows only
-        self.canvas_widget.bind(
-            "<MouseWheel>", self.zoom
-        )  # TODO this may be windows only
+        self.canvas_widget.bind("<MouseWheel>", self.zoom)
+        self.canvas_widget.bind("<ButtonPress-1>", self.mouse_down)
+        self.canvas_widget.bind("<ButtonRelease-1>", self.mouse_up)
+        self.canvas_widget.bind("<Motion>", self.move)
+
+    def mouse_down(self, event):
+        self.is_dragging = True
+        self.prev_mouse_x = event.x
+        self.prev_mouse_y = event.y
+
+    def mouse_up(self, event):
+        self.is_dragging = False
+
+    def move(self, event):
+        if self.is_dragging:
+            figwidth = self.fig.get_figwidth() * self.fig.dpi
+            figheight = self.fig.get_figheight() * self.fig.dpi
+            current_xlim = self.ax.get_xlim()
+            current_ylim = self.ax.get_ylim()
+
+            dx = event.x - self.prev_mouse_x
+            dy = event.y - self.prev_mouse_y
+            x_ratio = dx / figwidth
+            y_ratio = dy / figheight
+
+            width = current_xlim[1] - current_xlim[0]
+            height = current_ylim[1] - current_ylim[0]
+
+            new_xlim = (
+                current_xlim[0] - x_ratio * width,
+                current_xlim[1] - x_ratio * width,
+            )
+            new_ylim = (
+                current_ylim[0] + y_ratio * height,
+                current_ylim[1] + y_ratio * height,
+            )
+
+            # Set the new axis limits
+            self.ax.set_xlim(new_xlim)
+            self.ax.set_ylim(new_ylim)
+
+            # Redraw the canvas
+            self.canvas.draw()
+
+        self.prev_mouse_x = event.x
+        self.prev_mouse_y = event.y
 
     def zoom(self, event):
-        # Get the current axis limits
+        figwidth = self.fig.get_figwidth() * self.fig.dpi
+        figheight = self.fig.get_figheight() * self.fig.dpi
         current_xlim = self.ax.get_xlim()
         current_ylim = self.ax.get_ylim()
 
@@ -42,9 +89,7 @@ class ImageFrame(tb.Frame):
             return  # Return if no valid data
 
         # Define zoom factors for zooming in and out
-        zoom_factor = 0.9 * (event.delta / 120)  # delta seems to be a multiple of 120
-        if zoom_factor < 0:
-            zoom_factor = -1 / zoom_factor
+        zoom_factor = 0.9 if event.delta > 0 else 1 / 0.9
 
         width = current_xlim[1] - current_xlim[0]
         height = current_ylim[1] - current_ylim[0]
@@ -52,14 +97,25 @@ class ImageFrame(tb.Frame):
         new_width = width * zoom_factor
         new_height = height * zoom_factor
 
-        # Adjust the axis limits
+        dwidth = width - new_width
+        dheight = height - new_height
+
+        x_ratio = xdata / figwidth
+        x_left = x_ratio * dwidth
+        x_right = -(1 - x_ratio) * dwidth
+
+        # I have no idea why this is flipped
+        y_ratio = ydata / figheight
+        y_left = (1 - y_ratio) * dheight
+        y_right = -y_ratio * dheight
+
         new_xlim = (
-            current_xlim[0] + (width - new_width) / 2,
-            current_xlim[1] + (new_width - width) / 2,
+            current_xlim[0] + x_left,
+            current_xlim[1] + x_right,
         )
         new_ylim = (
-            current_ylim[0] + (height - new_height) / 2,
-            current_ylim[1] + (new_height - height) / 2,
+            current_ylim[0] + y_left,
+            current_ylim[1] + y_right,
         )
 
         # Set the new axis limits
@@ -93,6 +149,6 @@ class ImageFrame(tb.Frame):
         ax.axis("off")
 
         # Render the scaled image data onto the figure
-        cax = ax.imshow(scaled_data, cmap="gray", origin="lower")
+        cax = ax.imshow(scaled_data, origin="lower")
 
         return fig, ax
