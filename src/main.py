@@ -1,6 +1,6 @@
 import tkinter as tk
-import ttkbootstrap as ttk
 from tkinter import filedialog
+import ttkbootstrap as ttk
 
 from lib.event_handler import EventHandler
 from widgets import image_controller as ic
@@ -11,12 +11,19 @@ class MainWindow(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self.title("FITS Image Viewer")
-        self.geometry("250x250")
+        self.geometry("800x600")
 
         self.menu_controller = MenuBar(self)
-        self.image_controller = ic.ImageController(self)
 
+        notebook = ttk.Notebook(self)
+
+        notebook.grid(row=0, column=0, sticky="nsew")
+
+        self.menu_controller = MenuBar(self)
         self.config(menu=self.menu_controller.menu)
+
+        # Pass the notebook reference to the ImageController
+        self.image_controller = ic.ImageController(self, notebook)
 
     # Main run function for app
     # Place all functions of the app here
