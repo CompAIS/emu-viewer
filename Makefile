@@ -59,14 +59,14 @@ build:
 .PHONY: lint
 lint:
 	$(PYTHON) -m black . --check
-	$(PYTHON) -m autoflake . --check
 	$(PYTHON) -m isort . --check
+	$(PYTHON) -m autoflake . --check
 
 .PHONY: fmt
 fmt:
 	$(PYTHON) -m black .
-	$(PYTHON) -m autoflake .
 	$(PYTHON) -m isort .
+	$(PYTHON) -m autoflake .
 
 .PHONY: test
 test:
