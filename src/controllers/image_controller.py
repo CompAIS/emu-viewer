@@ -16,6 +16,8 @@ class ImageController(tb.Frame):
             parent,
             bootstyle="dark",
         )
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
 
         # Add open_image as an event listener to open file
         root.menu_controller.open_file.add(self.open_image)
