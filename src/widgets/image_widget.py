@@ -17,6 +17,8 @@ class ImageFrame(tb.Frame):
         self.parent = parent
         self.image_file = file_path
         self.grid(column=x, row=y, padx=10, pady=10)
+        self.grid_rowconfigure(x, weight=1)
+        self.grid_columnconfigure(y, weight=1)
 
         fig, ax = ImageFrame.render_fig(file_path)
         self.fig = fig
@@ -142,7 +144,7 @@ class ImageFrame(tb.Frame):
         scaled_data = log_stretch(image_data)
 
         # Create a matplotlib figure
-        fig = Figure(figsize=(5, 5), dpi=100)
+        fig = Figure(figsize=(5, 5), dpi=150)
         ax = fig.add_subplot()
         fig.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
         ax.margins(0, 0)
