@@ -1,5 +1,6 @@
 class EventHandler:
-    event_listeners = []
+    def __init__(self):
+        self.event_listeners = []
 
     def add(self, listener):
         self.event_listeners.append(listener)
