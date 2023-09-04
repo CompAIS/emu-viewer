@@ -1,3 +1,4 @@
+import os
 import random
 import string
 
@@ -35,6 +36,10 @@ def save_file(image_file):
     # Render the scaled image data onto the figure
     ax.imshow(data, cmap="inferno", origin="lower", vmin=vmin, vmax=vmax)
 
+    if not os.path.exists("tmp"):
+        os.makedirs("tmp")
+
+    # todo this is leaking file storage
     file_path = f"tmp/{''.join(random.choices(string.ascii_lowercase, k=10))}"
     fig.savefig(file_path)
 
