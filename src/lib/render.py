@@ -8,9 +8,9 @@ from matplotlib.figure import Figure
 
 def save_file(image_file):
     """
-    Creates the Figure object to be drawn onto the canvas.
+    Renders the provided .fits file with the given configuration (TODO) to a .png file.
 
-    TODO - extract this rendering out?
+    Returns the filepath to the png file.
     """
 
     # Read the .fits file

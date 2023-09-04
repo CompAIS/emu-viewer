@@ -1,9 +1,10 @@
 import tkinter as tk
 
 import ttkbootstrap as tb
-from PIL import ImageTk
+from PIL import Image, ImageTk
 
 import src.lib.render as Render
+from src.lib.util import with_defaults
 
 
 # Create an Image Frame
@@ -22,9 +23,8 @@ class ImageFrame(tb.Frame):
         self.canvas = tk.Canvas(master=self)
         self.canvas.grid(column=0, row=0, sticky=tk.NSEW)
 
-        self.tk_img_path = None
-        self.tk_img = None
-        self.canvas_image = None
+        self.tk_img_path = self.tk_img = self.canvas_image = None
+        self.image_x = self.image_y = self.image_size = None
         self.update_canvas(file_path=file_path)
 
         # Listen to mouse events
@@ -32,39 +32,54 @@ class ImageFrame(tb.Frame):
         self.prev_mouse_x = 0
         self.prev_mouse_y = 0
 
-        # self.canvas.bind("<MouseWheel>", self.zoom)
+        self.canvas.bind("<Motion>", self.move)
         self.canvas.bind("<ButtonPress-1>", self.mouse_down)
         self.canvas.bind("<ButtonRelease-1>", self.mouse_up)
-        self.canvas.bind("<Motion>", self.move)
+        self.canvas.bind("<MouseWheel>", self.zoom)
         # TODO widget changes size
         # https://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
         # https://stackoverflow.com/questions/61462360/tkinter-canvas-dynamically-resize-image
         # self.canvas.bind("<Configure>", self.window_resize)
 
-    def update_canvas(self, file_path=None, x=None, y=None):
+    def update_canvas(self, file_path=None, x=None, y=None, size=None):
         """
         Update canvas with image. Provide a file_path to change the image.
         Otherwise specify zoom and position arguments. TODO
         """
 
         self.root.update()
-        if x is None:
-            x = self.canvas.winfo_width() / 2
 
-        if y is None:
-            y = self.canvas.winfo_height() / 2
+        canvas_width = self.canvas.winfo_width()
+        canvas_height = self.canvas.winfo_height()
+
+        x = int(with_defaults(x, self.image_x, canvas_width / 2))
+        y = int(with_defaults(y, self.image_y, canvas_height / 2))
+        size = int(with_defaults(size, self.image_size, canvas_height - 20))
 
         # delete old image
         self.canvas.delete(self.canvas_image)
 
         # if we have no loaded image, or the file_path is different, load the new image
-        if self.tk_img == None or (file_path != None and self.tk_img_path != file_path):
-            # load new image
+        should_reload = self.tk_img is None or (
+            file_path != None and self.tk_img_path != file_path
+        )
+
+        if should_reload:
             self.tk_img_path = Render.save_file(file_path)
-            self.tk_img = ImageTk.PhotoImage(file=self.tk_img_path)
+            self.pil_img = Image.open(self.tk_img_path)
+            self.tk_img = ImageTk.PhotoImage(self.pil_img)
+
+        # resize image
+        (currsize, _) = self.pil_img.size
+        if size != currsize:
+            self.pil_img = self.pil_img.resize((size, size), Image.NEAREST)
+            self.tk_img = ImageTk.PhotoImage(self.pil_img)
 
         # draw new image
         self.canvas_image = self.canvas.create_image(x, y, image=self.tk_img)
+        self.image_x = x
+        self.image_y = y
+        self.image_size = size
 
     def mouse_down(self, event):
         self.is_dragging = True
@@ -80,8 +95,10 @@ class ImageFrame(tb.Frame):
             dy = event.y - self.prev_mouse_y
 
             x1, y1, x2, y2 = self.canvas.bbox(self.canvas_image)
-            x = x1 + ((x2 - x1) / 2) + dx
-            y = y1 + ((y2 - y1) / 2) + dy
+            width = x2 - x1
+            height = y2 - y1
+            x = x1 + (width / 2) + dx
+            y = y1 + (height / 2) + dy
 
             self.update_canvas(x=x, y=y)
 
@@ -89,50 +106,15 @@ class ImageFrame(tb.Frame):
         self.prev_mouse_y = event.y
 
     def zoom(self, event):
-        figwidth = self.fig.get_figwidth() * self.fig.dpi
-        figheight = self.fig.get_figheight() * self.fig.dpi
-        current_xlim = self.ax.get_xlim()
-        current_ylim = self.ax.get_ylim()
-
-        # Calculate new axis limits based on the zoom event
         xdata = event.x  # x-coordinate of the mouse pointer
         ydata = event.y  # y-coordinate of the mouse pointer
         if xdata is None or ydata is None:
             return  # Return if no valid data
 
         # Define zoom factors for zooming in and out
-        zoom_factor = 0.9 if event.delta > 0 else 1 / 0.9
+        zoom_factor = 0.9 if event.delta < 0 else 1 / 0.9
 
-        width = current_xlim[1] - current_xlim[0]
-        height = current_ylim[1] - current_ylim[0]
-
-        new_width = width * zoom_factor
-        new_height = height * zoom_factor
-
-        dwidth = width - new_width
-        dheight = height - new_height
-
-        x_ratio = xdata / figwidth
-        x_left = x_ratio * dwidth
-        x_right = -(1 - x_ratio) * dwidth
-
-        # I have no idea why this is flipped
-        y_ratio = ydata / figheight
-        y_left = (1 - y_ratio) * dheight
-        y_right = -y_ratio * dheight
-
-        new_xlim = (
-            current_xlim[0] + x_left,
-            current_xlim[1] + x_right,
-        )
-        new_ylim = (
-            current_ylim[0] + y_left,
-            current_ylim[1] + y_right,
-        )
-
-        # Set the new axis limits
-        self.ax.set_xlim(new_xlim)
-        self.ax.set_ylim(new_ylim)
+        new_size = self.image_size * zoom_factor
 
         # Redraw the canvas
-        self.canvas.draw()
+        self.update_canvas(size=new_size)
