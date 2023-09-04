@@ -23,7 +23,7 @@ class EventHandlerTest(TestCase):
         listener_3.assert_called_once_with("foo", bar="baz")
 
     @staticmethod
-    def test_all_events_called_on_invoke():
+    def test_event_handlers_do_not_leak():
         my_handler_1 = EventHandler()
         my_handler_2 = EventHandler()
 
