@@ -37,4 +37,3 @@ class EventHandlerTest(TestCase):
 
         listener_1.assert_called_once_with("foo")
         listener_2.assert_not_called()
-        print(listener_2.event_listeners)
