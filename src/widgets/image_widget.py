@@ -1,5 +1,7 @@
+import time
 import tkinter as tk
 
+import pyvips as vips
 import ttkbootstrap as tb
 from PIL import Image, ImageTk
 
@@ -47,6 +49,7 @@ class ImageFrame(tb.Frame):
         Otherwise specify zoom and position arguments. TODO
         """
 
+        start = time.time()
         self.root.update()
 
         canvas_width = self.canvas.winfo_width()
@@ -66,17 +69,27 @@ class ImageFrame(tb.Frame):
 
         if should_reload:
             self.tk_img_path = Render.save_file(file_path)
-            self.pil_img = Image.open(self.tk_img_path)
-            self.tk_img = ImageTk.PhotoImage(self.pil_img)
+            self.vips_raw_img = vips.Image.new_from_file(self.tk_img_path).flatten()
+            self.vips_img = self.vips_raw_img
 
         # resize image
-        (currsize, _) = self.pil_img.size
+        currsize = self.vips_img.width
         if size != currsize:
-            self.pil_img = self.pil_img.resize((size, size), Image.NEAREST)
+            resize_start = time.time()
+            scale = size / self.vips_raw_img.width
+            self.vips_img = self.vips_raw_img.resize(scale)
+            print(f"Resize took {time.time() - resize_start}")
+
+        if should_reload or size != currsize:
+            reload_start = time.time()
+            self.pil_img = Image.fromarray(self.vips_img.numpy())
             self.tk_img = ImageTk.PhotoImage(self.pil_img)
+            print(f"Reload took {time.time() - resize_start} {self.pil_img.mode}")
 
         # draw new image
         self.canvas_image = self.canvas.create_image(x, y, image=self.tk_img)
+        print(f"Rendered in {time.time() - start} (Image size: {size})")
+
         self.image_x = x
         self.image_y = y
         self.image_size = size
@@ -100,6 +113,7 @@ class ImageFrame(tb.Frame):
             x = x1 + (width / 2) + dx
             y = y1 + (height / 2) + dy
 
+            print(f"started {x}, {y}")
             self.update_canvas(x=x, y=y)
 
         self.prev_mouse_x = event.x
