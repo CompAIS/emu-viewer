@@ -95,38 +95,22 @@ class ImageFrame(tb.Frame):
             if should_reload:
                 self.tk_img_path = Render.save_file(file_path)
                 self.vips_raw_img = vips.Image.new_from_file(self.tk_img_path).flatten()
-                self.vips_cropped_img = self.vips_resized_img = self.vips_raw_img
+                self.vips_resized_img = self.vips_raw_img
 
             # resize image if the given size is different from our current
             csize_prev = self.vips_resized_img.width
             if csize_desired != csize_prev:
                 scale_rs = csize_desired / self.vips_raw_img.width
                 self.vips_resized_img = self.vips_raw_img.resize(scale_rs)
-                self.vips_cropped_img = self.vips_resized_img
-
-            # if any portion of the image is off-screen, we should crop it out
-            is_oob = cx1 < 0 or cy1 < 0 or cx2 > canvas_width or cy2 > canvas_height
-            sx1, sy1 = max(0, -cx1), max(0, -cy1)
-            swidth, sheight = min(csize_desired, cx2), min(csize_desired, cy2)
-            if is_oob:
-                if swidth > 0 and sheight > 0:
-                    self.vips_cropped_img = self.vips_resized_img.crop(
-                        sx1, sy1, swidth, sheight
-                    )
 
             # reload image if we made any changes
-            if should_reload or csize_desired != csize_prev or is_oob:
-                self.pil_img = Image.fromarray(self.vips_cropped_img.numpy())
+            if should_reload or csize_desired != csize_prev:
+                self.pil_img = Image.fromarray(self.vips_resized_img.numpy())
                 self.tk_img = ImageTk.PhotoImage(self.pil_img)
-                # reload_start = time.time()
-                # print(f"Step 1: took {time.time() - reload_start} {self.pil_img.mode}")
-                # print(f"Reload took {time.time() - reload_start} {self.pil_img.mode}")
 
             # load new image in
             self.canvas.itemconfig(self.canvas_image, image=self.tk_img)
-            self.canvas.moveto(self.canvas_image, cx1 + sx1, cy1 + sy1)
-            # print(f"Rendered in {time.time() - start} (Image size: {csize_desired})")
-
+            self.canvas.moveto(self.canvas_image, cx1, cy1)
         except Exception as e:
             print(e)
 
@@ -168,7 +152,7 @@ class ImageFrame(tb.Frame):
         # Define zoom factors for zooming in and out
         zoom_factor = 0.9 if event.delta < 0 else 1 / 0.9
 
-        new_size = self.image_size * zoom_factor
+        new_size = self.csize * zoom_factor
 
         # Redraw the canvas
         # TODO should zoom into mouse
