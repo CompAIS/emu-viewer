@@ -1,3 +1,5 @@
+import tkinter as tk
+
 import ttkbootstrap as tb
 
 from src.widgets import image_widget as iw
@@ -5,33 +7,30 @@ from src.widgets import image_widget as iw
 
 # Create Image Controller Frame
 class ImageController(tb.Frame):
-    gridX = 0
-    gridY = 0
-
-    open_images = []
-
     def __init__(self, parent, root):
-        tb.Frame.__init__(
-            self,
-            parent,
-            bootstyle="dark",
-        )
-        self.grid(
-            column=1,
-            row=0,
-            sticky="w" + "e" + "n" + "s",
-        )
+        tb.Frame.__init__(self, parent, bootstyle="dark")
+
+        self.root = root
+        self.grid(column=1, row=0, sticky=tk.NSEW)
+        self.rowconfigure(0, weight=1, uniform="c")
+        self.columnconfigure(0, weight=1, uniform="r")
 
         # Add open_image as an event listener to open file
         root.menu_controller.open_file_eh.add(self.open_image)
+        self.open_images = []
 
     # Open image file based on path selected
     def open_image(self, file_path):
-        new_image = iw.ImageFrame(self, file_path, self.gridX, self.gridY)
-        self.open_images.append(new_image)
+        gridX = len(self.open_images) % 2
+        gridY = len(self.open_images) // 2
+        new_image = iw.ImageFrame(self, self.root, file_path, gridX, gridY)
 
-        if self.gridX > self.gridY:
-            self.gridY += 1
-            self.gridX = 0
-        else:
-            self.gridX += 1
+        # if we are about to expand into the second column, configure it
+        if len(self.open_images) == 1:
+            self.columnconfigure(1, weight=1, uniform="c")
+
+        # if we are about to expand into a new row, configure it
+        if gridY == 1:
+            self.rowconfigure(gridX, weight=1, uniform="r")
+
+        self.open_images.append(new_image)

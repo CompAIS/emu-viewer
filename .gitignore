@@ -1,6 +1,7 @@
 build/
 dist/
 venv/
+tmp/
 **/__pycache__
 .pytest_cache/
 .idea

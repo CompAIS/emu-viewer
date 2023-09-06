@@ -1,40 +1,118 @@
+import tkinter as tk
+
+import pyvips as vips
 import ttkbootstrap as tb
-from astropy.io import fits
-from astropy.visualization import LogStretch
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
+from PIL import Image, ImageTk
+
+import src.lib.render as Render
+from src.lib.util import with_defaults
 
 
 # Create an Image Frame
 class ImageFrame(tb.Frame):
-    image_file = None
-    is_dragging = False
-    prev_mouse_x = 0
-    prev_mouse_y = 0
-
-    def __init__(self, parent, file_path, x, y):
+    def __init__(self, parent, root, file_path, x, y):
         tb.Frame.__init__(self, parent)
+
+        # basic layout
+        self.root = root
         self.parent = parent
-        self.image_file = file_path
-        self.grid(column=x, row=y, padx=10, pady=10)
-        self.grid_rowconfigure(x, weight=1)
-        self.grid_columnconfigure(y, weight=1)
+        self.grid(column=x, row=y, padx=10, pady=10, sticky=tk.NSEW)
+        self.rowconfigure(0, weight=1, uniform="a")
+        self.columnconfigure(0, weight=1, uniform="a")
 
-        fig, ax = ImageFrame.render_fig(file_path)
-        self.fig = fig
-        self.ax = ax
+        # create a tk canvas and load initial image
+        self.canvas = tk.Canvas(master=self)
+        self.canvas.grid(column=0, row=0, sticky=tk.NSEW)
 
-        # Embed the matplotlib figure in the tkinter window
-        self.canvas = FigureCanvasTkAgg(fig, master=self)
+        self.tk_img_path = self.tk_img = None
+        self.cx = self.cy = self.csize = None
+        self.updating = False
+        self.canvas_image = self.canvas.create_image(0, 0, image=None)
+        self.update_canvas(file_path=file_path)
 
-        self.canvas_widget = self.canvas.get_tk_widget()
-        self.canvas_widget.grid(column=0, row=0)
+        # image info label
+        self.image_info = self.canvas.create_text(0, 0, text="", fill="white")
+        self.canvas.tag_raise(self.image_info)
 
         # Listen to mouse events
-        self.canvas_widget.bind("<MouseWheel>", self.zoom)
-        self.canvas_widget.bind("<ButtonPress-1>", self.mouse_down)
-        self.canvas_widget.bind("<ButtonRelease-1>", self.mouse_up)
-        self.canvas_widget.bind("<Motion>", self.move)
+        self.is_dragging = False
+        self.prev_mouse_x = 0
+        self.prev_mouse_y = 0
+
+        self.canvas.bind("<Motion>", self.move)
+        self.canvas.bind("<ButtonPress-1>", self.mouse_down)
+        self.canvas.bind("<ButtonRelease-1>", self.mouse_up)
+        self.canvas.bind("<MouseWheel>", self.zoom)
+        # TODO widget changes size
+        # https://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
+        # https://stackoverflow.com/questions/61462360/tkinter-canvas-dynamically-resize-image
+        # self.canvas.bind("<Configure>", self.window_resize)
+
+    # We have three different "coordinate" systems here
+    # - (c) on the actual canvas (between 0 and the canvas_width/height)
+    # - (r) on the *raw* image (before scaling)
+    # - (s) on the *scaled* image
+
+    def update_canvas(self, file_path=None, cx=None, cy=None, csize=None):
+        """
+        Update canvas with image. Provide a file_path to change the image.
+        Otherwise specify zoom and position arguments. TODO
+        """
+
+        # Some assumptions:
+        # - aspect ratio is always 1:1 for the image, so we can use 'width' to mean 'size'
+
+        if self.updating:
+            return
+
+        self.updating = True
+
+        try:
+            self.root.update()
+            canvas_width = self.canvas.winfo_width()
+            canvas_height = self.canvas.winfo_height()
+
+            cx = self.cx = with_defaults(cx, self.cx, canvas_width / 2)
+            cy = self.cy = with_defaults(cy, self.cy, canvas_height / 2)
+            self.csize = with_defaults(csize, self.csize, canvas_height - 20)
+            csize_desired = int(self.csize)
+
+            # (desired) bounding box of the image on the canvas
+            cx1, cx2, cy1, cy2 = (
+                cx - csize_desired / 2,
+                cx + csize_desired / 2,
+                cy - csize_desired / 2,
+                cy + csize_desired / 2,
+            )
+
+            # if we have no loaded image, or the file_path is different, render the image
+            should_reload = self.tk_img is None or (
+                file_path != None and self.tk_img_path != file_path
+            )
+
+            if should_reload:
+                self.tk_img_path = Render.save_file(file_path)
+                self.vips_raw_img = vips.Image.new_from_file(self.tk_img_path).flatten()
+                self.vips_resized_img = self.vips_raw_img
+
+            # resize image if the given size is different from our current
+            csize_prev = self.vips_resized_img.width
+            if csize_desired != csize_prev:
+                scale_rs = csize_desired / self.vips_raw_img.width
+                self.vips_resized_img = self.vips_raw_img.resize(scale_rs)
+
+            # reload image if we made any changes
+            if should_reload or csize_desired != csize_prev:
+                self.pil_img = Image.fromarray(self.vips_resized_img.numpy())
+                self.tk_img = ImageTk.PhotoImage(self.pil_img)
+
+            # load new image in
+            self.canvas.itemconfig(self.canvas_image, image=self.tk_img)
+            self.canvas.moveto(self.canvas_image, cx1, cy1)
+        except Exception as e:
+            print(e)
+
+        self.updating = False
 
     def mouse_down(self, event):
         self.is_dragging = True
@@ -45,112 +123,42 @@ class ImageFrame(tb.Frame):
         self.is_dragging = False
 
     def move(self, event):
+        x1, y1, x2, y2 = self.canvas.bbox(self.canvas_image)
         if self.is_dragging:
-            figwidth = self.fig.get_figwidth() * self.fig.dpi
-            figheight = self.fig.get_figheight() * self.fig.dpi
-            current_xlim = self.ax.get_xlim()
-            current_ylim = self.ax.get_ylim()
-
             dx = event.x - self.prev_mouse_x
             dy = event.y - self.prev_mouse_y
-            x_ratio = dx / figwidth
-            y_ratio = dy / figheight
 
-            width = current_xlim[1] - current_xlim[0]
-            height = current_ylim[1] - current_ylim[0]
+            width = x2 - x1
+            height = y2 - y1
+            x = x1 + (width / 2) + dx
+            y = y1 + (height / 2) + dy
 
-            new_xlim = (
-                current_xlim[0] - x_ratio * width,
-                current_xlim[1] - x_ratio * width,
-            )
-            new_ylim = (
-                current_ylim[0] + y_ratio * height,
-                current_ylim[1] + y_ratio * height,
-            )
+            self.update_canvas(cx=x, cy=y)
 
-            # Set the new axis limits
-            self.ax.set_xlim(new_xlim)
-            self.ax.set_ylim(new_ylim)
+        # converts values on the canvas to the corresponding values on the raw image
+        scale_cr = self.vips_raw_img.width / self.csize
+        rx_image = (event.x - x1) * scale_cr
+        ry_image = (event.y - y1) * scale_cr
 
-            # Redraw the canvas
-            self.canvas.draw()
+        # update text
+        self.canvas.itemconfig(
+            self.image_info, text=f"Image: ({rx_image:.2f}, {ry_image:.2f})"
+        )
+        self.canvas.moveto(self.image_info, 10, 10)
 
         self.prev_mouse_x = event.x
         self.prev_mouse_y = event.y
 
     def zoom(self, event):
-        figwidth = self.fig.get_figwidth() * self.fig.dpi
-        figheight = self.fig.get_figheight() * self.fig.dpi
-        current_xlim = self.ax.get_xlim()
-        current_ylim = self.ax.get_ylim()
+        cx_mouse = event.x
+        cy_mouse = event.y
+        if cx_mouse is None or cy_mouse is None:
+            return
 
-        # Calculate new axis limits based on the zoom event
-        xdata = event.x  # x-coordinate of the mouse pointer
-        ydata = event.y  # y-coordinate of the mouse pointer
-        if xdata is None or ydata is None:
-            return  # Return if no valid data
+        zoom_factor = 0.9 if event.delta < 0 else 1 / 0.9
 
-        # Define zoom factors for zooming in and out
-        zoom_factor = 0.9 if event.delta > 0 else 1 / 0.9
-
-        width = current_xlim[1] - current_xlim[0]
-        height = current_ylim[1] - current_ylim[0]
-
-        new_width = width * zoom_factor
-        new_height = height * zoom_factor
-
-        dwidth = width - new_width
-        dheight = height - new_height
-
-        x_ratio = xdata / figwidth
-        x_left = x_ratio * dwidth
-        x_right = -(1 - x_ratio) * dwidth
-
-        # I have no idea why this is flipped
-        y_ratio = ydata / figheight
-        y_left = (1 - y_ratio) * dheight
-        y_right = -y_ratio * dheight
-
-        new_xlim = (
-            current_xlim[0] + x_left,
-            current_xlim[1] + x_right,
-        )
-        new_ylim = (
-            current_ylim[0] + y_left,
-            current_ylim[1] + y_right,
-        )
-
-        # Set the new axis limits
-        self.ax.set_xlim(new_xlim)
-        self.ax.set_ylim(new_ylim)
+        new_size = self.csize * zoom_factor
 
         # Redraw the canvas
-        self.canvas.draw()
-
-    @staticmethod
-    def render_fig(image_file):
-        """
-        Creates the Figure object to be drawn onto the canvas.
-
-        TODO - extract this rendering out?
-        """
-
-        # Read the .fits file
-        hdu_list = fits.open(image_file)
-        image_data = hdu_list[0].data
-
-        # Apply logarithmic scaling to the image data
-        log_stretch = LogStretch()
-        scaled_data = log_stretch(image_data)
-
-        # Create a matplotlib figure
-        fig = Figure(figsize=(5, 5), dpi=150)
-        ax = fig.add_subplot()
-        fig.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
-        ax.margins(0, 0)
-        ax.axis("off")
-
-        # Render the scaled image data onto the figure
-        cax = ax.imshow(scaled_data, origin="lower")
-
-        return fig, ax
+        # TODO should zoom into mouse
+        self.update_canvas(csize=new_size)
