@@ -7,7 +7,9 @@ from src.lib.event_handler import EventHandler
 
 # Create Menu bar for tkinter window
 class MenuBar(tb.Frame):
-    open_file = EventHandler()
+    open_file_eh = EventHandler()
+    open_image_table_eh = EventHandler()
+    open_histogram_eh = EventHandler()
 
     def __init__(self, parent):
         tb.Frame.__init__(self, parent)
@@ -23,7 +25,7 @@ class MenuBar(tb.Frame):
     def file_menu_creation(self):
         file_menu = tb.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label="File", menu=file_menu)
-        file_menu.add_command(label="Open", command=self.open)
+        file_menu.add_command(label="Open", command=self.open_file)
         file_menu.add_command(label="Exit", command=self.parent.quit)
 
     def widget_menu_creation(self):
@@ -33,7 +35,7 @@ class MenuBar(tb.Frame):
         widget_menu.add_command(label="Image Table", command=self.open_image_table)
 
     # Open command for option in menu
-    def open(self):
+    def open_file(self):
         file_name = filedialog.askopenfilename(
             title="Select .fits file",
             filetypes=(("Fits files", "*.fits"), ("All files", "*.*")),
@@ -42,10 +44,10 @@ class MenuBar(tb.Frame):
         if file_name == "":
             return
 
-        self.open_file.invoke("open_image", file_name)
+        self.open_file_eh.invoke(file_name)
 
     def open_histogram(self):
-        self.open_file.invoke("open_histogram_widget")
+        self.open_histogram_eh.invoke()
 
     def open_image_table(self):
-        self.open_file.invoke("open_image_table_widget")
+        self.open_image_table_eh.invoke()

@@ -8,13 +8,9 @@ class WidgetController:
     def __init__(self, root):
         self.root = root
 
-        root.menu_controller.open_file.add(
-            "open_histogram_widget", self.open_histogram_widget
-        )
+        root.menu_controller.open_histogram_eh.add(self.open_histogram_widget)
 
-        root.menu_controller.open_file.add(
-            "open_image_table_widget", self.open_image_table_widget
-        )
+        root.menu_controller.open_image_table_eh.add(self.open_image_table_widget)
 
     def open_histogram_widget(self):
         new_histogram = histogram_widget.HistogramWidget(self.root)
