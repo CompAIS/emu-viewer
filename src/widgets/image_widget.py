@@ -10,13 +10,13 @@ from src.lib.util import with_defaults
 
 # Create an Image Frame
 class ImageFrame(tb.Frame):
-    def __init__(self, parent, root, file_path, x, y):
+    def __init__(self, parent, root, file_path):
         tb.Frame.__init__(self, parent)
 
         # basic layout
         self.root = root
         self.parent = parent
-        self.grid(column=x, row=y, padx=10, pady=10, sticky=tk.NSEW)
+        self.grid(column=0, row=0, padx=10, pady=10, sticky=tk.NSEW)
         self.rowconfigure(0, weight=1, uniform="a")
         self.columnconfigure(0, weight=1, uniform="a")
 
