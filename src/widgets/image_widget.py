@@ -31,8 +31,8 @@ class ImageFrame(tb.Frame):
         self.update_canvas(file_path=file_path)
 
         # image info label
-        self.image_info = tb.Label(self, text="")
-        self.image_info.grid(column=0, row=0, sticky=tk.N + tk.EW)
+        self.image_info = self.canvas.create_text(0, 0, text="", fill="white")
+        self.canvas.tag_raise(self.image_info)
 
         # Listen to mouse events
         self.is_dragging = False
@@ -135,9 +135,17 @@ class ImageFrame(tb.Frame):
 
             self.update_canvas(cx=x, cy=y)
 
-        self.image_info.configure(
-            text=f"Image: ({(event.x - x1) * (self.vips_raw_img.width / self.csize)}, {(event.y - y1) * (self.vips_raw_img.width / self.csize)})"
+        # converts values on the canvas to the corresponding values on the raw image
+        scale_cr = self.vips_raw_img.width / self.csize
+        rx_image = (event.x - x1) * scale_cr
+        ry_image = (event.y - y1) * scale_cr
+
+        # update text
+        self.canvas.itemconfig(
+            self.image_info, text=f"Image: ({rx_image:.2f}, {ry_image:.2f})"
         )
+        self.canvas.moveto(self.image_info, 10, 10)
+
         self.prev_mouse_x = event.x
         self.prev_mouse_y = event.y
 

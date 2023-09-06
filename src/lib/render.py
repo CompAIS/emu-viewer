@@ -1,8 +1,6 @@
 import os
-import random
-import string
 
-import pyvips as vips
+import numpy as np
 from astropy.io import fits
 from matplotlib.figure import Figure
 
@@ -14,21 +12,21 @@ def save_file(image_file):
     Returns the filepath to the png file.
     """
 
-    # Read the .fits file
+    # Read the .fits file (assume that the image is [0]?)
     hdu_list = fits.open(image_file)
-    data = hdu_list[0].data
+    hdu = hdu_list[0]
+
+    # some files have (1, 1, x, y) or (x, y, 1, 1) shape so we use .squeeze
+    data = hdu.data.squeeze()
 
     # Apply logarithmic scaling to the image data
     # log_stretch = LogStretch()
     # data = log_stretch(data)
 
-    # vmin = np.percentile(data, 2.5)
-    # vmax = np.percentile(data, 97.5)
-    vmin, vmax = 0, 1500
-    print(vmin, vmax)
+    vmin, vmax = np.nanpercentile(data, (0.5, 99.5))
 
     # Create a matplotlib figure
-    fig = Figure(figsize=(5, 5), dpi=300)
+    fig = Figure(figsize=(5, 5), dpi=150)
     ax = fig.add_subplot()
     fig.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
     ax.margins(0, 0)
@@ -40,19 +38,15 @@ def save_file(image_file):
     if not os.path.exists("tmp"):
         os.makedirs("tmp")
 
-    # TODO this is leaking file storage
-    file_path = f"tmp/{''.join(random.choices(string.ascii_lowercase, k=10))}"
+    file_path = f"tmp/rendered"
+    if os.path.exists(file_path + ".png"):
+        os.remove(file_path + ".png")
+
     fig.savefig(file_path)
+    print(f"file saved to {file_path}")
+    hdu_list.close()
 
     return file_path + ".png"
-
-
-def vips_resize(file_path, size):
-    vips_raw_img = vips.Image.new_from_file(file_path)
-    scale = size / vips_raw_img.width
-    print(vips_raw_img.width, vips_raw_img.height)
-    new = vips_raw_img.resize(scale)
-    print(new.width, new.height)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,8 @@
+import tkinter as tk
+
 import ttkbootstrap as tb
 
 from src.widgets import image_widget as iw
-import tkinter as tk
 
 
 # Create Image Controller Frame
