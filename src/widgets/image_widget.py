@@ -62,7 +62,6 @@ class ImageFrame(tb.Frame):
         # Some assumptions:
         # - aspect ratio is always 1:1 for the image, so we can use 'width' to mean 'size'
 
-        print(f"updating: {self.updating}")
         if self.updating:
             return
 
@@ -77,7 +76,6 @@ class ImageFrame(tb.Frame):
             cy = self.cy = with_defaults(cy, self.cy, canvas_height / 2)
             self.csize = with_defaults(csize, self.csize, canvas_height - 20)
             csize_desired = int(self.csize)
-            print(f"RENDER: {cx, cy, csize_desired}")
 
             # (desired) bounding box of the image on the canvas
             cx1, cx2, cy1, cy2 = (
@@ -135,21 +133,20 @@ class ImageFrame(tb.Frame):
             x = x1 + (width / 2) + dx
             y = y1 + (height / 2) + dy
 
-            print(f"MOVE: {x, y}")
             self.update_canvas(cx=x, cy=y)
-        else:
-            self.image_info.configure(text=f"Image: ({event.x - x1}, {event.y - y1})")
 
+        self.image_info.configure(
+            text=f"Image: ({(event.x - x1) * (self.vips_raw_img.width / self.csize)}, {(event.y - y1) * (self.vips_raw_img.width / self.csize)})"
+        )
         self.prev_mouse_x = event.x
         self.prev_mouse_y = event.y
 
     def zoom(self, event):
-        xdata = event.x  # x-coordinate of the mouse pointer
-        ydata = event.y  # y-coordinate of the mouse pointer
-        if xdata is None or ydata is None:
-            return  # Return if no valid data
+        cx_mouse = event.x
+        cy_mouse = event.y
+        if cx_mouse is None or cy_mouse is None:
+            return
 
-        # Define zoom factors for zooming in and out
         zoom_factor = 0.9 if event.delta < 0 else 1 / 0.9
 
         new_size = self.csize * zoom_factor
