@@ -16,11 +16,16 @@ class ImageController(tb.Frame):
             parent,
             bootstyle="dark",
         )
+        self.grid(
+            column=1,
+            row=0,
+            sticky="w" + "e" + "n" + "s",
+        )
         self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
 
         # Add open_image as an event listener to open file
-        root.menu_controller.open_file.add(self.open_image)
+        root.menu_controller.open_file.add("open_image", self.open_image)
 
     # Open image file based on path selected
     def open_image(self, file_path):

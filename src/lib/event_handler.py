@@ -1,9 +1,9 @@
 class EventHandler:
-    event_listeners = []
+    event_listeners = {}
 
-    def add(self, listener):
-        self.event_listeners.append(listener)
+    def add(self, name, listener):
+        self.event_listeners[name] = listener
 
-    def invoke(self, *args, **kwargs):
-        for listener in self.event_listeners:
-            listener(*args, **kwargs)
+    def invoke(self, name, *args, **kwargs):
+        listener = self.event_listeners[name]
+        listener(*args, **kwargs)
