@@ -12,11 +12,29 @@ class ToolBar(tb.Frame):
             sticky="w" + "e" + "n" + "s",
         )
 
-        img = tk.PhotoImage(file="./src/assets/zoom.png")
+        # Toolbar - Hand/Move Button
+        img_hand = tk.PhotoImage(file="./data/resources/hand.png")
+        button_hand = tb.Button(self, image=img_hand)
+        button_hand.image = img_hand
+        button_hand.grid(row=0, column=0, padx=10, pady=10)
 
-        button1 = tb.Button(self, image=img)
-        button1.image = img
-        button1.grid(row=0, column=0, padx=0, pady=0)
+        # Toolbar - Line Annotation Button
+        img_line = tk.PhotoImage(file="./data/resources/line.png")
+        button_line = tb.Button(self, image=img_line)
+        button_line.image = img_line
+        button_line.grid(row=2, column=0, padx=10, pady=10)
+
+        # Toolbar - Squaure Annotation Button
+        img_square = tk.PhotoImage(file="./data/resources/square.png")
+        button_square = tb.Button(self, image=img_square)
+        button_square.image = img_square
+        button_square.grid(row=4, column=0, padx=10, pady=10)
+
+        # Toolbar - Typing Button
+        img_type = tk.PhotoImage(file="./data/resources/type.png")
+        button_type = tb.Button(self, image=img_type)
+        button_type.image = img_type
+        button_type.grid(row=6, column=0, padx=10, pady=10)
 
 
 if __name__ == "__main__":
