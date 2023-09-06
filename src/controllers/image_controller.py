@@ -21,8 +21,6 @@ class ImageController(tb.Frame):
             row=0,
             sticky="w" + "e" + "n" + "s",
         )
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(1, weight=1)
 
         # Add open_image as an event listener to open file
         root.menu_controller.open_file_eh.add(self.open_image)

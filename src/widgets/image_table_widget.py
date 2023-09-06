@@ -8,4 +8,4 @@ class ImageTableWidget(tk.Toplevel):
         self.geometry("500x500")
 
         self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(1, weight=1)
+        self.grid_columnconfigure(0, weight=1)
