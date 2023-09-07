@@ -11,7 +11,7 @@ class MainWindow(tb.Window):
     def __init__(self):
         tb.Window.__init__(self, themename="superhero")
         self.title("FITS Image Viewer")
-        self.geometry("500x500")
+        self.geometry("800x800")
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=0)

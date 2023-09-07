@@ -10,6 +10,7 @@ class MenuBar(tb.Frame):
     open_file_eh = EventHandler()
     open_image_table_eh = EventHandler()
     open_renderer_eh = EventHandler()
+    append_image_eh = EventHandler()
 
     def __init__(self, parent):
         tb.Frame.__init__(self, parent)
@@ -25,7 +26,8 @@ class MenuBar(tb.Frame):
     def file_menu_creation(self):
         file_menu = tb.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label="File", menu=file_menu)
-        file_menu.add_command(label="Open", command=self.open_file)
+        file_menu.add_command(label="Open Image", command=self.open_file)
+        file_menu.add_command(label="Append Image", command=self.append_image)
         file_menu.add_command(label="Exit", command=self.parent.quit)
 
     def widget_menu_creation(self):
@@ -53,3 +55,14 @@ class MenuBar(tb.Frame):
 
     def open_image_table(self):
         self.open_image_table_eh.invoke()
+
+    def append_image(self):
+        file_name = filedialog.askopenfilename(
+            title="Select .fits file",
+            filetypes=(("Fits files", "*.fits"), ("All files", "*.*")),
+        )
+
+        if file_name == "":
+            return
+
+        self.append_image_eh.invoke(file_name)

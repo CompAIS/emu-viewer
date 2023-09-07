@@ -1,4 +1,6 @@
 import os
+import random
+import string
 
 import numpy as np
 from astropy.io import fits
@@ -38,7 +40,8 @@ def save_file(image_file):
     if not os.path.exists("tmp"):
         os.makedirs("tmp")
 
-    file_path = f"tmp/rendered"
+    # TODO this is leaking file storage
+    file_path = f"tmp/{''.join(random.choices(string.ascii_lowercase, k=10))}"
     if os.path.exists(file_path + ".png"):
         os.remove(file_path + ".png")
 

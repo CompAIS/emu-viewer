@@ -1,3 +1,4 @@
+import os  # Used to obtain file name from path
 import tkinter as tk
 
 import ttkbootstrap as tb
@@ -17,20 +18,31 @@ class ImageController(tb.Frame):
 
         # Add open_image as an event listener to open file
         root.menu_controller.open_file_eh.add(self.open_image)
-        self.open_images = []
+        root.menu_controller.append_image_eh.add(self.append_image)
+        self.main_image = None
+        self.open_windows = []
 
-    # Open image file based on path selected
     def open_image(self, file_path):
-        gridX = len(self.open_images) % 2
-        gridY = len(self.open_images) // 2
-        new_image = iw.ImageFrame(self, self.root, file_path, gridX, gridY)
+        self.main_image = iw.ImageFrame(self, self.root, file_path)
+        self.close_windows()
 
-        # if we are about to expand into the second column, configure it
-        if len(self.open_images) == 1:
-            self.columnconfigure(1, weight=1, uniform="c")
+    def append_image(self, file_path):
+        if self.main_image is None:
+            self.open_image(self, file_path)
+            return
 
-        # if we are about to expand into a new row, configure it
-        if gridY == 1:
-            self.rowconfigure(gridX, weight=1, uniform="r")
+        file_name = os.path.basename(file_path)
 
-        self.open_images.append(new_image)
+        new_window = tk.Toplevel(self.root)
+        new_window.title(file_name)
+        new_window.geometry("800x600")
+        new_window.rowconfigure(0, weight=1)
+        new_window.columnconfigure(0, weight=1)
+
+        new_image = iw.ImageFrame(new_window, self.root, file_path)
+        self.open_windows.append(new_window)
+
+    def close_windows(self):
+        for window in self.open_windows:
+            window.destroy()
+        self.open_windows = []
