@@ -9,7 +9,7 @@ from src.lib.event_handler import EventHandler
 class MenuBar(tb.Frame):
     open_file_eh = EventHandler()
     open_image_table_eh = EventHandler()
-    open_histogram_eh = EventHandler()
+    open_renderer_eh = EventHandler()
 
     def __init__(self, parent):
         tb.Frame.__init__(self, parent)
@@ -31,7 +31,9 @@ class MenuBar(tb.Frame):
     def widget_menu_creation(self):
         widget_menu = tb.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label="Widget", menu=widget_menu)
-        widget_menu.add_command(label="Histogram", command=self.open_histogram)
+        widget_menu.add_command(
+            label="Renderer Configuration", command=self.open_renderer
+        )
         widget_menu.add_command(label="Image Table", command=self.open_image_table)
 
     # Open command for option in menu
@@ -46,8 +48,8 @@ class MenuBar(tb.Frame):
 
         self.open_file_eh.invoke(file_name)
 
-    def open_histogram(self):
-        self.open_histogram_eh.invoke()
+    def open_renderer(self):
+        self.open_renderer_eh.invoke()
 
     def open_image_table(self):
         self.open_image_table_eh.invoke()
