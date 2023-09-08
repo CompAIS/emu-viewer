@@ -53,6 +53,6 @@ def save_file(image_file):
 
 
 if __name__ == "__main__":
-    file = save_file("data/sample/Optical_r.fits")
+    file = save_file("resources/data/Optical_r.fits")
     print(f"Saved to {file}")
     vips_resize(file, 3005)
