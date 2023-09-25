@@ -25,6 +25,7 @@ class MainWindow(tb.Window):
         self.widget_controller = wc.WidgetController(self)
 
         self.config(menu=self.menu_controller.menu)
+        self.bind("<FocusIn>", self.image_controller.handle_focus)
 
     # Main run function for app
     # Place all functions of the app here
