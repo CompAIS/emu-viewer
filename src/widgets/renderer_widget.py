@@ -1,9 +1,27 @@
 import tkinter as tk
+from functools import partial
 
 import ttkbootstrap as tb
 
+scaling_options = [
+    "Scaling Option 1",
+    "Scaling Option 2",
+    "Scaling Option 3",
+    "Scaling Option 4",
+]
+
+colour_map_options = [
+    "Colour Map Option 1",
+    "Colour Map Option 2",
+    "Colour Map Option 3",
+    "Colour Map Option 4",
+]
+
 
 class RendererWidget(tk.Toplevel):
+    selected_scaling_option = scaling_options[0]
+    selected_colour_map_option = colour_map_options[0]
+
     def __init__(self, root):
         tk.Toplevel.__init__(self, root)
         self.title("Renderer Configuration")
@@ -75,19 +93,24 @@ class RendererWidget(tk.Toplevel):
         scaling_label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
 
         scaling_dropdown = tb.Menubutton(
-            parent, text="Scaling Options", bootstyle="dark"
+            parent, text=self.selected_scaling_option, bootstyle="dark"
         )
         scaling_dropdown.grid(
             column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
         )
 
         scaling_dropdown_menu = tk.Menu(scaling_dropdown, tearoff=0)
-        scaling_dropdown_menu.add_command(label="Render Option 1")
-        scaling_dropdown_menu.add_command(label="Render Option 2")
-        scaling_dropdown_menu.add_command(label="Render Option 3")
-        scaling_dropdown_menu.add_command(label="Render Option 4")
+        for option in scaling_options:
+            scaling_dropdown_menu.add_command(
+                label=option,
+                command=partial(self.select_scaling_option, option, scaling_dropdown),
+            )
 
         scaling_dropdown["menu"] = scaling_dropdown_menu
+
+    def select_scaling_option(self, option, menu_button):
+        self.selected_scaling_option = option
+        menu_button["text"] = option
 
     def colour_map_options(self, parent, gridX, gridY):
         colour_map_label = tb.Label(
@@ -96,16 +119,23 @@ class RendererWidget(tk.Toplevel):
         colour_map_label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
 
         colour_map_dropdown = tb.Menubutton(
-            parent, text="Colour Map Options", bootstyle="dark"
+            parent, text=self.selected_colour_map_option, bootstyle="dark"
         )
         colour_map_dropdown.grid(
             column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
         )
 
         colour_map_dropdown_menu = tk.Menu(colour_map_dropdown, tearoff=0)
-        colour_map_dropdown_menu.add_command(label="Colour Map Option 1")
-        colour_map_dropdown_menu.add_command(label="Colour Map Option 2")
-        colour_map_dropdown_menu.add_command(label="Colour Map Option 3")
-        colour_map_dropdown_menu.add_command(label="Colour Map Option 4")
+        for option in colour_map_options:
+            colour_map_dropdown_menu.add_command(
+                label=option,
+                command=partial(
+                    self.select_colour_map_option, option, colour_map_dropdown
+                ),
+            )
 
         colour_map_dropdown["menu"] = colour_map_dropdown_menu
+
+    def select_colour_map_option(self, option, menu_button):
+        self.selected_colour_map_option = option
+        menu_button["text"] = option
