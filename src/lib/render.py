@@ -6,7 +6,7 @@ import numpy as np
 from matplotlib.figure import Figure
 
 
-def save_file(fits_file, colour_map):
+def save_file(fits_file, colour_map, min, max):
     """
     Renders the provided .fits file with the given configuration (TODO) to a .png file.
 
@@ -22,7 +22,7 @@ def save_file(fits_file, colour_map):
     # log_stretch = LogStretch()
     # data = log_stretch(data)
 
-    vmin, vmax = np.nanpercentile(data, (0.5, 99.5))
+    vmin, vmax = np.nanpercentile(data, (min, max))
 
     # Create a matplotlib figure
     fig = Figure(figsize=(5, 5), dpi=150)

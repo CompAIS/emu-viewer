@@ -11,16 +11,26 @@ scaling_options = [
 ]
 
 colour_map_options = [
+    "viridis",
+    "plasma",
     "inferno",
+    "magma",
+    "cividis",
     "Greys",
-    "Colour Map Option 3",
-    "Colour Map Option 4",
+    "Purples",
+    "Blues",
+    "Greens",
+    "Oranges",
+    "Reds",
+    "binary",
+    "hot",
 ]
 
 
 class RendererWidget(tk.Toplevel):
     def __init__(self, root):
         tk.Toplevel.__init__(self, root)
+
         self.title("Render Configuration")
         self.resizable(0, 0)
         self.root = root
@@ -51,20 +61,58 @@ class RendererWidget(tk.Toplevel):
         self.histogram_buttons(frame)
 
     def histogram_buttons(self, parent):
-        button_90 = tb.Button(parent, text="90%", bootstyle="dark")
+        button_90 = tb.Button(
+            parent,
+            text="90%",
+            bootstyle="dark",
+            command=partial(self.set_selected_image_histogram_scaling, 0, 90),
+        )
         button_90.grid(column=0, row=0, sticky=tk.NSEW, padx=10, pady=10)
 
-        button_95 = tb.Button(parent, text="95%", bootstyle="dark")
+        button_95 = tb.Button(
+            parent,
+            text="95%",
+            bootstyle="dark",
+            command=partial(self.set_selected_image_histogram_scaling, 0, 95),
+        )
         button_95.grid(column=1, row=0, sticky=tk.NSEW, padx=10, pady=10)
 
-        button_99 = tb.Button(parent, text="99%", bootstyle="dark")
+        button_99 = tb.Button(
+            parent,
+            text="99%",
+            bootstyle="dark",
+            command=partial(self.set_selected_image_histogram_scaling, 0, 99),
+        )
         button_99.grid(column=2, row=0, sticky=tk.NSEW, padx=10, pady=10)
 
-        button_995 = tb.Button(parent, text="99.5%", bootstyle="dark")
+        button_995 = tb.Button(
+            parent,
+            text="99.5%",
+            bootstyle="dark",
+            command=partial(self.set_selected_image_histogram_scaling, 0, 99.5),
+        )
         button_995.grid(column=3, row=0, sticky=tk.NSEW, padx=10, pady=10)
 
-        button_custom = tb.Button(parent, text="Custom", bootstyle="dark")
+        button_custom = tb.Button(
+            parent,
+            text="Custom",
+            bootstyle="dark",
+            command=self.set_selected_image_histogram_scaling_custom,
+        )
         button_custom.grid(column=4, row=0, sticky=tk.NSEW, padx=10, pady=10)
+
+    def set_selected_image_histogram_scaling_custom(self):
+        self.set_selected_image_histogram_scaling(
+            float(self.min_entry.get()), float(self.max_entry.get())
+        )
+
+    def set_selected_image_histogram_scaling(self, vmin, vmax):
+        self.selected_image = self.root.image_controller.get_selected_image()
+        self.selected_image.vmin = vmin
+        self.selected_image.vmax = vmax
+        self.selected_image.update_render = True
+        self.selected_image.update_canvas()
+        self.root.update()
 
     def histogram_graph(self, parent):
         histogram = tb.Frame(parent, bootstyle="dark")
@@ -88,14 +136,18 @@ class RendererWidget(tk.Toplevel):
     def min_options(self, parent, gridX, gridY):
         min_label = tb.Label(parent, text="Min", bootstyle="inverse-light")
         min_label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
-        min_entry = tb.Entry(parent, bootstyle="dark")
-        min_entry.grid(column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
+        self.min_entry = tb.Entry(parent, bootstyle="dark")
+        self.min_entry.grid(
+            column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
+        )
 
     def max_options(self, parent, gridX, gridY):
         max_label = tb.Label(parent, text="Max", bootstyle="inverse-light")
         max_label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
-        max_entry = tb.Entry(parent, bootstyle="dark")
-        max_entry.grid(column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
+        self.max_entry = tb.Entry(parent, bootstyle="dark")
+        self.max_entry.grid(
+            column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
+        )
 
     def scaling_options(self, parent, gridX, gridY):
         scaling_label = tb.Label(parent, text="Scaling", bootstyle="inverse-light")
@@ -149,9 +201,7 @@ class RendererWidget(tk.Toplevel):
         self.selected_colour_map_option = option
         menu_button["text"] = option
         self.selected_image = self.root.image_controller.get_selected_image()
-        self.update_selected_image()
-
-    def update_selected_image(self):
         self.selected_image.colour_map = self.selected_colour_map_option
         self.selected_image.update_render = True
         self.selected_image.update_canvas()
+        self.root.update()
