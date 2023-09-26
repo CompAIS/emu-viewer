@@ -11,25 +11,34 @@ scaling_options = [
 ]
 
 colour_map_options = [
-    "Colour Map Option 1",
-    "Colour Map Option 2",
+    "inferno",
+    "Greys",
     "Colour Map Option 3",
     "Colour Map Option 4",
 ]
 
 
 class RendererWidget(tk.Toplevel):
-    selected_scaling_option = scaling_options[0]
-    selected_colour_map_option = colour_map_options[0]
-
     def __init__(self, root):
         tk.Toplevel.__init__(self, root)
-        self.title("Renderer Configuration")
+        self.title("Render Configuration")
         self.resizable(0, 0)
+        self.root = root
 
         self.grid_rowconfigure(0, weight=2)
         self.grid_columnconfigure(0, weight=2)
         self.grid_columnconfigure(1, weight=0)
+
+        self.selected_image = self.root.image_controller.get_selected_image()
+        self.selected_scaling_option = scaling_options[0]
+        if self.selected_image is None:
+            self.selected_colour_map_option = colour_map_options[0]
+        else:
+            self.selected_colour_map_option = self.selected_image.colour_map
+
+        self.protocol(
+            "WM_DELETE_WINDOW", self.root.widget_controller.close_render_widget
+        )
 
         self.histogram()
         self.render_options()
@@ -139,3 +148,10 @@ class RendererWidget(tk.Toplevel):
     def select_colour_map_option(self, option, menu_button):
         self.selected_colour_map_option = option
         menu_button["text"] = option
+        self.selected_image = self.root.image_controller.get_selected_image()
+        self.update_selected_image()
+
+    def update_selected_image(self):
+        self.selected_image.colour_map = self.selected_colour_map_option
+        self.selected_image.update_render = True
+        self.selected_image.update_canvas()

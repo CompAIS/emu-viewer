@@ -28,7 +28,9 @@ class ImageFrame(tb.Frame):
         self.tk_img_path = self.tk_img = None
         self.cx = self.cy = self.csize = None
         self.updating = False
+        self.update_render = False
         self.canvas_image = self.canvas.create_image(0, 0, image=None)
+        self.colour_map = "Greys"
         self.update_canvas(file_path=file_path)
 
         # image info label
@@ -44,6 +46,7 @@ class ImageFrame(tb.Frame):
         self.canvas.bind("<ButtonPress-1>", self.mouse_down)
         self.canvas.bind("<ButtonRelease-1>", self.mouse_up)
         self.canvas.bind("<MouseWheel>", self.zoom)
+
         # TODO widget changes size
         # https://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
         # https://stackoverflow.com/questions/61462360/tkinter-canvas-dynamically-resize-image
@@ -93,9 +96,15 @@ class ImageFrame(tb.Frame):
 
             if should_reload:
                 self.fits_file = fits.open(file_path)
-                self.tk_img_path = Render.save_file(self.fits_file)
+                self.tk_img_path = Render.save_file(self.fits_file, self.colour_map)
                 self.vips_raw_img = vips.Image.new_from_file(self.tk_img_path).flatten()
                 self.vips_resized_img = self.vips_raw_img
+
+            if self.update_render:
+                self.tk_img_path = Render.save_file(self.fits_file, self.colour_map)
+                self.vips_raw_img = vips.Image.new_from_file(self.tk_img_path).flatten()
+                self.vips_resized_img = self.vips_raw_img
+                self.update_render = False
 
             # resize image if the given size is different from our current
             csize_prev = self.vips_resized_img.width

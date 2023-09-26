@@ -6,7 +6,7 @@ import numpy as np
 from matplotlib.figure import Figure
 
 
-def save_file(fits_file):
+def save_file(fits_file, colour_map):
     """
     Renders the provided .fits file with the given configuration (TODO) to a .png file.
 
@@ -32,7 +32,7 @@ def save_file(fits_file):
     ax.axis("off")
 
     # Render the scaled image data onto the figure
-    ax.imshow(data, cmap="inferno", origin="lower", vmin=vmin, vmax=vmax)
+    ax.imshow(data, cmap=colour_map, origin="lower", vmin=vmin, vmax=vmax)
 
     if not os.path.exists("tmp"):
         os.makedirs("tmp")
