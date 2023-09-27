@@ -33,6 +33,7 @@ class ImageFrame(tb.Frame):
         self.colour_map = "inferno"
         self.vmin = 0.5
         self.vmax = 99.5
+        self.stretch = "Linear"
         self.update_canvas(file_path=file_path)
 
         # image info label
@@ -99,14 +100,14 @@ class ImageFrame(tb.Frame):
             if should_reload:
                 self.fits_file = fits.open(file_path)
                 self.tk_img_path = Render.save_file(
-                    self.fits_file, self.colour_map, self.vmin, self.vmax
+                    self.fits_file, self.colour_map, self.vmin, self.vmax, self.stretch
                 )
                 self.vips_raw_img = vips.Image.new_from_file(self.tk_img_path).flatten()
                 self.vips_resized_img = self.vips_raw_img
 
             if self.update_render:
                 self.tk_img_path = Render.save_file(
-                    self.fits_file, self.colour_map, self.vmin, self.vmax
+                    self.fits_file, self.colour_map, self.vmin, self.vmax, self.stretch
                 )
                 self.vips_raw_img = vips.Image.new_from_file(self.tk_img_path).flatten()
                 self.vips_resized_img = self.vips_raw_img

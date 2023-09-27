@@ -4,10 +4,9 @@ from functools import partial
 import ttkbootstrap as tb
 
 scaling_options = [
-    "Scaling Option 1",
-    "Scaling Option 2",
-    "Scaling Option 3",
-    "Scaling Option 4",
+    "Linear",
+    "Log",
+    "Sqrt",
 ]
 
 colour_map_options = [
@@ -202,6 +201,14 @@ class RendererWidget(tk.Toplevel):
         self.selected_scaling_option = option
         menu_button["text"] = option
 
+        self.selected_image = self.root.image_controller.get_selected_image()
+
+        if self.check_if_image_selected():
+            self.selected_image.stretch = self.selected_scaling_option
+            self.selected_image.update_render = True
+            self.selected_image.update_canvas()
+            self.root.update()
+
     def select_colour_map_option(self, option, menu_button):
         self.selected_colour_map_option = option
         menu_button["text"] = option
@@ -213,6 +220,10 @@ class RendererWidget(tk.Toplevel):
             self.selected_image.update_render = True
             self.selected_image.update_canvas()
             self.root.update()
+
+    def update_selected_scaling(self, option):
+        self.selected_scaling_option = option
+        self.scaling_dropdown["text"] = option
 
     def update_selected_colour_map(self, option):
         self.selected_colour_map_option = option

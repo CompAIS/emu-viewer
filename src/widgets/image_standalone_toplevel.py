@@ -24,8 +24,16 @@ class StandaloneImage(tk.Toplevel):
 
     def handle_focus(self, event):
         self.parent.set_selected_image(self.image_id)
-        if self.root.widget_controller.open_windows["Render Configuration"] is not None:
-            self.root.widget_controller.open_windows[
-                "Render Configuration"
-            ].update_selected_colour_map(self.image_frame.colour_map)
-            self.root.update()
+
+        if self.root.widget_controller.open_windows["Render Configuration"] is None:
+            return
+
+        self.root.widget_controller.open_windows[
+            "Render Configuration"
+        ].update_selected_scaling(self.image_frame.stretch)
+
+        self.root.widget_controller.open_windows[
+            "Render Configuration"
+        ].update_selected_colour_map(self.image_frame.colour_map)
+
+        self.root.update()
