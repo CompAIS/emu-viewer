@@ -72,7 +72,10 @@ class ImageController(tb.Frame):
 
     def handle_focus(self, event):
         self.set_selected_image(0)
-        if self.root.widget_controller.open_windows["Render Configuration"] is not None:
+        if (
+            self.root.widget_controller.open_windows["Render Configuration"] is not None
+            and self.selected_image == -1
+        ):
             self.root.widget_controller.open_windows[
                 "Render Configuration"
             ].update_selected_colour_map(self.main_image.colour_map)
