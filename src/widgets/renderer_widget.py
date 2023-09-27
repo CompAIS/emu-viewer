@@ -159,25 +159,44 @@ class RendererWidget(tk.Toplevel):
         label = tb.Label(parent, text=text, bootstyle="inverse-light")
         label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
 
-        dropdown = tb.Menubutton(parent, text=selected_option, bootstyle="dark")
-        dropdown.grid(column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
-
-        dropdown_menu = tk.Menu(dropdown, tearoff=0)
-
         if text == "Scaling":
+            self.scaling_dropdown = tb.Menubutton(
+                parent, text=selected_option, bootstyle="dark"
+            )
+            self.scaling_dropdown.grid(
+                column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
+            )
+
+            dropdown_menu = tk.Menu(self.scaling_dropdown, tearoff=0)
+
             for option in scaling_options:
                 dropdown_menu.add_command(
                     label=option,
-                    command=partial(self.select_scaling_option, option, dropdown),
+                    command=partial(
+                        self.select_scaling_option, option, self.scaling_dropdown
+                    ),
                 )
+
+            self.scaling_dropdown["menu"] = dropdown_menu
         elif text == "Colour Map":
+            self.colour_map_dropdown = tb.Menubutton(
+                parent, text=selected_option, bootstyle="dark"
+            )
+            self.colour_map_dropdown.grid(
+                column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
+            )
+
+            dropdown_menu = tk.Menu(self.colour_map_dropdown, tearoff=0)
+
             for option in colour_map_options:
                 dropdown_menu.add_command(
                     label=option,
-                    command=partial(self.select_colour_map_option, option, dropdown),
+                    command=partial(
+                        self.select_colour_map_option, option, self.colour_map_dropdown
+                    ),
                 )
 
-        dropdown["menu"] = dropdown_menu
+            self.colour_map_dropdown["menu"] = dropdown_menu
 
     def select_scaling_option(self, option, menu_button):
         self.selected_scaling_option = option
@@ -194,6 +213,10 @@ class RendererWidget(tk.Toplevel):
             self.selected_image.update_render = True
             self.selected_image.update_canvas()
             self.root.update()
+
+    def update_selected_colour_map(self, option):
+        self.selected_colour_map_option = option
+        self.colour_map_dropdown["text"] = option
 
     def check_if_image_selected(self):
         if self.selected_image is None:
