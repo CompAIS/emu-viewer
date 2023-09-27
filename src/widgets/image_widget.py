@@ -31,7 +31,7 @@ class ImageFrame(tb.Frame):
         self.update_render = False
         self.canvas_image = self.canvas.create_image(0, 0, image=None)
         self.colour_map = "inferno"
-        self.vmin = 0.0
+        self.vmin = 0.5
         self.vmax = 99.5
         self.update_canvas(file_path=file_path)
 
