@@ -1,3 +1,4 @@
+import os
 import tkinter as tk
 
 import ttkbootstrap as tb
@@ -34,10 +35,14 @@ class ImageController(tb.Frame):
     def open_image(self, file_path):
         self.close_windows()
 
-        image_data = Fits_handler.open_fits_file(file_path)
+        image_data, image_data_header = Fits_handler.open_fits_file(file_path)
         self.fits_image_data[file_path] = image_data
 
-        self.main_image = iw.ImageFrame(self, self.root, image_data)
+        file_name = os.path.basename(file_path)
+
+        self.main_image = iw.ImageFrame(
+            self, self.root, image_data, image_data_header, file_name
+        )
         self.set_selected_image(0)
 
     def append_image(self, file_path):
@@ -48,12 +53,18 @@ class ImageController(tb.Frame):
         image_id = len(self.open_windows) + 1
 
         if self.fits_already_open(file_path):
-            image_data = self.fits_image_data[file_path]
+            # TODO save image header in fit_image_data with tuple???
+            # image_data = self.fits_image_data[file_path]
+            image_data, image_data_header = Fits_handler.open_fits_file(file_path)
         else:
-            image_data = Fits_handler.open_fits_file(file_path)
+            image_data, image_data_header = Fits_handler.open_fits_file(file_path)
             self.fits_image_data[file_path] = image_data
 
-        new_window = StandaloneImage(self, self.root, image_data, file_path, image_id)
+        file_name = os.path.basename(file_path)
+
+        new_window = StandaloneImage(
+            self, self.root, image_data, image_data_header, file_name, image_id
+        )
         self.set_selected_image(image_id)
 
         self.open_windows.append(new_window)
@@ -63,7 +74,7 @@ class ImageController(tb.Frame):
 
         image_data = Hips_handler.open_hips(hips_survey)
 
-        self.main_image = iw.ImageFrame(self, self.root, image_data)
+        self.main_image = iw.ImageFrame(self, self.root, image_data, None, hips_survey)
         self.set_selected_image(0)
 
     def append_hips(self, hips_survey):
@@ -75,7 +86,9 @@ class ImageController(tb.Frame):
 
         image_data = Hips_handler.open_hips(hips_survey)
 
-        new_window = StandaloneImage(self, self.root, image_data, hips_survey, image_id)
+        new_window = StandaloneImage(
+            self, self.root, image_data, None, hips_survey, image_id
+        )
         self.set_selected_image(image_id)
 
         self.open_windows.append(new_window)

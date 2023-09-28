@@ -2,6 +2,8 @@ import tkinter as tk
 
 import pyvips as vips
 import ttkbootstrap as tb
+from astropy import units as u
+from astropy.wcs import WCS
 from PIL import Image, ImageTk
 
 import src.lib.render as Render
@@ -10,7 +12,7 @@ from src.lib.util import with_defaults
 
 # Create an Image Frame
 class ImageFrame(tb.Frame):
-    def __init__(self, parent, root, image_data):
+    def __init__(self, parent, root, image_data, image_data_header, file_name):
         tb.Frame.__init__(self, parent)
 
         # basic layout
@@ -20,8 +22,12 @@ class ImageFrame(tb.Frame):
         self.rowconfigure(0, weight=1, uniform="a")
         self.columnconfigure(0, weight=1, uniform="a")
 
-        # Image data and render options
+        # Image data and file name
         self.image_data = image_data
+        self.image_data_header = image_data_header
+        self.file_name = file_name
+
+        # Default render config
         self.colour_map = "inferno"
         self.vmin = 0.5
         self.vmax = 99.5
@@ -143,30 +149,50 @@ class ImageFrame(tb.Frame):
 
     def move(self, event):
         x1, y1, x2, y2 = self.canvas.bbox(self.canvas_image)
+        width = x2 - x1
+        height = y2 - y1
+
         if self.is_dragging:
             dx = event.x - self.prev_mouse_x
             dy = event.y - self.prev_mouse_y
 
-            width = x2 - x1
-            height = y2 - y1
             x = x1 + (width / 2) + dx
             y = y1 + (height / 2) + dy
 
             self.update_canvas(cx=x, cy=y)
-
         # converts values on the canvas to the corresponding values on the raw image
         scale_cr = self.vips_raw_img.width / self.csize
         rx_image = (event.x - x1) * scale_cr
-        ry_image = (event.y - y1) * scale_cr
+        ry_image = (height - (event.y - y1)) * scale_cr
 
         # update text
-        self.canvas.itemconfig(
-            self.image_info, text=f"Image: ({rx_image:.2f}, {ry_image:.2f})"
-        )
+        fx_image, fy_image = self.r_to_fits_coordinate(rx_image, ry_image)
+
+        if self.image_data_header is not None:
+            w = WCS(self.image_data_header)
+
+            c = w.pixel_to_world(fx_image, fy_image)
+
+            # The units here match CARTA. Don't know why.
+            ra = c.ra.to_string(unit=u.hour, sep=":", pad=True, precision=2)
+            dec = c.dec.to_string(unit=u.degree, sep=":", pad=True, precision=2)
+
+            self.canvas.itemconfig(
+                self.image_info,
+                text=f"WCS: ({ra}, {dec}); Image: ({int(fx_image)}, {int(fy_image)});",
+            )
+
         self.canvas.moveto(self.image_info, 10, 10)
 
         self.prev_mouse_x = event.x
         self.prev_mouse_y = event.y
+
+    def r_to_fits_coordinate(self, rx_image, ry_image):
+        width, height = self.image_data.shape
+        return (
+            rx_image * width / self.vips_raw_img.width,
+            ry_image * height / self.vips_raw_img.height,
+        )
 
     def zoom(self, event):
         cx_mouse = event.x
