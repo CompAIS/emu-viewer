@@ -6,3 +6,4 @@ tmp/
 .pytest_cache/
 .idea
 *.pyc
+.DS_Store

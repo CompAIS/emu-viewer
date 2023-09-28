@@ -1,20 +1,19 @@
 import os
+import random
+import string
 
 import numpy as np
-from astropy.io import fits
 from matplotlib.figure import Figure
 
 
-def save_file(image_file):
+def save_file(fits_file):
     """
     Renders the provided .fits file with the given configuration (TODO) to a .png file.
 
     Returns the filepath to the png file.
     """
 
-    # Read the .fits file (assume that the image is [0]?)
-    hdu_list = fits.open(image_file)
-    hdu = hdu_list[0]
+    hdu = fits_file[0]
 
     # some files have (1, 1, x, y) or (x, y, 1, 1) shape so we use .squeeze
     data = hdu.data.squeeze()
@@ -38,18 +37,12 @@ def save_file(image_file):
     if not os.path.exists("tmp"):
         os.makedirs("tmp")
 
-    file_path = f"tmp/rendered"
+    # TODO this is leaking file storage
+    file_path = f"tmp/{''.join(random.choices(string.ascii_lowercase, k=10))}"
     if os.path.exists(file_path + ".png"):
         os.remove(file_path + ".png")
 
     fig.savefig(file_path)
     print(f"file saved to {file_path}")
-    hdu_list.close()
 
     return file_path + ".png"
-
-
-if __name__ == "__main__":
-    file = save_file("data/sample/Optical_r.fits")
-    print(f"Saved to {file}")
-    vips_resize(file, 3005)

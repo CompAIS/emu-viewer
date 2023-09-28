@@ -2,6 +2,7 @@ import tkinter as tk
 
 import pyvips as vips
 import ttkbootstrap as tb
+from astropy.io import fits
 from PIL import Image, ImageTk
 
 import src.lib.render as Render
@@ -10,13 +11,13 @@ from src.lib.util import with_defaults
 
 # Create an Image Frame
 class ImageFrame(tb.Frame):
-    def __init__(self, parent, root, file_path, x, y):
+    def __init__(self, parent, root, file_path):
         tb.Frame.__init__(self, parent)
 
         # basic layout
         self.root = root
         self.parent = parent
-        self.grid(column=x, row=y, padx=10, pady=10, sticky=tk.NSEW)
+        self.grid(column=0, row=0, padx=10, pady=10, sticky=tk.NSEW)
         self.rowconfigure(0, weight=1, uniform="a")
         self.columnconfigure(0, weight=1, uniform="a")
 
@@ -91,7 +92,8 @@ class ImageFrame(tb.Frame):
             )
 
             if should_reload:
-                self.tk_img_path = Render.save_file(file_path)
+                self.fits_file = fits.open(file_path)
+                self.tk_img_path = Render.save_file(self.fits_file)
                 self.vips_raw_img = vips.Image.new_from_file(self.tk_img_path).flatten()
                 self.vips_resized_img = self.vips_raw_img
 
@@ -162,3 +164,7 @@ class ImageFrame(tb.Frame):
         # Redraw the canvas
         # TODO should zoom into mouse
         self.update_canvas(csize=new_size)
+
+    def close(self):
+        if self.fits_file is not None:
+            self.fits_file.close()
