@@ -6,28 +6,38 @@ from src.widgets import image_widget as iw
 from src.widgets.image_standalone_toplevel import StandaloneImage
 
 
-# Create Image Controller Frame
 class ImageController(tb.Frame):
-    def __init__(self, parent, root):
-        tb.Frame.__init__(self, parent, bootstyle="dark")
+    def __init__(self, parent, image_table_widget=None):
+        super().__init__(parent, bootstyle="dark")
 
-        self.root = root
+        self.root = parent
+        self.image_table_widget = image_table_widget
+
         self.grid(column=1, row=0, sticky=tk.NSEW)
         self.rowconfigure(0, weight=1, uniform="c")
         self.columnconfigure(0, weight=1, uniform="r")
 
         self.selected_image = -1
 
-        # Add open_image as an event listener to open file
-        root.menu_controller.open_file_eh.add(self.open_image)
-        root.menu_controller.append_image_eh.add(self.append_image)
+        if hasattr(self.root, "menu_controller"):
+            # Add open_image as an event listener to open file
+            self.root.menu_controller.open_file_eh.add(self.open_image)
+            self.root.menu_controller.append_image_eh.add(self.append_image)
+
         self.main_image = None
         self.open_windows = []
+
+    def add_image_to_table(self, image_path):
+        if self.image_table_widget is not None:
+            self.image_table_widget.add_image(image_path)
 
     def open_image(self, file_path):
         self.close_windows()
         self.main_image = iw.ImageFrame(self, self.root, file_path)
         self.set_selected_image(0)
+
+        # Add the opened image to the Image Table if it exists
+        self.add_image_to_table(file_path)
 
     def append_image(self, file_path):
         if self.main_image is None:
@@ -37,6 +47,9 @@ class ImageController(tb.Frame):
         image_id = len(self.open_windows) + 1
         new_window = StandaloneImage(self, file_path, image_id)
         self.set_selected_image(image_id)
+
+        # Add the opened image to the Image Table if it exists
+        self.add_image_to_table(file_path)
 
         self.open_windows.append(new_window)
 
