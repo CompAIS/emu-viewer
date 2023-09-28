@@ -5,7 +5,7 @@ from src.widgets import image_widget as iw
 
 
 class StandaloneImage(tk.Toplevel):
-    def __init__(self, parent, root, file_path, image_id):
+    def __init__(self, parent, root, image_data, file_path, image_id):
         tk.Toplevel.__init__(self, root)
 
         file_name = os.path.basename(file_path)
@@ -17,7 +17,7 @@ class StandaloneImage(tk.Toplevel):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
 
-        self.image_frame = iw.ImageFrame(self, self, file_path)
+        self.image_frame = iw.ImageFrame(self, self, image_data)
         self.image_id = image_id
 
         self.bind("<FocusIn>", self.handle_focus)

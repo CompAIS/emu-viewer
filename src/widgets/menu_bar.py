@@ -11,6 +11,7 @@ class MenuBar(tb.Frame):
     open_image_table_eh = EventHandler()
     open_render_eh = EventHandler()
     append_image_eh = EventHandler()
+    open_hips_eh = EventHandler()
 
     def __init__(self, parent):
         tb.Frame.__init__(self, parent)
@@ -28,6 +29,7 @@ class MenuBar(tb.Frame):
         self.menu.add_cascade(label="File", menu=file_menu)
         file_menu.add_command(label="Open Image", command=self.open_file)
         file_menu.add_command(label="Append Image", command=self.append_image)
+        file_menu.add_command(label="Open Hips Survey", command=self.open_hips)
         file_menu.add_command(label="Exit", command=self.parent.quit)
 
     def widget_menu_creation(self):
@@ -66,3 +68,6 @@ class MenuBar(tb.Frame):
             return
 
         self.append_image_eh.invoke(file_name)
+
+    def open_hips(self):
+        self.open_hips_eh.invoke("CDS/P/DSS2/red")
