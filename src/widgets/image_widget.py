@@ -2,7 +2,9 @@ import tkinter as tk
 
 import pyvips as vips
 import ttkbootstrap as tb
+from astropy import units as u
 from astropy.io import fits
+from astropy.wcs import WCS
 from PIL import Image, ImageTk
 
 import src.lib.render as Render
@@ -142,30 +144,46 @@ class ImageFrame(tb.Frame):
 
     def move(self, event):
         x1, y1, x2, y2 = self.canvas.bbox(self.canvas_image)
+        width = x2 - x1
+        height = y2 - y1
+
         if self.is_dragging:
             dx = event.x - self.prev_mouse_x
             dy = event.y - self.prev_mouse_y
 
-            width = x2 - x1
-            height = y2 - y1
             x = x1 + (width / 2) + dx
             y = y1 + (height / 2) + dy
 
             self.update_canvas(cx=x, cy=y)
-
         # converts values on the canvas to the corresponding values on the raw image
         scale_cr = self.vips_raw_img.width / self.csize
         rx_image = (event.x - x1) * scale_cr
-        ry_image = (event.y - y1) * scale_cr
+        ry_image = (height - (event.y - y1)) * scale_cr
 
         # update text
+        fx_image, fy_image = self.r_to_fits_coordinate(rx_image, ry_image)
+        w = WCS(self.fits_file[0].header)
+        c = w.pixel_to_world(fx_image, fy_image)
+
+        # The units here match CARTA. Don't know why.
+        ra = c.ra.to_string(unit=u.hour, sep=":", pad=True, precision=2)
+        dec = c.dec.to_string(unit=u.degree, sep=":", pad=True, precision=2)
+
         self.canvas.itemconfig(
-            self.image_info, text=f"Image: ({rx_image:.2f}, {ry_image:.2f})"
+            self.image_info,
+            text=f"WCS: ({ra}, {dec}); Image: ({int(fx_image)}, {int(fy_image)});",
         )
         self.canvas.moveto(self.image_info, 10, 10)
 
         self.prev_mouse_x = event.x
         self.prev_mouse_y = event.y
+
+    def r_to_fits_coordinate(self, rx_image, ry_image):
+        width, height = self.fits_file[0].data.squeeze().shape
+        return (
+            rx_image * width / self.vips_raw_img.width,
+            ry_image * height / self.vips_raw_img.height,
+        )
 
     def zoom(self, event):
         cx_mouse = event.x
