@@ -181,7 +181,3 @@ class ImageFrame(tb.Frame):
         # Redraw the canvas
         # TODO should zoom into mouse
         self.update_canvas(csize=new_size)
-
-    def close(self):
-        if self.fits_file is not None:
-            self.fits_file.close()

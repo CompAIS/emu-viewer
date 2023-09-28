@@ -33,10 +33,6 @@ class RendererWidget(tk.Toplevel):
         self.resizable(0, 0)
         self.root = root
 
-        self.grid_rowconfigure(0, weight=2)
-        self.grid_columnconfigure(0, weight=2)
-        self.grid_columnconfigure(1, weight=0)
-
         self.selected_image = self.root.image_controller.get_selected_image()
 
         if self.selected_image is None:
@@ -115,8 +111,7 @@ class RendererWidget(tk.Toplevel):
         if self.check_if_image_selected():
             self.selected_image.vmin = vmin
             self.selected_image.vmax = vmax
-            self.selected_image.update_render = True
-            self.selected_image.update_canvas()
+            self.selected_image.update_image_render()
             self.root.update()
 
     def histogram_graph(self, parent):

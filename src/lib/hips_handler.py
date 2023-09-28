@@ -1,11 +1,11 @@
+import astropy.coordinates as coords
 import hips
-from astropy.coordinates import SkyCoord
 
 
 def open_hips(hips_survey):
     geometry = hips.WCSGeometry.create(
-        skydir=SkyCoord(0, 0, unit="deg", frame="galactic"),
-        width=2000,
+        skydir=coords.SkyCoord(0, 0, unit="deg", frame="galactic"),
+        width=1000,
         height=1000,
         fov="3 deg",
         coordsys="galactic",

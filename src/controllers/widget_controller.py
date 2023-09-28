@@ -4,7 +4,7 @@ from src.widgets import image_table_widget, renderer_widget
 class WidgetController:
     def __init__(self, root):
         self.root = root
-        self.open_windows = {"Render Configuration": None}
+        self.open_windows = {"Render Configuration": None, "Hips Survey Selector": None}
 
         root.menu_controller.open_render_eh.add(self.open_render_widget)
 

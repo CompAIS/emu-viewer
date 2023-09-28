@@ -3,6 +3,7 @@ from tkinter import filedialog
 import ttkbootstrap as tb
 
 from src.lib.event_handler import EventHandler
+from src.widgets.hips_selector_widget import HipsSelectorWidget
 
 
 # Create Menu bar for tkinter window
@@ -12,6 +13,7 @@ class MenuBar(tb.Frame):
     open_render_eh = EventHandler()
     append_image_eh = EventHandler()
     open_hips_eh = EventHandler()
+    append_hips_eh = EventHandler()
 
     def __init__(self, parent):
         tb.Frame.__init__(self, parent)
@@ -30,6 +32,7 @@ class MenuBar(tb.Frame):
         file_menu.add_command(label="Open Image", command=self.open_file)
         file_menu.add_command(label="Append Image", command=self.append_image)
         file_menu.add_command(label="Open Hips Survey", command=self.open_hips)
+        file_menu.add_command(label="Append Hips Survey", command=self.append_hips)
         file_menu.add_command(label="Exit", command=self.parent.quit)
 
     def widget_menu_creation(self):
@@ -70,4 +73,19 @@ class MenuBar(tb.Frame):
         self.append_image_eh.invoke(file_name)
 
     def open_hips(self):
-        self.open_hips_eh.invoke("CDS/P/DSS2/red")
+        hips_selector = HipsSelectorWidget(self, self.parent)
+        self.parent.wait_window(hips_selector)
+
+        if hips_selector.selected_hips_survey == "":
+            return
+
+        self.open_hips_eh.invoke(hips_selector.selected_hips_survey)
+
+    def append_hips(self):
+        hips_selector = HipsSelectorWidget(self, self.parent)
+        self.parent.wait_window(hips_selector)
+
+        if hips_selector.selected_hips_survey == "":
+            return
+
+        self.append_hips_eh.invoke(hips_selector.selected_hips_survey)

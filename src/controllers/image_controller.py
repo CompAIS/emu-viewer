@@ -24,6 +24,8 @@ class ImageController(tb.Frame):
         root.menu_controller.open_file_eh.add(self.open_image)
         root.menu_controller.append_image_eh.add(self.append_image)
         root.menu_controller.open_hips_eh.add(self.open_hips)
+        root.menu_controller.append_hips_eh.add(self.append_hips)
+
         self.main_image = None
         self.open_windows = []
 
@@ -64,6 +66,20 @@ class ImageController(tb.Frame):
         self.main_image = iw.ImageFrame(self, self.root, image_data)
         self.set_selected_image(0)
 
+    def append_hips(self, hips_survey):
+        if self.main_image is None:
+            self.open_hips(hips_survey)
+            return
+
+        image_id = len(self.open_windows) + 1
+
+        image_data = Hips_handler.open_hips(hips_survey)
+
+        new_window = StandaloneImage(self, self.root, image_data, hips_survey, image_id)
+        self.set_selected_image(image_id)
+
+        self.open_windows.append(new_window)
+
     def get_selected_image(self):
         if self.selected_image == -1:
             return None  # No image loaded so nothing to select
@@ -84,11 +100,7 @@ class ImageController(tb.Frame):
         self.selected_image = image
 
     def close_windows(self):
-        if self.main_image is not None:
-            self.main_image.close()
-
         for window in self.open_windows:
-            window.image_frame.close()
             window.destroy()
 
         self.open_windows = []
