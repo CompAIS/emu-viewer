@@ -9,7 +9,7 @@ from src.lib.event_handler import EventHandler
 class MenuBar(tb.Frame):
     open_file_eh = EventHandler()
     open_image_table_eh = EventHandler()
-    open_renderer_eh = EventHandler()
+    open_render_eh = EventHandler()
     append_image_eh = EventHandler()
 
     def __init__(self, parent):
@@ -34,7 +34,7 @@ class MenuBar(tb.Frame):
         widget_menu = tb.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label="Widget", menu=widget_menu)
         widget_menu.add_command(
-            label="Renderer Configuration", command=self.open_renderer
+            label="Renderer Configuration", command=self.open_render
         )
         widget_menu.add_command(label="Image Table", command=self.open_image_table)
 
@@ -50,8 +50,8 @@ class MenuBar(tb.Frame):
 
         self.open_file_eh.invoke(file_name)
 
-    def open_renderer(self):
-        self.open_renderer_eh.invoke()
+    def open_render(self):
+        self.open_render_eh.invoke()
 
     def open_image_table(self):
         self.open_image_table_eh.invoke()

@@ -2,11 +2,12 @@ import os
 import random
 import string
 
+import astropy.visualization as vis
 import numpy as np
 from matplotlib.figure import Figure
 
 
-def save_file(fits_file):
+def save_file(fits_file, colour_map, min, max, s):
     """
     Renders the provided .fits file with the given configuration (TODO) to a .png file.
 
@@ -18,12 +19,6 @@ def save_file(fits_file):
     # some files have (1, 1, x, y) or (x, y, 1, 1) shape so we use .squeeze
     data = hdu.data.squeeze()
 
-    # Apply logarithmic scaling to the image data
-    # log_stretch = LogStretch()
-    # data = log_stretch(data)
-
-    vmin, vmax = np.nanpercentile(data, (0.5, 99.5))
-
     # Create a matplotlib figure
     fig = Figure(figsize=(5, 5), dpi=150)
     ax = fig.add_subplot()
@@ -31,8 +26,21 @@ def save_file(fits_file):
     ax.margins(0, 0)
     ax.axis("off")
 
+    stretch = None
+
+    if s == "Linear":
+        stretch = vis.LinearStretch()
+    elif s == "Log":
+        stretch = vis.LogStretch()
+    elif s == "Sqrt":
+        stretch = vis.SqrtStretch()
+
+    vmin, vmax = np.nanpercentile(data, (min, max))
+
+    norm = vis.ImageNormalize(stretch=stretch, vmin=vmin, vmax=vmax)
+
     # Render the scaled image data onto the figure
-    ax.imshow(data, cmap="inferno", origin="lower", vmin=vmin, vmax=vmax)
+    ax.imshow(data, cmap=colour_map, origin="lower", norm=norm)
 
     if not os.path.exists("tmp"):
         os.makedirs("tmp")
