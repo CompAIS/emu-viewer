@@ -76,16 +76,28 @@ class MenuBar(tb.Frame):
         hips_selector = HipsSelectorWidget(self, self.parent)
         self.parent.wait_window(hips_selector)
 
-        if hips_selector.selected_hips_survey == "":
+        hips_survey = hips_selector.hips_survey
+
+        if (
+            hips_survey.FOV == ""
+            or hips_survey.projection == ""
+            or hips_survey.survey == ""
+        ):
             return
 
-        self.open_hips_eh.invoke(hips_selector.selected_hips_survey)
+        self.open_hips_eh.invoke(hips_survey)
 
     def append_hips(self):
         hips_selector = HipsSelectorWidget(self, self.parent)
         self.parent.wait_window(hips_selector)
 
-        if hips_selector.selected_hips_survey == "":
+        hips_survey = hips_selector.hips_survey
+
+        if (
+            hips_survey.FOV == ""
+            or hips_survey.projection == ""
+            or hips_survey.survey == ""
+        ):
             return
 
-        self.append_hips_eh.invoke(hips_selector.selected_hips_survey)
+        self.append_hips_eh.invoke(hips_survey)

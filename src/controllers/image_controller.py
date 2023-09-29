@@ -74,7 +74,9 @@ class ImageController(tb.Frame):
 
         image_data = Hips_handler.open_hips(hips_survey)
 
-        self.main_image = iw.ImageFrame(self, self.root, image_data, None, hips_survey)
+        self.main_image = iw.ImageFrame(
+            self, self.root, image_data, None, hips_survey.survey
+        )
         self.set_selected_image(0)
 
     def append_hips(self, hips_survey):
@@ -87,7 +89,7 @@ class ImageController(tb.Frame):
         image_data = Hips_handler.open_hips(hips_survey)
 
         new_window = StandaloneImage(
-            self, self.root, image_data, None, hips_survey, image_id
+            self, self.root, image_data, None, hips_survey.survey, image_id
         )
         self.set_selected_image(image_id)
 

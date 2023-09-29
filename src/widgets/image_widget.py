@@ -1,13 +1,16 @@
 import tkinter as tk
+import warnings
 
 import pyvips as vips
 import ttkbootstrap as tb
 from astropy import units as u
-from astropy.wcs import WCS
+from astropy import wcs
 from PIL import Image, ImageTk
 
 import src.lib.render as Render
 from src.lib.util import with_defaults
+
+warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
 
 
 # Create an Image Frame
@@ -113,7 +116,9 @@ class ImageFrame(tb.Frame):
             csize_prev = self.vips_resized_img.width
             if csize_desired != csize_prev:
                 scale_rs = csize_desired / self.vips_raw_img.width
-                self.vips_resized_img = self.vips_raw_img.resize(scale_rs)
+                self.vips_resized_img = self.vips_raw_img.resize(
+                    scale_rs, kernel=vips.Kernel.NEAREST
+                )
 
             # reload image if we made any changes
             if should_reload or csize_desired != csize_prev:
@@ -169,7 +174,7 @@ class ImageFrame(tb.Frame):
         fx_image, fy_image = self.r_to_fits_coordinate(rx_image, ry_image)
 
         if self.image_data_header is not None:
-            w = WCS(self.image_data_header)
+            w = wcs.WCS(self.image_data_header).celestial
 
             c = w.pixel_to_world(fx_image, fy_image)
 
