@@ -1,6 +1,7 @@
 import tkinter as tk
 from functools import partial
 
+import matplotlib.pyplot as plt
 import ttkbootstrap as tb
 
 import src.lib.render as Render
@@ -80,6 +81,38 @@ class RendererWidget(BaseWidget):
         histogram = tb.Frame(parent, bootstyle="dark")
         c = len(Render.PERCENTILES) + 1
         histogram.grid(column=0, columnspan=c, row=1, sticky=tk.NSEW, padx=10, pady=10)
+
+        self.histogram_canvas = tk.Canvas(histogram)
+        self.histogram_canvas.pack(fill=tk.BOTH, expand=True)
+        self.plot_histogram()
+
+    def plot_histogram(self):
+        if not self.check_if_image_selected():
+            return
+
+        # get fits data
+        image_data = self.selected_image.fits_file[0].data.squeeze()
+        """ Note, unsure whether this is the correct data to plot. The data we need to graph in the histogram is the Jy/Beam which is measure of flux density.
+            Referring to the astropy documentation there should be a header in the fits file called photflam however I was unable to find this under any of the HDUs.
+            Possibly need to consult with Kieran if there is another way to calculate, or if the data is there how it can be recieved.
+        """
+
+        # create histogram
+        plt.figure()
+        plt.hist(image_data.flatten(), bins=1000, color="blue", alpha=1)
+        plt.xlabel("Value")
+        plt.ylabel("Frequency")
+        plt.title("Histogram")
+        min_y = 0  # Adjust this value as needed
+        max_y = 100000  # Adjust this value as needed
+        plt.ylim(min_y, max_y)
+        min_x = 0  # Adjust this value as needed
+        max_x = 1000  # Adjust this value as needed
+        plt.xlim(min_x, max_x)
+
+        plt.show()
+
+        self.histogram_canvas.update()
 
     def render_options(self):
         render = tb.Frame(self, width=100, bootstyle="light")
