@@ -6,9 +6,22 @@ import ttkbootstrap as tb
 from src.lib.hips_handler import HipsSurvey
 
 projection_options = ["TAN", "ARC", "AIT"]
-hips_survey_options = [
+
+optical_survey_options = [
     "CDS/P/skymapper-R",
     "CDS/P/DSS2/red",
+    "CDS/P/DES-DR2/r",
+    "CDS/P/DESI-Legacy-Surveys/DR10/r",
+]
+
+infrared_survey_options = [
+    "CDS/P/unWISE/W1",
+]
+
+radio_survey_options = [
+    "CSIRO/P/RACS/low/I",
+    "CSIRO/P/RACS/mid/I",
+    "CDS/P/HI4PI/NHI",
 ]
 
 
@@ -44,7 +57,17 @@ class HipsSelectorWidget(tk.Toplevel):
 
         self.projection_options(frame, "Projection", self.selected_projection, 0, 3)
 
-        self.survey_options(frame, "Hips Survey", self.selected_hips_survey, 0, 4)
+        self.optical_survey_options(
+            frame, "Optical Hips Surveys", self.selected_hips_survey, 2, 0
+        )
+
+        self.infrared_survey_options(
+            frame, "Infrared Hips Surveys", self.selected_hips_survey, 2, 1
+        )
+
+        self.radio_survey_options(
+            frame, "Radio Hips Surveys", self.selected_hips_survey, 2, 2
+        )
 
         self.confirm_button(frame, "Select Survey", 0, 5)
 
@@ -96,22 +119,86 @@ class HipsSelectorWidget(tk.Toplevel):
         self.selected_projection = projection
         menu_button["text"] = projection
 
-    def survey_options(self, parent, text, selected_survey, gridX, gridY):
+    def optical_survey_options(self, parent, text, selected_survey, gridX, gridY):
         label = tb.Label(parent, text=text, bootstyle="inverse-light")
         label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
 
-        dropdown = tb.Menubutton(parent, text=selected_survey, bootstyle="dark")
-        dropdown.grid(column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
+        self.optical_dropdown = tb.Menubutton(
+            parent, text=selected_survey, bootstyle="dark"
+        )
+        self.optical_dropdown.grid(
+            column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
+        )
 
-        dropdown_menu = tk.Menu(dropdown, tearoff=0)
+        dropdown_menu = tk.Menu(self.optical_dropdown, tearoff=0)
 
-        for option in hips_survey_options:
+        for option in optical_survey_options:
             dropdown_menu.add_command(
                 label=option,
-                command=partial(self.select_hips_survey, option, dropdown),
+                command=partial(self.select_optical_survey, option),
             )
 
-        dropdown["menu"] = dropdown_menu
+        self.optical_dropdown["menu"] = dropdown_menu
+
+    def select_optical_survey(self, hips_survey):
+        self.selected_hips_survey = hips_survey
+        self.optical_dropdown["text"] = hips_survey
+        self.infrared_dropdown["text"] = ""
+        self.radio_dropdown["text"] = ""
+
+    def infrared_survey_options(self, parent, text, selected_survey, gridX, gridY):
+        label = tb.Label(parent, text=text, bootstyle="inverse-light")
+        label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
+
+        self.infrared_dropdown = tb.Menubutton(
+            parent, text=selected_survey, bootstyle="dark"
+        )
+        self.infrared_dropdown.grid(
+            column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
+        )
+
+        dropdown_menu = tk.Menu(self.optical_dropdown, tearoff=0)
+
+        for option in infrared_survey_options:
+            dropdown_menu.add_command(
+                label=option,
+                command=partial(self.select_infrared_survey, option),
+            )
+
+        self.infrared_dropdown["menu"] = dropdown_menu
+
+    def select_infrared_survey(self, hips_survey):
+        self.selected_hips_survey = hips_survey
+        self.infrared_dropdown["text"] = hips_survey
+        self.optical_dropdown["text"] = ""
+        self.radio_dropdown["text"] = ""
+
+    def radio_survey_options(self, parent, text, selected_survey, gridX, gridY):
+        label = tb.Label(parent, text=text, bootstyle="inverse-light")
+        label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
+
+        self.radio_dropdown = tb.Menubutton(
+            parent, text=selected_survey, bootstyle="dark"
+        )
+        self.radio_dropdown.grid(
+            column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
+        )
+
+        dropdown_menu = tk.Menu(self.radio_dropdown, tearoff=0)
+
+        for option in radio_survey_options:
+            dropdown_menu.add_command(
+                label=option,
+                command=partial(self.select_radio_survey, option),
+            )
+
+        self.radio_dropdown["menu"] = dropdown_menu
+
+    def select_radio_survey(self, hips_survey):
+        self.selected_hips_survey = hips_survey
+        self.radio_dropdown["text"] = hips_survey
+        self.optical_dropdown["text"] = ""
+        self.infrared_dropdown["text"] = ""
 
     def confirm_button(self, parent, text, gridX, gridY):
         button = tb.Button(
@@ -121,10 +208,6 @@ class HipsSelectorWidget(tk.Toplevel):
             command=partial(self.select_survey),
         )
         button.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
-
-    def select_hips_survey(self, hips_survey, menu_button):
-        self.selected_hips_survey = hips_survey
-        menu_button["text"] = hips_survey
 
     def select_survey(self):
         if (

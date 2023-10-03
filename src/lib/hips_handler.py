@@ -3,6 +3,10 @@ from dataclasses import dataclass
 import astropy.coordinates as coords
 import hips
 
+# Todo - Figure why scikit doesn't want to work
+# scikit keeps throwing error "Big-endian buffer not supported on little-endian compiler"
+# might be able to fix by installing scikit-image 0.15.0 but it doesn't want to install
+
 
 @dataclass
 class HipsSurvey:
