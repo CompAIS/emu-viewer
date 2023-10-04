@@ -79,9 +79,9 @@ class MenuBar(tb.Frame):
         hips_survey = hips_selector.hips_survey
 
         if (
-            hips_survey.FOV == ""
-            or hips_survey.projection == ""
+            hips_survey.projection == ""
             or hips_survey.survey == ""
+            or hips_survey.image_type == ""
         ):
             return
 
@@ -94,9 +94,9 @@ class MenuBar(tb.Frame):
         hips_survey = hips_selector.hips_survey
 
         if (
-            hips_survey.FOV == ""
-            or hips_survey.projection == ""
+            hips_survey.projection == ""
             or hips_survey.survey == ""
+            or hips_survey.image_type == ""
         ):
             return
 

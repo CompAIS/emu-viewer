@@ -170,10 +170,10 @@ class ImageFrame(tb.Frame):
         rx_image = (event.x - x1) * scale_cr
         ry_image = (height - (event.y - y1)) * scale_cr
 
-        # update text
-        fx_image, fy_image = self.r_to_fits_coordinate(rx_image, ry_image)
-
         if self.image_data_header is not None:
+            # update text
+            fx_image, fy_image = self.r_to_fits_coordinate(rx_image, ry_image)
+
             w = wcs.WCS(self.image_data_header).celestial
 
             c = w.pixel_to_world(fx_image, fy_image)
