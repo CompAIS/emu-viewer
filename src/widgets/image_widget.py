@@ -1,9 +1,10 @@
 import tkinter as tk
+from tkinter import simpledialog
 
 import pyvips as vips
 import ttkbootstrap as tb
 from astropy.io import fits
-from PIL import Image, ImageTk
+from PIL import Image, ImageGrab, ImageTk
 
 import src.lib.render as Render
 from src.lib.util import with_defaults
@@ -13,6 +14,11 @@ from src.lib.util import with_defaults
 class ImageFrame(tb.Frame):
     def __init__(self, parent, root, file_path):
         tb.Frame.__init__(self, parent)
+        root.toolbar.toggle_eh.add(self.update_canvas_bindings)
+        root.menu_controller.pencil_colour_eh.add(self.pencil_colour_set)
+        root.menu_controller.pencil_size_eh.add(self.pencil_size_set)
+        root.menu_controller.export_image_eh.add(self.save_canvas_as_png)
+        self.buttonToggler = 0
 
         # basic layout
         self.root = root
@@ -40,10 +46,15 @@ class ImageFrame(tb.Frame):
         self.prev_mouse_x = 0
         self.prev_mouse_y = 0
 
-        self.canvas.bind("<Motion>", self.move)
-        self.canvas.bind("<ButtonPress-1>", self.mouse_down)
-        self.canvas.bind("<ButtonRelease-1>", self.mouse_up)
         self.canvas.bind("<MouseWheel>", self.zoom)
+        # Drawing variables
+        self.drawing = False
+        self.prev_x = None
+        self.prev_y = None
+
+        self.draw_colour = "red"
+        self.draw_width = 2
+
         # TODO widget changes size
         # https://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
         # https://stackoverflow.com/questions/61462360/tkinter-canvas-dynamically-resize-image
@@ -168,3 +179,88 @@ class ImageFrame(tb.Frame):
     def close(self):
         if self.fits_file is not None:
             self.fits_file.close()
+
+    def start_drawing(self, event):
+        self.drawing = True
+        self.prev_x = event.x
+        self.prev_y = event.y
+
+    def draw(self, event):
+        if self.drawing:
+            x, y = event.x, event.y
+            if self.prev_x is not None and self.prev_y is not None:
+                self.canvas.create_line(
+                    self.prev_x,
+                    self.prev_y,
+                    x,
+                    y,
+                    fill=self.draw_colour,
+                    width=self.draw_width,
+                    tags="drawings",  # Tag used for deletion
+                )
+            self.prev_x = x
+            self.prev_y = y
+
+    def stop_drawing(self, event):
+        self.drawing = False
+
+    def open_text_input(self, event):
+        user_text = simpledialog.askstring("Text Input", "Enter text:")
+        if user_text is not None:
+            x, y = event.x, event.y
+            self.canvas.create_text(
+                x,
+                y,
+                text=user_text,
+                fill="red",
+                font=("Helvetica", 12),
+                anchor=tk.W,
+                tags="text",
+            )
+
+    def eraseButton(self):
+        print("bin method was called")
+        # Delete items with the "drawings" tag
+        self.canvas.delete("drawings")
+
+        # Delete items with the "text" tag
+        self.canvas.delete("text")
+
+    def update_canvas_bindings(self, toggle):
+        self.canvas.unbind("<ButtonPress-1>")
+        self.canvas.unbind("<ButtonRelease-1>")
+        self.canvas.unbind("<B1-Motion>")
+        self.buttonToggler = toggle
+
+        if self.buttonToggler == 0:
+            self.canvas.bind("<ButtonPress-1>", self.mouse_down)
+            self.canvas.bind("<ButtonRelease-1>", self.mouse_up)
+            self.canvas.bind("<B1-Motion>", self.move)
+        elif self.buttonToggler == 1:
+            self.canvas.bind("<ButtonPress-1>", self.start_drawing)
+            self.canvas.bind("<B1-Motion>", self.draw)
+            self.canvas.bind("<ButtonRelease-1>", self.stop_drawing)
+        elif self.buttonToggler == 2:
+            self.canvas.bind("<ButtonPress-1>", self.open_text_input)
+
+    def pencil_colour_set(self, pencil_colour):
+        self.draw_colour = pencil_colour
+
+    def pencil_size_set(self, pencil_size):
+        self.draw_width = pencil_size
+
+    def save_canvas_as_png(self, file_path):
+        if self.canvas is not None:
+            # Get the coordinates of the canvas relative to its parent
+            x0 = self.canvas.winfo_rootx() - self.parent.winfo_rootx()
+            y0 = self.canvas.winfo_rooty() - self.parent.winfo_rooty()
+            x1 = x0 + self.canvas.winfo_width()
+            y1 = y0 + self.canvas.winfo_height()
+
+            # Capture the canvas content as an image
+            screenshot = ImageGrab.grab(bbox=(x0, y0, x1, y1))
+
+            # Save the image as PNG
+            screenshot.save(file_path, "PNG")
+        else:
+            print("No canvas widget found. Cannot save as PNG.")
