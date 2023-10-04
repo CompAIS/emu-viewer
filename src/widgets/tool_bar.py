@@ -29,7 +29,6 @@ class ToolBar(tb.Frame):
 
         # Toolbar - Hand/Move Button
         img_hand = ImageTk.PhotoImage(open_icon("hand.png"))
-        print(img_hand.width(), img_hand.height())
         button_hand = tb.Button(self, image=img_hand)
         button_hand.image = img_hand
         button_hand.grid(

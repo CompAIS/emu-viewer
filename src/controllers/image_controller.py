@@ -1,7 +1,10 @@
+import os
 import tkinter as tk
 
 import ttkbootstrap as tb
 
+import src.lib.fits_handler as Fits_handler
+import src.lib.hips_handler as Hips_handler
 from src.widgets import image_widget as iw
 from src.widgets.image_standalone_toplevel import StandaloneImage
 
@@ -21,12 +24,25 @@ class ImageController(tb.Frame):
         # Add open_image as an event listener to open file
         root.menu_controller.open_file_eh.add(self.open_image)
         root.menu_controller.append_image_eh.add(self.append_image)
+        root.menu_controller.open_hips_eh.add(self.open_hips)
+        root.menu_controller.append_hips_eh.add(self.append_hips)
+
         self.main_image = None
         self.open_windows = []
 
+        self.fits_image_data = {}
+
     def open_image(self, file_path):
         self.close_windows()
-        self.main_image = iw.ImageFrame(self, self.root, file_path)
+
+        image_data, image_data_header = Fits_handler.open_fits_file(file_path)
+        self.fits_image_data[file_path] = image_data
+
+        file_name = os.path.basename(file_path)
+
+        self.main_image = iw.ImageFrame(
+            self, self.root, image_data, image_data_header, file_name
+        )
         self.set_selected_image(0)
 
     def append_image(self, file_path):
@@ -35,7 +51,46 @@ class ImageController(tb.Frame):
             return
 
         image_id = len(self.open_windows) + 1
-        new_window = StandaloneImage(self, self.root, file_path, image_id)
+
+        if self.fits_already_open(file_path):
+            # TODO save image header in fit_image_data with tuple???
+            # image_data = self.fits_image_data[file_path]
+            image_data, image_data_header = Fits_handler.open_fits_file(file_path)
+        else:
+            image_data, image_data_header = Fits_handler.open_fits_file(file_path)
+            self.fits_image_data[file_path] = image_data
+
+        file_name = os.path.basename(file_path)
+
+        new_window = StandaloneImage(
+            self, self.root, image_data, image_data_header, file_name, image_id
+        )
+        self.set_selected_image(image_id)
+
+        self.open_windows.append(new_window)
+
+    def open_hips(self, hips_survey):
+        self.close_windows()
+
+        image_data = Hips_handler.open_hips(hips_survey)
+
+        self.main_image = iw.ImageFrame(
+            self, self.root, image_data, None, hips_survey.survey
+        )
+        self.set_selected_image(0)
+
+    def append_hips(self, hips_survey):
+        if self.main_image is None:
+            self.open_hips(hips_survey)
+            return
+
+        image_id = len(self.open_windows) + 1
+
+        image_data = Hips_handler.open_hips(hips_survey)
+
+        new_window = StandaloneImage(
+            self, self.root, image_data, None, hips_survey.survey, image_id
+        )
         self.set_selected_image(image_id)
 
         self.open_windows.append(new_window)
@@ -60,11 +115,7 @@ class ImageController(tb.Frame):
         self.selected_image = image
 
     def close_windows(self):
-        if self.main_image is not None:
-            self.main_image.close()
-
         for window in self.open_windows:
-            window.image_frame.close()
             window.destroy()
 
         self.open_windows = []
@@ -89,3 +140,9 @@ class ImageController(tb.Frame):
         ].update_selected_colour_map(self.main_image.colour_map)
 
         self.root.update()
+
+    def fits_already_open(self, file_path):
+        if self.fits_image_data.get(file_path) is not None:
+            return True
+
+        return False

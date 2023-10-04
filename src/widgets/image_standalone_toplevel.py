@@ -1,4 +1,3 @@
-import os
 import tkinter as tk
 
 from src.widgets import image_widget as iw
@@ -6,10 +5,11 @@ from src.widgets import tool_bar as tool_bar
 
 
 class StandaloneImage(tk.Toplevel):
-    def __init__(self, parent, root, file_path, image_id):
+    def __init__(
+        self, parent, root, image_data, image_data_header, file_name, image_id
+    ):
         tk.Toplevel.__init__(self, root)
 
-        file_name = os.path.basename(file_path)
         self.parent = parent
         self.root = root
         self.image_id = image_id
@@ -27,7 +27,9 @@ class StandaloneImage(tk.Toplevel):
         self.dummy_frame.grid_rowconfigure(0, weight=1)
         self.dummy_frame.grid_columnconfigure(0, weight=1)
 
-        self.image_frame = iw.ImageFrame(self.dummy_frame, root, file_path)
+        self.image_frame = iw.ImageFrame(
+            self.dummy_frame, root, image_data, image_data_header, file_name
+        )
 
         self.bind("<FocusIn>", self.handle_focus)
 
