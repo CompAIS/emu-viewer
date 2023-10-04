@@ -51,13 +51,15 @@ class ImageFrame(tb.Frame):
 
     def create_image(self):
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.parent)
-        self.canvas.get_tk_widget().grid(column=0, row=0, sticky=tk.NSEW)
+        self.canvas.get_tk_widget().grid(
+            column=0, row=0, sticky=tk.NSEW, padx=10, pady=10
+        )
         self.canvas.draw()
 
         self.toolbar = NavigationToolbar2Tk(
             self.canvas, self.parent, pack_toolbar=False
         )
-        self.toolbar.grid(column=0, row=1, sticky=tk.NSEW)
+        self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
         self.toolbar.update()
 
     def update_norm(self):
