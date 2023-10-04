@@ -111,7 +111,7 @@ class RendererWidget(tk.Toplevel):
         if self.check_if_image_selected():
             self.selected_image.vmin = vmin
             self.selected_image.vmax = vmax
-            self.selected_image.update_image_render()
+            self.selected_image.update_image()
             self.root.update()
 
     def histogram_graph(self, parent):
@@ -200,7 +200,7 @@ class RendererWidget(tk.Toplevel):
 
         if self.check_if_image_selected():
             self.selected_image.stretch = self.selected_scaling_option
-            self.selected_image.update_image_render()
+            self.selected_image.update_image()
             self.root.update()
 
     def select_colour_map_option(self, option, menu_button):
@@ -211,7 +211,7 @@ class RendererWidget(tk.Toplevel):
 
         if self.check_if_image_selected():
             self.selected_image.colour_map = self.selected_colour_map_option
-            self.selected_image.update_image_render()
+            self.selected_image.update_image()
             self.root.update()
 
     def update_selected_scaling(self, option):
