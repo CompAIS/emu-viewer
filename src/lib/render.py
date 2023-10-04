@@ -23,15 +23,12 @@ def create_figure(image_data, wcs, colour_map, min, max, s):
 
     # Render the scaled image data onto the figure
     image = ax.imshow(image_data, cmap=colour_map, origin="lower", norm=norm)
-    cbar = fig.colorbar(image)
+    fig.colorbar(image)
 
-    return fig, cbar
+    return fig, image
 
 
-def update_figure(fig, cbar, image_data, colour_map, min, max, s):
-    ax_list = fig.axes
-    ax = ax_list[0]
-
+def update_image_norm(image, image_data, min, max, s):
     stretch = None
 
     if s == "Linear":
@@ -45,9 +42,12 @@ def update_figure(fig, cbar, image_data, colour_map, min, max, s):
 
     norm = vis.ImageNormalize(stretch=stretch, vmin=vmin, vmax=vmax)
 
-    # Render the scaled image data onto the figure
-    image = ax.imshow(image_data, cmap=colour_map, origin="lower", norm=norm)
-    cbar.remove()
-    cbar = fig.colorbar(image)
+    image.set_norm(norm)
 
-    return fig, cbar
+    return image
+
+
+def update_image_cmap(image, colour_map):
+    image.set_cmap(colour_map)
+
+    return image
