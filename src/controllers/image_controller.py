@@ -84,10 +84,10 @@ class ImageController(tb.Frame):
     def open_hips(self, hips_survey):
         self.close_windows()
 
-        image_data = Hips_handler.open_hips(hips_survey)
+        image_data, image_header = Hips_handler.open_hips(hips_survey)
 
         self.main_image = iw.ImageFrame(
-            self, self.root, image_data, None, hips_survey.survey
+            self, self.root, image_data, image_header, hips_survey.survey
         )
         self.set_selected_image(self.main_image)
 
@@ -98,10 +98,10 @@ class ImageController(tb.Frame):
             self.open_hips(hips_survey)
             return
 
-        image_data = Hips_handler.open_hips(hips_survey)
+        image_data, image_header = Hips_handler.open_hips(hips_survey)
 
         new_window = StandaloneImage(
-            self, self.root, image_data, None, hips_survey.survey
+            self, self.root, image_data, image_header, hips_survey.survey
         )
 
         self.open_windows.append(new_window)
