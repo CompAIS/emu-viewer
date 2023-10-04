@@ -35,7 +35,10 @@ class ImageFrame(tb.Frame):
         self.stretch = "Linear"
 
         self.image_wcs = wcs.WCS(self.image_data_header)
-        self.fig, self.cbar = Render.create_figure(
+        if self.image_wcs.world_n_dim > 2:
+            self.image_wcs = self.image_wcs.celestial
+
+        self.fig, self.image = Render.create_figure(
             self.image_data,
             self.image_wcs,
             self.colour_map,
@@ -57,14 +60,16 @@ class ImageFrame(tb.Frame):
         self.toolbar.grid(column=0, row=1, sticky=tk.NSEW)
         self.toolbar.update()
 
-    def update_image(self):
-        self.fig, self.cbar = Render.update_figure(
-            self.fig,
-            self.cbar,
+    def update_norm(self):
+        self.image = Render.update_image_norm(
+            self.image,
             self.image_data,
-            self.colour_map,
             self.vmin,
             self.vmax,
             self.stretch,
         )
+        self.canvas.draw()
+
+    def update_colour_map(self):
+        self.image = Render.update_image_cmap(self.image, self.colour_map)
         self.canvas.draw()
