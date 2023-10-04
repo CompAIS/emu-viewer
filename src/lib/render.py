@@ -1,12 +1,17 @@
 import astropy.visualization as vis
 import numpy as np
+from matplotlib import ticker
 from matplotlib.figure import Figure
 
 
 def create_figure(image_data, wcs, colour_map, min, max, s):
     fig = Figure(figsize=(5, 5), dpi=150)
+    fig.patch.set_facecolor("#afbac5")
     ax = fig.add_subplot(projection=wcs)
-    fig.subplots_adjust(top=0.95, bottom=0.05, right=0.95, left=0.2, hspace=0, wspace=0)
+    fig.subplots_adjust(top=0.95, bottom=0.2, right=0.95, left=0.2, hspace=0, wspace=0)
+    ax.tick_params(axis="both", which="major", labelsize=5)
+    ax.set_xlabel("Ra")
+    ax.set_ylabel("Dec")
 
     stretch = None
 
@@ -23,7 +28,12 @@ def create_figure(image_data, wcs, colour_map, min, max, s):
 
     # Render the scaled image data onto the figure
     image = ax.imshow(image_data, cmap=colour_map, origin="lower", norm=norm)
-    fig.colorbar(image)
+
+    cbar = fig.colorbar(image, shrink=0.5)
+    tick_locator = ticker.MaxNLocator(nbins=10)
+    cbar.locator = tick_locator
+    cbar.ax.tick_params(labelsize=5)
+    cbar.update_ticks()
 
     return fig, image
 
