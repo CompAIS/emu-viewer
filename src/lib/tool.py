@@ -29,12 +29,27 @@ class NavigationToolbar(NavigationToolbar2Tk):
             ),
             ("Zoom", "Zoom to rectangle\nx/y fixes axis", "zoom_to_rect", "zoom"),
             (None, None, None, None),
-            ("Save", "Save the figure", "filesave", "save_figure"),
             (
                 "Line",
                 "Draw line on figure",
                 f"{ASSETS_FOLDER}/line",
-                "save_figure",
+                "draw_line",
             ),
+            (None, None, None, None),
+            ("Save", "Save the figure", "filesave", "save_figure"),
         )
         super().__init__(canvas, parent, pack_toolbar=pack)
+
+    def draw_line(self):
+        print("Line annotation")
+        if not self.canvas.widgetlock.available(self):
+            self.set_message("line tool unavailable")
+            return
+        if self.mode == "line_tool":
+            print("Unlock")
+            self.mode = ""
+            self.canvas.widgetlock.release(self)
+        else:
+            print("Lock")
+            self.mode = "line_tool"
+            self.canvas.widgetlock(self)
