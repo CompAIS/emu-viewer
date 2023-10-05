@@ -30,6 +30,7 @@ class ToolBar(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent, width=SIZE)
         self.grid(column=0, row=0, sticky=tk.NSEW)
+        self.grid_propagate(True)
         self.rowconfigure((0, 1, 2, 3), weight=0, uniform="a")
         self.rowconfigure(4, weight=1, uniform="a")
         self.columnconfigure(0, weight=1)
