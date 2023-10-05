@@ -22,14 +22,13 @@ class ToolBar(tb.Frame):
     def __init__(self, parent):
         tb.Frame.__init__(self, parent, width=SIZE, bootstyle="medium")
         self.grid(column=0, row=0, sticky=tk.NSEW)
-        # self.grid_propagate(0)
+        self.grid_propagate(True)
         self.rowconfigure((0, 1, 2, 3), weight=0, uniform="a")
         self.rowconfigure(4, weight=1, uniform="a")
         self.columnconfigure(0, weight=1)
 
         # Toolbar - Hand/Move Button
         img_hand = ImageTk.PhotoImage(open_icon("hand.png"))
-        print(img_hand.width(), img_hand.height())
         button_hand = tb.Button(self, image=img_hand)
         button_hand.image = img_hand
         button_hand.grid(

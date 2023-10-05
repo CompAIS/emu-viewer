@@ -1,17 +1,21 @@
 import tkinter as tk
+import warnings
 
 import pyvips as vips
 import ttkbootstrap as tb
-from astropy.io import fits
+from astropy import units as u
+from astropy import wcs
 from PIL import Image, ImageTk
 
 import src.lib.render as Render
 from src.lib.util import with_defaults
 
+warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
+
 
 # Create an Image Frame
 class ImageFrame(tb.Frame):
-    def __init__(self, parent, root, file_path):
+    def __init__(self, parent, root, image_data, image_data_header, file_name):
         tb.Frame.__init__(self, parent)
 
         # basic layout
@@ -21,15 +25,29 @@ class ImageFrame(tb.Frame):
         self.rowconfigure(0, weight=1, uniform="a")
         self.columnconfigure(0, weight=1, uniform="a")
 
+        # Image data and file name
+        self.image_data = image_data
+        self.image_data_header = image_data_header
+        self.file_name = file_name
+
+        # Default render config
+        self.colour_map = "inferno"
+        self.vmin = 0.5
+        self.vmax = 99.5
+        self.stretch = "Linear"
+
         # create a tk canvas and load initial image
         self.canvas = tk.Canvas(master=self)
         self.canvas.grid(column=0, row=0, sticky=tk.NSEW)
 
         self.tk_img_path = self.tk_img = None
         self.cx = self.cy = self.csize = None
+
         self.updating = False
         self.canvas_image = self.canvas.create_image(0, 0, image=None)
-        self.update_canvas(file_path=file_path)
+
+        self.create_image_render()
+        self.update_canvas()
 
         # image info label
         self.image_info = self.canvas.create_text(0, 0, text="", fill="white")
@@ -44,6 +62,7 @@ class ImageFrame(tb.Frame):
         self.canvas.bind("<ButtonPress-1>", self.mouse_down)
         self.canvas.bind("<ButtonRelease-1>", self.mouse_up)
         self.canvas.bind("<MouseWheel>", self.zoom)
+
         # TODO widget changes size
         # https://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
         # https://stackoverflow.com/questions/61462360/tkinter-canvas-dynamically-resize-image
@@ -54,7 +73,7 @@ class ImageFrame(tb.Frame):
     # - (r) on the *raw* image (before scaling)
     # - (s) on the *scaled* image
 
-    def update_canvas(self, file_path=None, cx=None, cy=None, csize=None):
+    def update_canvas(self, update_image=False, cx=None, cy=None, csize=None):
         """
         Update canvas with image. Provide a file_path to change the image.
         Otherwise specify zoom and position arguments. TODO
@@ -87,13 +106,9 @@ class ImageFrame(tb.Frame):
             )
 
             # if we have no loaded image, or the file_path is different, render the image
-            should_reload = self.tk_img is None or (
-                file_path != None and self.tk_img_path != file_path
-            )
+            should_reload = self.tk_img is None or update_image
 
             if should_reload:
-                self.fits_file = fits.open(file_path)
-                self.tk_img_path = Render.save_file(self.fits_file)
                 self.vips_raw_img = vips.Image.new_from_file(self.tk_img_path).flatten()
                 self.vips_resized_img = self.vips_raw_img
 
@@ -101,7 +116,9 @@ class ImageFrame(tb.Frame):
             csize_prev = self.vips_resized_img.width
             if csize_desired != csize_prev:
                 scale_rs = csize_desired / self.vips_raw_img.width
-                self.vips_resized_img = self.vips_raw_img.resize(scale_rs)
+                self.vips_resized_img = self.vips_raw_img.resize(
+                    scale_rs, kernel=vips.Kernel.NEAREST
+                )
 
             # reload image if we made any changes
             if should_reload or csize_desired != csize_prev:
@@ -116,6 +133,17 @@ class ImageFrame(tb.Frame):
 
         self.updating = False
 
+    def create_image_render(self):
+        self.tk_img_path = Render.create_render(
+            self.image_data, self.colour_map, self.vmin, self.vmax, self.stretch
+        )
+
+    def update_image_render(self):
+        self.tk_img_path = Render.create_render(
+            self.image_data, self.colour_map, self.vmin, self.vmax, self.stretch
+        )
+        self.update_canvas(update_image=True)
+
     def mouse_down(self, event):
         self.is_dragging = True
         self.prev_mouse_x = event.x
@@ -126,30 +154,50 @@ class ImageFrame(tb.Frame):
 
     def move(self, event):
         x1, y1, x2, y2 = self.canvas.bbox(self.canvas_image)
+        width = x2 - x1
+        height = y2 - y1
+
         if self.is_dragging:
             dx = event.x - self.prev_mouse_x
             dy = event.y - self.prev_mouse_y
 
-            width = x2 - x1
-            height = y2 - y1
             x = x1 + (width / 2) + dx
             y = y1 + (height / 2) + dy
 
             self.update_canvas(cx=x, cy=y)
-
         # converts values on the canvas to the corresponding values on the raw image
         scale_cr = self.vips_raw_img.width / self.csize
         rx_image = (event.x - x1) * scale_cr
-        ry_image = (event.y - y1) * scale_cr
+        ry_image = (height - (event.y - y1)) * scale_cr
 
-        # update text
-        self.canvas.itemconfig(
-            self.image_info, text=f"Image: ({rx_image:.2f}, {ry_image:.2f})"
-        )
+        if self.image_data_header is not None:
+            # update text
+            fx_image, fy_image = self.r_to_fits_coordinate(rx_image, ry_image)
+
+            w = wcs.WCS(self.image_data_header).celestial
+
+            c = w.pixel_to_world(fx_image, fy_image)
+
+            # The units here match CARTA. Don't know why.
+            ra = c.ra.to_string(unit=u.hour, sep=":", pad=True, precision=2)
+            dec = c.dec.to_string(unit=u.degree, sep=":", pad=True, precision=2)
+
+            self.canvas.itemconfig(
+                self.image_info,
+                text=f"WCS: ({ra}, {dec}); Image: ({int(fx_image)}, {int(fy_image)});",
+            )
+
         self.canvas.moveto(self.image_info, 10, 10)
 
         self.prev_mouse_x = event.x
         self.prev_mouse_y = event.y
+
+    def r_to_fits_coordinate(self, rx_image, ry_image):
+        width, height = self.image_data.shape
+        return (
+            rx_image * width / self.vips_raw_img.width,
+            ry_image * height / self.vips_raw_img.height,
+        )
 
     def zoom(self, event):
         cx_mouse = event.x
@@ -164,7 +212,3 @@ class ImageFrame(tb.Frame):
         # Redraw the canvas
         # TODO should zoom into mouse
         self.update_canvas(csize=new_size)
-
-    def close(self):
-        if self.fits_file is not None:
-            self.fits_file.close()
