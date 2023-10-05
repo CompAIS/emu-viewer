@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import filedialog
 
 from PIL import Image, ImageTk
 
@@ -26,13 +27,14 @@ class ToolBar(tk.Frame):
     line_eh = EventHandler()
     typing_eh = EventHandler()
     bin_eh = EventHandler()
+    export_eh = EventHandler()
 
     def __init__(self, parent):
         tk.Frame.__init__(self, parent, width=SIZE)
         self.grid(column=0, row=0, sticky=tk.NSEW)
         self.grid_propagate(True)
-        self.rowconfigure((0, 1, 2, 3), weight=0, uniform="a")
-        self.rowconfigure(4, weight=1, uniform="a")
+        self.rowconfigure((0, 1, 2, 3, 4), weight=0, uniform="a")
+        self.rowconfigure(5, weight=1, uniform="a")
         self.columnconfigure(0, weight=1)
         self.selected_button = None
 
@@ -80,6 +82,29 @@ class ToolBar(tk.Frame):
         )
         self.button_bin.bind("<Button-1>", self.toggle_bin_button_color)
 
+        # Toolbar - Export image Button
+        img_export = ImageTk.PhotoImage(open_icon("export.png"))
+        self.button_export = tk.Button(
+            self, image=img_export, relief=tk.FLAT, bg="lightblue", width=BUTTON_WIDTH
+        )
+        self.button_export.image = img_export
+        self.button_export.grid(
+            row=4, column=0, padx=BUTTON_PAD, pady=BUTTON_PAD, sticky=tk.NSEW
+        )
+        self.button_export.bind("<Button-1>", self.toggle_export_button)
+
+    def toggle_export_button(self, event):
+        default_file_name = "image.png"
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".png",
+            filetypes=[("PNG files", "*.png"), ("All files", "*.*")],
+            initialfile=default_file_name,
+        )
+
+        if file_path == "":
+            return
+        self.export_eh.invoke(file_path)
+
     # Toggle bin pressed to red
     def toggle_bin_button_color(self, event):
         if self.selected_button is not None:
@@ -95,7 +120,7 @@ class ToolBar(tk.Frame):
         self.selected_button = self.button_hand
         self.button_hand.configure(bg="red")
         self.toggle = 0
-        self.toggle_eh.invoke(0)
+        self.toggle_eh.invoke(self.toggle)
 
     def toggle_line_button_color(self, event):
         if self.selected_button is not None:
@@ -103,7 +128,7 @@ class ToolBar(tk.Frame):
         self.selected_button = self.button_line
         self.button_line.configure(bg="red")
         self.toggle = 1
-        self.toggle_eh.invoke(1)
+        self.toggle_eh.invoke(self.toggle)
 
     def toggle_typing_button_color(self, event):
         if self.selected_button is not None:
@@ -111,7 +136,7 @@ class ToolBar(tk.Frame):
         self.selected_button = self.button_type
         self.button_type.configure(bg="red")
         self.toggle = 2
-        self.toggle_eh.invoke(2)
+        self.toggle_eh.invoke(self.toggle)
 
 
 if __name__ == "__main__":

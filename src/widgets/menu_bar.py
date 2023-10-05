@@ -12,7 +12,6 @@ class MenuBar(tb.Frame):
     open_image_table_eh = EventHandler()
     open_render_eh = EventHandler()
     append_image_eh = EventHandler()
-    export_image_eh = EventHandler()
     pencil_colour_eh = EventHandler()
     pencil_size_eh = EventHandler()
     open_hips_eh = EventHandler()
@@ -29,7 +28,7 @@ class MenuBar(tb.Frame):
         self.widget_menu_creation()
         self.annotations_menu_creation()
         self.pencil_color = "red"  # Default color
-        self.pencil_size = "small"  # Default size
+        self.pencil_size = "medium"  # Default size
 
     def set_pencil_color(self, color):
         self.pencil_color = color
@@ -47,7 +46,6 @@ class MenuBar(tb.Frame):
         file_menu.add_command(label="Append Image", command=self.append_image)
         file_menu.add_command(label="Open Hips Survey", command=self.open_hips)
         file_menu.add_command(label="Append Hips Survey", command=self.append_hips)
-        file_menu.add_command(label="Export Image", command=self.export_image)
         file_menu.add_command(label="Exit", command=self.parent.quit)
 
     def widget_menu_creation(self):
@@ -153,14 +151,3 @@ class MenuBar(tb.Frame):
             return
 
         self.append_hips_eh.invoke(hips_survey)
-
-    def export_image(self):
-        file_path = filedialog.asksaveasfilename(
-            defaultextension=".png",
-            filetypes=[("PNG files", "*.png"), ("All files", "*.*")],
-        )
-
-        if file_path == "":
-            return
-
-        self.export_image_eh.invoke(file_path)

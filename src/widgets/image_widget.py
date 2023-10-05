@@ -20,10 +20,9 @@ class ImageFrame(tb.Frame):
         tb.Frame.__init__(self, parent)
         root.toolbar.toggle_eh.add(self.update_canvas_bindings)
         root.toolbar.bin_eh.add(self.binButton)
+        root.toolbar.export_eh.add(self.save_canvas_as_png)
         root.menu_controller.pencil_colour_eh.add(self.pencil_colour_set)
         root.menu_controller.pencil_size_eh.add(self.pencil_size_set)
-        root.menu_controller.export_image_eh.add(self.save_canvas_as_png)
-        self.buttonToggler = 0
 
         # basic layout
         self.root = root
@@ -70,7 +69,6 @@ class ImageFrame(tb.Frame):
         self.drawing = False
         self.prev_x = None
         self.prev_y = None
-
         self.draw_colour = "red"
         self.draw_width = 2
 
@@ -274,17 +272,16 @@ class ImageFrame(tb.Frame):
         self.canvas.unbind("<ButtonPress-1>")
         self.canvas.unbind("<ButtonRelease-1>")
         self.canvas.unbind("<B1-Motion>")
-        self.buttonToggler = toggle
 
-        if self.buttonToggler == 0:
+        if toggle == 0:
             self.canvas.bind("<ButtonPress-1>", self.mouse_down)
             self.canvas.bind("<ButtonRelease-1>", self.mouse_up)
             self.canvas.bind("<B1-Motion>", self.move)
-        elif self.buttonToggler == 1:
+        elif toggle == 1:
             self.canvas.bind("<ButtonPress-1>", self.start_drawing)
             self.canvas.bind("<B1-Motion>", self.draw)
             self.canvas.bind("<ButtonRelease-1>", self.stop_drawing)
-        elif self.buttonToggler == 2:
+        elif toggle == 2:
             self.canvas.bind("<ButtonPress-1>", self.open_text_input)
 
     def pencil_colour_set(self, pencil_colour):
@@ -294,11 +291,15 @@ class ImageFrame(tb.Frame):
         self.draw_width = pencil_size
 
     def save_canvas_as_png(self, file_path):
-        # UNFINISHESD TODO
-        x0 = self.canvas.winfo_rootx() - self.parent.winfo_rootx()
-        y0 = self.canvas.winfo_rooty() - self.parent.winfo_rooty()
-        x1 = x0 + self.canvas.winfo_width()
-        y1 = y0 + self.canvas.winfo_height()
+        x1 = self.canvas.winfo_width()
+        y1 = self.canvas.winfo_height()
 
-        screenshot = ImageGrab.grab(bbox=(x0, y0, x1, y1))
+        screenshot = ImageGrab.grab(
+            bbox=(
+                self.canvas.winfo_rootx(),
+                self.canvas.winfo_rooty(),
+                self.canvas.winfo_rootx() + x1,
+                self.canvas.winfo_rooty() + y1,
+            )
+        )
         screenshot.save(file_path, "PNG")
