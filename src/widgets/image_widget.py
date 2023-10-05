@@ -3,9 +3,10 @@ import warnings
 
 import ttkbootstrap as tb
 from astropy import wcs
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import src.lib.render as Render
+from src.lib.tool import NavigationToolbar
 
 warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
 
@@ -56,10 +57,9 @@ class ImageFrame(tb.Frame):
         )
         self.canvas.draw()
 
-        self.toolbar = NavigationToolbar2Tk(
-            self.canvas, self.parent, pack_toolbar=False
-        )
+        self.toolbar = NavigationToolbar(self.canvas, self.parent, False)
         self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
+
         self.toolbar.update()
 
     def update_norm(self):

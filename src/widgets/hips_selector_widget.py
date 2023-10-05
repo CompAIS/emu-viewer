@@ -282,7 +282,6 @@ class HipsSelectorWidget(tk.Toplevel):
         button.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
 
     def select_survey(self):
-        print(self.selected_image_type)
         if (
             self.ra_entry.get() == ""
             or self.dec_entry.get() == ""
