@@ -12,7 +12,6 @@ class ImageController(tb.Frame):
         tb.Frame.__init__(self, parent, bootstyle="dark")
 
         self.root = root
-        self.toolbar
         self.grid(column=1, row=0, sticky=tk.NSEW)
         self.rowconfigure(0, weight=1, uniform="c")
         self.columnconfigure(0, weight=1, uniform="r")
@@ -36,7 +35,7 @@ class ImageController(tb.Frame):
             return
 
         image_id = len(self.open_windows) + 1
-        new_window = StandaloneImage(self, file_path, image_id, self.toolbar)
+        new_window = StandaloneImage(self, file_path, image_id)
         self.set_selected_image(image_id)
 
         self.open_windows.append(new_window)

@@ -15,6 +15,7 @@ class ImageFrame(tb.Frame):
     def __init__(self, parent, root, file_path):
         tb.Frame.__init__(self, parent)
         root.toolbar.toggle_eh.add(self.update_canvas_bindings)
+        root.toolbar.bin_eh.add(self.binButton)
         root.menu_controller.pencil_colour_eh.add(self.pencil_colour_set)
         root.menu_controller.pencil_size_eh.add(self.pencil_size_set)
         root.menu_controller.export_image_eh.add(self.save_canvas_as_png)
@@ -218,12 +219,8 @@ class ImageFrame(tb.Frame):
                 tags="text",
             )
 
-    def eraseButton(self):
-        print("bin method was called")
-        # Delete items with the "drawings" tag
+    def binButton(self):
         self.canvas.delete("drawings")
-
-        # Delete items with the "text" tag
         self.canvas.delete("text")
 
     def update_canvas_bindings(self, toggle):
@@ -250,17 +247,11 @@ class ImageFrame(tb.Frame):
         self.draw_width = pencil_size
 
     def save_canvas_as_png(self, file_path):
-        if self.canvas is not None:
-            # Get the coordinates of the canvas relative to its parent
-            x0 = self.canvas.winfo_rootx() - self.parent.winfo_rootx()
-            y0 = self.canvas.winfo_rooty() - self.parent.winfo_rooty()
-            x1 = x0 + self.canvas.winfo_width()
-            y1 = y0 + self.canvas.winfo_height()
+        # UNFINISHESD TODO
+        x0 = self.canvas.winfo_rootx() - self.parent.winfo_rootx()
+        y0 = self.canvas.winfo_rooty() - self.parent.winfo_rooty()
+        x1 = x0 + self.canvas.winfo_width()
+        y1 = y0 + self.canvas.winfo_height()
 
-            # Capture the canvas content as an image
-            screenshot = ImageGrab.grab(bbox=(x0, y0, x1, y1))
-
-            # Save the image as PNG
-            screenshot.save(file_path, "PNG")
-        else:
-            print("No canvas widget found. Cannot save as PNG.")
+        screenshot = ImageGrab.grab(bbox=(x0, y0, x1, y1))
+        screenshot.save(file_path, "PNG")

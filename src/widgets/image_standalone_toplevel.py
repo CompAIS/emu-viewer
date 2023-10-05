@@ -5,9 +5,8 @@ from src.widgets import image_widget as iw
 
 
 class StandaloneImage(tk.Toplevel):
-    def __init__(self, parent, file_path, image_id, toolBar_controller, root):
+    def __init__(self, parent, file_path, image_id, root):
         tk.Toplevel.__init__(self, parent)
-        self.toolBar_controller = toolBar_controller
 
         file_name = os.path.basename(file_path)
         self.root = root
