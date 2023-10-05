@@ -1,4 +1,9 @@
-from src.widgets import image_table_widget, renderer_widget, statistics_widget
+from src.widgets import (
+    catalogue_widget,
+    image_table_widget,
+    renderer_widget,
+    statistics_widget,
+)
 
 
 class WidgetController:
@@ -9,10 +14,12 @@ class WidgetController:
             "Hips Survey Selector": None,
             "Image Table": None,
             "Statistics Table": None,
+            "Catalogue": None,
         }
 
         root.menu_controller.open_render_eh.add(self.open_render_widget)
         root.menu_controller.open_statistics_eh.add(self.open_statistics_widget)
+        root.menu_controller.open_catalogue_eh.add(self.open_catalogue_widget)
 
         root.menu_controller.open_image_table_eh.add(self.open_image_table_widget)
 
@@ -35,6 +42,16 @@ class WidgetController:
         if self.open_windows["Statistics Table"] is not None:
             self.open_windows["Statistics Table"].destroy()
             self.open_windows["Statistics Table"] = None
+
+    def open_catalogue_widget(self):
+        if self.open_windows["Catalogue"] is None:
+            new_widget = catalogue_widget.CatalogueWidget(self.root)
+            self.open_windows["Catalogue"] = new_widget
+
+    def close_catalogue_widget(self):
+        if self.open_windows["Catalogue"] is not None:
+            self.open_windows["Catalogue"].destroy()
+            self.open_windows["Catalogue"] = None
 
     def open_image_table_widget(self):
         if self.open_windows["Image Table"] is None:

@@ -15,6 +15,7 @@ class MenuBar(tb.Frame):
     open_hips_eh = EventHandler()
     append_hips_eh = EventHandler()
     open_statistics_eh = EventHandler()
+    open_catalogue_eh = EventHandler()
 
     def __init__(self, parent):
         tb.Frame.__init__(self, parent)
@@ -43,6 +44,7 @@ class MenuBar(tb.Frame):
             label="Renderer Configuration", command=self.open_render
         )
         widget_menu.add_command(label="Statistics Table", command=self.open_statistics)
+        widget_menu.add_command(label="Catalogue", command=self.open_catalogue)
         widget_menu.add_command(label="Image Table", command=self.open_image_table)
 
     # Open command for option in menu
@@ -62,6 +64,9 @@ class MenuBar(tb.Frame):
 
     def open_statistics(self):
         self.open_statistics_eh.invoke()
+
+    def open_catalogue(self):
+        self.open_catalogue_eh.invoke()
 
     def open_image_table(self):
         self.open_image_table_eh.invoke()
