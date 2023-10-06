@@ -41,8 +41,6 @@ class MenuBar(tb.Frame):
         self.menu.add_cascade(label="Widget", menu=widget_menu)
 
         for widget in Widget:
-            # widget = widget.value
-
             if widget.value.dropdown is False:
                 continue
 
