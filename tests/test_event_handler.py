@@ -37,3 +37,16 @@ class EventHandlerTest(TestCase):
 
         listener_1.assert_called_once_with("foo")
         listener_2.assert_not_called()
+
+    @staticmethod
+    def test_event_handlers_remove():
+        my_handler = EventHandler()
+        listener = mock.Mock()
+
+        my_handler.add(listener)
+        my_handler.invoke()
+
+        my_handler.remove(listener)
+        my_handler.invoke()
+
+        listener.assert_called_once()

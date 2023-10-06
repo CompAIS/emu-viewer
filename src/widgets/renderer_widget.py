@@ -40,7 +40,7 @@ class RendererWidget(BaseWidget):
             self.selected_scaling_option = scaling_options[0]
             self.selected_colour_map_option = colour_map_options[0]
         else:
-            self.selected_scaling_option = scaling_options[0]
+            self.selected_scaling_option = self.selected_image.stretch
             self.selected_colour_map_option = self.selected_image.colour_map
 
         self.histogram()
@@ -236,3 +236,8 @@ class RendererWidget(BaseWidget):
             return False
 
         return True
+
+    def close(self):
+        self.root.image_controller.selected_image_eh.remove(self.update_render_values)
+
+        super().close()

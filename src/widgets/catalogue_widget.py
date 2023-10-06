@@ -5,14 +5,15 @@ import ttkbootstrap as tb
 from ttkbootstrap.tableview import Tableview
 
 import src.lib.catalogue_handler as catalogue_handler
+from src.widgets.base_widget import BaseWidget
 
 
-class CatalogueWidget(tk.Toplevel):
+class CatalogueWidget(BaseWidget):
     label = "Catalogue"
     dropdown = True
 
     def __init__(self, root):
-        tk.Toplevel.__init__(self, root)
+        BaseWidget.__init__(self, root)
         self.geometry("800x400")
 
         self.grid_rowconfigure(0, weight=0)
