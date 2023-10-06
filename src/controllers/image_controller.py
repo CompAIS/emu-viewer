@@ -1,5 +1,6 @@
 import os
 import tkinter as tk
+from tkinter import messagebox
 
 import ttkbootstrap as tb
 
@@ -34,6 +35,12 @@ class ImageController(tb.Frame):
         self.fits_image_data = {}
 
     def open_image(self, file_path):
+        t = "You are opening another Image. Changes made will reset. Do you want to continue?"
+        if self.get_selected_image() is not None and not messagebox.askyesno(
+            title="Confirmation", message=t
+        ):
+            return
+
         self.close_windows()
 
         image_data, image_data_header = Fits_handler.open_fits_file(file_path)
