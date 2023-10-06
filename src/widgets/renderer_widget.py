@@ -214,8 +214,13 @@ class RendererWidget(BaseWidget):
             self.root.update()
 
     def update_render_values(self, image):
-        self.update_selected_scaling(image.stretch)
-        self.update_selected_colour_map(image.colour_map)
+        if image is None:
+            self.selected_scaling_option = scaling_options[0]
+            self.selected_colour_map_option = colour_map_options[0]
+        else:
+            self.update_selected_scaling(image.stretch)
+            self.update_selected_colour_map(image.colour_map)
+
         self.root.update()
 
     def update_selected_scaling(self, option):
