@@ -6,14 +6,11 @@ from src.widgets import tool_bar as tool_bar
 
 
 class StandaloneImage(tk.Toplevel):
-    def __init__(
-        self, parent, root, image_data, image_data_header, file_name, image_id
-    ):
+    def __init__(self, parent, root, image_data, image_data_header, file_name):
         tk.Toplevel.__init__(self, root)
 
         self.parent = parent
         self.root = root
-        self.image_id = image_id
 
         self.title(file_name)
         self.geometry("800x600")
@@ -40,4 +37,4 @@ class StandaloneImage(tk.Toplevel):
         )
 
     def handle_focus(self, event):
-        self.parent.set_selected_image(self.image_id)
+        self.parent.set_selected_image(self)
