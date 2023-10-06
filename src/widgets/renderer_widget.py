@@ -92,10 +92,6 @@ class RendererWidget(BaseWidget):
 
         # get fits data
         image_data = self.selected_image.fits_file[0].data.squeeze()
-        """ Note, unsure whether this is the correct data to plot. The data we need to graph in the histogram is the Jy/Beam which is measure of flux density.
-            Referring to the astropy documentation there should be a header in the fits file called photflam however I was unable to find this under any of the HDUs.
-            Possibly need to consult with Kieran if there is another way to calculate, or if the data is there how it can be recieved.
-        """
 
         # create histogram
         plt.figure()
@@ -103,13 +99,8 @@ class RendererWidget(BaseWidget):
         plt.xlabel("Value")
         plt.ylabel("Frequency")
         plt.title("Histogram")
-        min_y = 0  # Adjust this value as needed
-        max_y = 100000  # Adjust this value as needed
-        plt.ylim(min_y, max_y)
-        min_x = 0  # Adjust this value as needed
-        max_x = 1000  # Adjust this value as needed
-        plt.xlim(min_x, max_x)
-
+        plt.yscale("log")
+        
         plt.show()
 
         self.histogram_canvas.update()
