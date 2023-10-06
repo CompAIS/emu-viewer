@@ -1,7 +1,9 @@
+from functools import partial
 from tkinter import filedialog
 
 import ttkbootstrap as tb
 
+from src.controllers.widget_controller import Widget
 from src.lib.event_handler import EventHandler
 from src.widgets.hips_selector_widget import HipsSelectorWidget
 
@@ -9,13 +11,10 @@ from src.widgets.hips_selector_widget import HipsSelectorWidget
 # Create Menu bar for tkinter window
 class MenuBar(tb.Frame):
     open_file_eh = EventHandler()
-    open_image_table_eh = EventHandler()
-    open_render_eh = EventHandler()
     append_image_eh = EventHandler()
     open_hips_eh = EventHandler()
     append_hips_eh = EventHandler()
-    open_statistics_eh = EventHandler()
-    open_catalogue_eh = EventHandler()
+    open_widget_eh = EventHandler()
 
     def __init__(self, parent):
         tb.Frame.__init__(self, parent)
@@ -40,12 +39,17 @@ class MenuBar(tb.Frame):
     def widget_menu_creation(self):
         widget_menu = tb.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label="Widget", menu=widget_menu)
-        widget_menu.add_command(
-            label="Renderer Configuration", command=self.open_render
-        )
-        widget_menu.add_command(label="Statistics Table", command=self.open_statistics)
-        widget_menu.add_command(label="Catalogue", command=self.open_catalogue)
-        widget_menu.add_command(label="Image Table", command=self.open_image_table)
+
+        for widget in Widget:
+            widget = widget.value
+
+            if widget.dropdown is False:
+                continue
+
+            widget_menu.add_command(
+                label=widget.label,
+                command=partial(self.open_widget, widget),
+            )
 
     # Open command for option in menu
     def open_file(self):
@@ -59,17 +63,8 @@ class MenuBar(tb.Frame):
 
         self.open_file_eh.invoke(file_name)
 
-    def open_render(self):
-        self.open_render_eh.invoke()
-
-    def open_statistics(self):
-        self.open_statistics_eh.invoke()
-
-    def open_catalogue(self):
-        self.open_catalogue_eh.invoke()
-
-    def open_image_table(self):
-        self.open_image_table_eh.invoke()
+    def open_widget(self, widget):
+        self.open_widget_eh.invoke(widget)
 
     def append_image(self):
         file_name = filedialog.askopenfilename(
@@ -83,7 +78,7 @@ class MenuBar(tb.Frame):
         self.append_image_eh.invoke(file_name)
 
     def open_hips(self):
-        hips_selector = HipsSelectorWidget(self, self.parent)
+        hips_selector = HipsSelectorWidget(self)
         self.parent.wait_window(hips_selector)
 
         hips_survey = hips_selector.hips_survey
@@ -98,7 +93,7 @@ class MenuBar(tb.Frame):
         self.open_hips_eh.invoke(hips_survey)
 
     def append_hips(self):
-        hips_selector = HipsSelectorWidget(self, self.parent)
+        hips_selector = HipsSelectorWidget(self)
         self.parent.wait_window(hips_selector)
 
         hips_survey = hips_selector.hips_survey

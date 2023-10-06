@@ -3,24 +3,18 @@ from tkinter import ttk
 
 import ttkbootstrap as tb
 
+from src.widgets.base_widget import BaseWidget
 
-class ImageTableWidget(tk.Toplevel):
-    _instance = None
 
-    def __new__(cls, root):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
+class ImageTableWidget(BaseWidget):
+    label = "Image Table"
+    dropdown = True
 
     def __init__(self, root):
-        tk.Toplevel.__init__(self, root)
-        self.title("Image Table")
-        self.root = root
-        self.resizable(0, 0)
+        BaseWidget.__init__(self, root)
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
-        # self.image_present = False
 
         self.image_num = 0  # Initialize the image number
 
@@ -29,10 +23,6 @@ class ImageTableWidget(tk.Toplevel):
         self.open_images = self.root.image_controller.get_images()
 
         self.image_table()  # Create the image table widget
-
-        self.protocol(
-            "WM_DELETE_WINDOW", self.root.widget_controller.close_image_table_widget
-        )
 
     def image_table(self):
         table = tb.Frame(self, bootstyle="light")
@@ -58,18 +48,12 @@ class ImageTableWidget(tk.Toplevel):
         # Extract the file name from the image_path
         self.tree.insert("", "end", values=(self.image_num, image_name, "", ""))
 
-    # def check_image_open(self):
-    # return self.image_present
-
     def remove_image(self):
         # if self.check_image_open():
         selected_item = self.tree.selection()
         if selected_item:
             self.tree.delete(selected_item)
             self.update_image_numbers()
-
-    # else:
-    # tk.messagebox.showinfo("No Open Images", "There are no open images to remove.")
 
     def update_image_numbers(self):
         for i, item in enumerate(self.tree.get_children()):
@@ -84,20 +68,3 @@ class ImageTableWidget(tk.Toplevel):
             self.add_image(image.file_name)
 
         self.root.update()
-
-
-if __name__ == "__main__":
-    root = tk.Tk()
-
-    # Example: Create the ImageTableWidget
-    image_table_widget = ImageTableWidget(root)
-
-    # Example: Add images
-    # image_table_widget.add_image("C:/Users/ayman/Downloads/Optical_r.fits")
-    # image_table_widget.add_image("path/to/Image2.png")
-    # image_table_widget.add_image("path/to/Image3.png")
-
-    # Example: Remove an image
-    # image_table_widget.remove_image()
-
-    root.mainloop()

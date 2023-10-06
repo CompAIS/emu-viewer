@@ -8,19 +8,16 @@ import src.lib.catalogue_handler as catalogue_handler
 
 
 class CatalogueWidget(tk.Toplevel):
+    label = "Catalogue"
+    dropdown = True
+
     def __init__(self, root):
         tk.Toplevel.__init__(self, root)
-        self.title("Catalogue")
         self.geometry("800x400")
-        self.root = root
 
         self.grid_rowconfigure(0, weight=0)
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
-
-        self.protocol(
-            "WM_DELETE_WINDOW", self.root.widget_controller.close_catalogue_widget
-        )
 
         button = tb.Button(
             self,

@@ -4,14 +4,15 @@ from tkinter import ttk
 
 import ttkbootstrap as tb
 
+from src.widgets.base_widget import BaseWidget
 
-class StatisticsWidget(tk.Toplevel):
+
+class StatisticsWidget(BaseWidget):
+    label = "Statistics Table"
+    dropdown = True
+
     def __init__(self, root):
-        tk.Toplevel.__init__(self, root)
-        self.title("Statistics Table")
-        self.resizable(0, 0)
-        self.root = root
-
+        BaseWidget.__init__(self, root)
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
@@ -21,10 +22,6 @@ class StatisticsWidget(tk.Toplevel):
         self.open_images = self.root.image_controller.get_images()
 
         self.stats_window()
-
-        self.protocol(
-            "WM_DELETE_WINDOW", self.root.widget_controller.close_statistics_widget
-        )
 
     def stats_window(self):
         self.window = tb.Frame(self, bootstyle="light")

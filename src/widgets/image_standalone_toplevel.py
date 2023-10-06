@@ -1,6 +1,7 @@
 import tkinter as tk
 from functools import partial
 
+from src.controllers.widget_controller import Widget
 from src.widgets import image_widget as iw
 from src.widgets import tool_bar as tool_bar
 
@@ -42,15 +43,15 @@ class StandaloneImage(tk.Toplevel):
     def handle_focus(self, event):
         self.parent.set_selected_image(self.image_id)
 
-        if self.root.widget_controller.open_windows["Render Configuration"] is None:
+        if self.root.widget_controller[Widget.RENDERER] is None:
             return
 
-        self.root.widget_controller.open_windows[
-            "Render Configuration"
-        ].update_selected_scaling(self.image_frame.stretch)
+        self.root.widget_controller[Widget.RENDERER].update_selected_scaling(
+            self.image_frame.stretch
+        )
 
-        self.root.widget_controller.open_windows[
-            "Render Configuration"
-        ].update_selected_colour_map(self.image_frame.colour_map)
+        self.root.widget_controller[Widget.RENDERER].update_selected_colour_map(
+            self.image_frame.colour_map
+        )
 
         self.root.update()
