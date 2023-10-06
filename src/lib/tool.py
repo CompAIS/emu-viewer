@@ -29,12 +29,13 @@ class NavigationToolbar(NavigationToolbar2Tk):
             ),
             ("Zoom", "Zoom to rectangle\nx/y fixes axis", "zoom_to_rect", "zoom"),
             (None, None, None, None),
-            (
-                "Line",
-                "Draw line on figure",
-                f"{ASSETS_FOLDER}/line",
-                "draw_line",
-            ),
+            # TODO PX12-118 revisit
+            # (
+            #     "Line",
+            #     "Draw line on figure",
+            #     f"{ASSETS_FOLDER}/line",
+            #     "draw_line",
+            # ),
             (None, None, None, None),
             ("Save", "Save the figure", "filesave", "save_figure"),
         )
