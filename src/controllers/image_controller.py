@@ -116,6 +116,9 @@ class ImageController(tb.Frame):
         return self.open_windows[self.selected_image - 1].image_frame
 
     def get_images(self):
+        if self.main_image is None:
+            return []
+
         images = [self.main_image]
         for w in self.open_windows:
             images.append(w.image_frame)
