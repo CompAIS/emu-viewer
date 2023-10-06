@@ -40,11 +40,13 @@ class RendererWidget(BaseWidget):
             self.selected_scaling_option = scaling_options[0]
             self.selected_colour_map_option = colour_map_options[0]
         else:
-            self.selected_scaling_option = scaling_options[0]
+            self.selected_scaling_option = self.selected_image.stretch
             self.selected_colour_map_option = self.selected_image.colour_map
 
         self.histogram()
         self.render_options()
+
+        self.root.image_controller.selected_image_eh.add(self.update_render_values)
 
     def histogram(self):
         frame = tb.Frame(self, bootstyle="light")
@@ -211,6 +213,16 @@ class RendererWidget(BaseWidget):
             self.selected_image.update_image_render()
             self.root.update()
 
+    def update_render_values(self, image):
+        if image is None:
+            self.selected_scaling_option = scaling_options[0]
+            self.selected_colour_map_option = colour_map_options[0]
+        else:
+            self.update_selected_scaling(image.stretch)
+            self.update_selected_colour_map(image.colour_map)
+
+        self.root.update()
+
     def update_selected_scaling(self, option):
         self.selected_scaling_option = option
         self.scaling_dropdown["text"] = option
@@ -220,7 +232,12 @@ class RendererWidget(BaseWidget):
         self.colour_map_dropdown["text"] = option
 
     def check_if_image_selected(self):
-        if self.selected_image is None:
+        if self.root.image_controller.get_selected_image() is None:
             return False
 
         return True
+
+    def close(self):
+        self.root.image_controller.selected_image_eh.remove(self.update_render_values)
+
+        super().close()

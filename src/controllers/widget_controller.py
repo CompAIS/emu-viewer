@@ -31,15 +31,12 @@ class WidgetController:
     def open_widget(self, widget):
         if widget not in self.open_windows:
             self.open_windows[widget] = widget.value(self.root)
-
-            self.open_windows[widget].protocol(
-                "WM_DELETE_WINDOW",
-                partial(self.close_widget, widget),
+            self.open_windows[widget].on_close_eh.add(
+                partial(self.close_widget, widget)
             )
 
     def close_widget(self, widget):
         if widget in self.open_windows:
-            self.open_windows[widget].destroy()
             del self.open_windows[widget]
 
     def __getitem__(self, widget):

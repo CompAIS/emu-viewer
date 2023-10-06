@@ -1,4 +1,7 @@
 import tkinter as tk
+from functools import partial
+
+from src.lib.event_handler import EventHandler
 
 
 class BaseWidget(tk.Toplevel):
@@ -19,5 +22,13 @@ class BaseWidget(tk.Toplevel):
         self.title(self.__class__.label)
         self.resizable(False, False)
 
+        self.on_close_eh = EventHandler()
+
+        self.protocol(
+            "WM_DELETE_WINDOW",
+            partial(self.close),
+        )
+
     def close(self):
-        self.root.widget_controller.close_widget(self.__class__)
+        self.on_close_eh.invoke()
+        self.destroy()
