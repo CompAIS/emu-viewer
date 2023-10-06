@@ -4,7 +4,6 @@ from src.controllers import image_controller as ic
 from src.controllers import widget_controller as wc
 from src.widgets import menu_bar as menu_bar
 from src.widgets import tool_bar as tool_bar
-from src.widgets.image_table_widget import ImageTableWidget
 
 
 # Create Main Tkinter Window
@@ -22,9 +21,7 @@ class MainWindow(tb.Window):
 
         self.toolbar = tool_bar.ToolBar(self)
 
-        self.image_table_widget = ImageTableWidget(self)
-
-        self.image_controller = ic.ImageController(self, self.image_table_widget)
+        self.image_controller = ic.ImageController(self, self)
         self.widget_controller = wc.WidgetController(self)
 
         self.config(menu=self.menu_controller.menu)

@@ -9,13 +9,12 @@ from src.widgets import image_widget as iw
 from src.widgets.image_standalone_toplevel import StandaloneImage
 
 
+# Create Image Controller Frame
 class ImageController(tb.Frame):
-    def __init__(self, parent, image_table_widget=None):
-        super().__init__(parent, bootstyle="dark")
+    def __init__(self, parent, root):
+        tb.Frame.__init__(self, parent, bootstyle="dark")
 
-        self.root = parent
-        self.image_table_widget = image_table_widget
-
+        self.root = root
         self.grid(column=1, row=0, sticky=tk.NSEW)
         self.rowconfigure(0, weight=1, uniform="c")
         self.columnconfigure(0, weight=1, uniform="r")
@@ -45,9 +44,7 @@ class ImageController(tb.Frame):
             self, self.root, image_data, image_data_header, file_name
         )
         self.set_selected_image(0)
-
-        # Add the opened image to the Image Table if it exists
-        self.add_image_to_table(file_path)
+        self.update_image_table()
 
     def append_image(self, file_path):
         if self.main_image is None:
@@ -72,6 +69,7 @@ class ImageController(tb.Frame):
         self.set_selected_image(image_id)
 
         self.open_windows.append(new_window)
+        self.update_image_table()
 
     def open_hips(self, hips_survey):
         self.close_windows()
@@ -96,9 +94,6 @@ class ImageController(tb.Frame):
             self, self.root, image_data, None, hips_survey.survey, image_id
         )
         self.set_selected_image(image_id)
-
-        # Add the opened image to the Image Table if it exists
-        self.add_image_to_table(file_path)
 
         self.open_windows.append(new_window)
 
@@ -153,3 +148,9 @@ class ImageController(tb.Frame):
             return True
 
         return False
+
+    def update_image_table(self):
+        if self.root.widget_controller.open_windows["Image Table"] is None:
+            return
+
+        self.root.widget_controller.open_windows["Image Table"].update_images()
