@@ -41,13 +41,13 @@ class MenuBar(tb.Frame):
         self.menu.add_cascade(label="Widget", menu=widget_menu)
 
         for widget in Widget:
-            widget = widget.value
+            # widget = widget.value
 
-            if widget.dropdown is False:
+            if widget.value.dropdown is False:
                 continue
 
             widget_menu.add_command(
-                label=widget.label,
+                label=widget.value.label,
                 command=partial(self.open_widget, widget),
             )
 
