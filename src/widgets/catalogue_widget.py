@@ -13,7 +13,7 @@ class CatalogueWidget(BaseWidget):
     dropdown = True
 
     def __init__(self, root):
-        BaseWidget.__init__(self, root)
+        super().__init__(root)
         self.geometry("800x400")
 
         self.grid_rowconfigure(0, weight=0)

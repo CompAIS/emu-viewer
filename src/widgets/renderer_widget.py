@@ -33,7 +33,7 @@ class RendererWidget(BaseWidget):
     dropdown = True
 
     def __init__(self, root):
-        BaseWidget.__init__(self, root)
+        super().__init__(root)
         self.selected_image = self.root.image_controller.get_selected_image()
 
         if self.selected_image is None:

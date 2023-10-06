@@ -40,7 +40,7 @@ class HipsSelectorWidget(BaseWidget):
     dropdown = False
 
     def __init__(self, root):
-        BaseWidget.__init__(self, root)
+        super().__init__(root)
         self.selected_projection = ""
         self.selected_hips_survey = ""
         self.selected_image_type = ""

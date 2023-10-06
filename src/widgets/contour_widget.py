@@ -6,4 +6,4 @@ class ContourWidget(BaseWidget):
     dropdown = True
 
     def __init__(self, root):
-        BaseWidget.__init__(self, root)
+        super().__init__(root)
