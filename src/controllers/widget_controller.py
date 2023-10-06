@@ -29,18 +29,18 @@ class WidgetController:
         root.menu_controller.open_widget_eh.add(self.open_widget)
 
     def open_widget(self, widget):
-        if widget.label not in self.open_windows:
-            self.open_windows[widget.label] = widget(self.root)
+        if widget not in self.open_windows:
+            self.open_windows[widget] = widget.value(self.root)
 
-            self.open_windows[widget.label].protocol(
+            self.open_windows[widget].protocol(
                 "WM_DELETE_WINDOW",
                 partial(self.close_widget, widget),
             )
 
     def close_widget(self, widget):
-        if widget.label in self.open_windows:
-            self.open_windows[widget.label].destroy()
-            self.open_windows[widget.label] = None
+        if widget in self.open_windows:
+            self.open_windows[widget].destroy()
+            self.open_windows[widget] = None
 
     def __getitem__(self, widget):
-        return self.open_windows.get(widget.value)
+        return self.open_windows.get(widget)
