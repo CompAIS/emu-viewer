@@ -7,10 +7,7 @@ class BaseWidget(tk.Toplevel):
     label = None
     dropdown = None
 
-    def __init__(
-        self,
-        root,
-    ):
+    def __init__(self, root):
         tk.Toplevel.__init__(self, root)
         self.root = root
 
