@@ -44,6 +44,7 @@ class ImageController(tb.Frame):
             self, self.root, image_data, image_data_header, file_name
         )
         self.set_selected_image(0)
+        self.update_image_table()
 
     def append_image(self, file_path):
         if self.main_image is None:
@@ -68,6 +69,7 @@ class ImageController(tb.Frame):
         self.set_selected_image(image_id)
 
         self.open_windows.append(new_window)
+        self.update_image_table()
 
     def open_hips(self, hips_survey):
         self.close_windows()
@@ -146,3 +148,9 @@ class ImageController(tb.Frame):
             return True
 
         return False
+
+    def update_image_table(self):
+        if self.root.widget_controller.open_windows["Image Table"] is None:
+            return
+
+        self.root.widget_controller.open_windows["Image Table"].update_images()
