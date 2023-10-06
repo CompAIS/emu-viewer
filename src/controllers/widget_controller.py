@@ -40,7 +40,7 @@ class WidgetController:
     def close_widget(self, widget):
         if widget in self.open_windows:
             self.open_windows[widget].destroy()
-            self.open_windows[widget] = None
+            del self.open_windows[widget]
 
     def __getitem__(self, widget):
         return self.open_windows.get(widget)
