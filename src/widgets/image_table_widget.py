@@ -2,12 +2,15 @@ import tkinter as tk
 
 import ttkbootstrap as tb
 
+from src.widgets.base_widget import BaseWidget
 
-class ImageTableWidget(tk.Toplevel):
+
+class ImageTableWidget(BaseWidget):
+    label = "Image Table"
+    dropdown = True
+
     def __init__(self, root):
-        tk.Toplevel.__init__(self, root)
-        self.title("Image Table")
-        self.geometry("500x250")
+        BaseWidget.__init__(self, root)
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)

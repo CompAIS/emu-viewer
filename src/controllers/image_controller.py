@@ -5,6 +5,7 @@ import ttkbootstrap as tb
 
 import src.lib.fits_handler as Fits_handler
 import src.lib.hips_handler as Hips_handler
+from src.controllers.widget_controller import Widget
 from src.widgets import image_widget as iw
 from src.widgets.image_standalone_toplevel import StandaloneImage
 
@@ -125,19 +126,19 @@ class ImageController(tb.Frame):
         if self.selected_image != -1:
             self.set_selected_image(0)
 
-        if self.root.widget_controller.open_windows["Render Configuration"] is None:
+        if self.root.widget_controller[Widget.RENDERER] is None:
             return
 
         if self.selected_image == -1:
             return
 
-        self.root.widget_controller.open_windows[
-            "Render Configuration"
-        ].update_selected_scaling(self.main_image.stretch)
+        self.root.widget_controller[Widget.RENDERER].update_selected_scaling(
+            self.main_image.stretch
+        )
 
-        self.root.widget_controller.open_windows[
-            "Render Configuration"
-        ].update_selected_colour_map(self.main_image.colour_map)
+        self.root.widget_controller[Widget.RENDERER].update_selected_colour_map(
+            self.main_image.colour_map
+        )
 
         self.root.update()
 

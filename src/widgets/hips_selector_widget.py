@@ -4,6 +4,7 @@ from functools import partial
 import ttkbootstrap as tb
 
 from src.lib.hips_handler import HipsSurvey
+from src.widgets.base_widget import BaseWidget
 
 projection_options = ["TAN", "ARC", "AIT"]
 
@@ -34,15 +35,12 @@ xray_survey_options = ["ov-gso/P/RASS"]
 image_type_options = ["fits", "png", "jpg"]
 
 
-class HipsSelectorWidget(tk.Toplevel):
-    def __init__(self, parent, root):
-        tk.Toplevel.__init__(self, root)
-        self.parent = parent
-        self.root = root
+class HipsSelectorWidget(BaseWidget):
+    label = "Hips Survey Selector"
+    dropdown = False
 
-        self.title("Hips Survey Selector")
-        self.resizable(0, 0)
-
+    def __init__(self, root):
+        BaseWidget.__init__(self, root)
         self.selected_projection = ""
         self.selected_hips_survey = ""
         self.selected_image_type = ""
@@ -50,8 +48,6 @@ class HipsSelectorWidget(tk.Toplevel):
         self.hips_survey = HipsSurvey()
 
         self.setup()
-
-        self.protocol("WM_DELETE_WINDOW", self.close_without_select)
 
         self.grab_set()
 
@@ -299,7 +295,4 @@ class HipsSelectorWidget(tk.Toplevel):
         self.hips_survey.survey = self.selected_hips_survey
         self.hips_survey.image_type = self.selected_image_type
 
-        self.destroy()
-
-    def close_without_select(self):
-        self.destroy()
+        self.close()
