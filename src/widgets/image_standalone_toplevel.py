@@ -1,4 +1,5 @@
 import tkinter as tk
+from functools import partial
 
 from src.controllers.widget_controller import Widget
 from src.widgets import image_widget as iw
@@ -33,6 +34,11 @@ class StandaloneImage(tk.Toplevel):
         )
 
         self.bind("<FocusIn>", self.handle_focus)
+
+        self.protocol(
+            "WM_DELETE_WINDOW",
+            partial(self.root.image_controller.close_appended_image, self),
+        )
 
     def handle_focus(self, event):
         self.parent.set_selected_image(self.image_id)
