@@ -172,6 +172,7 @@ class ImageController(tb.Frame):
         self.open_windows.remove(image)
 
         self.set_selected_image(0)
+        self.update_image_table()
 
         self.update_stats_widget()
 
