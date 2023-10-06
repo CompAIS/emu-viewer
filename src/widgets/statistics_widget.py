@@ -18,9 +18,7 @@ class StatisticsWidget(tk.Toplevel):
         self.image_dropdown = None
         self.selected_image = self.root.image_controller.get_selected_image()
 
-        self.open_images = [self.root.image_controller.main_image]
-        for images in self.root.image_controller.open_windows:
-            self.open_images.append(images.image_frame)
+        self.open_images = self.root.image_controller.get_images()
 
         self.stats_window()
 
@@ -71,7 +69,7 @@ class StatisticsWidget(tk.Toplevel):
         )
         self.table.heading("#0", text="Stat")
         self.table.heading("values", text="Value")
-        self.insert_row("Flux", "850")
+        # self.insert_row("Flux", "850")
 
     def insert_row(self, stat, value):
         self.table.insert("", tk.END, text=stat, values=value)
@@ -79,9 +77,7 @@ class StatisticsWidget(tk.Toplevel):
     def update_open_images(self):
         self.selected_image = self.root.image_controller.get_selected_image()
 
-        self.open_images = [self.root.image_controller.main_image]
-        for images in self.root.image_controller.open_windows:
-            self.open_images.append(images.image_frame)
+        self.open_images = self.root.image_controller.get_images()
 
         if self.image_dropdown is None:
             self.image_options(
