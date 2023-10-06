@@ -5,7 +5,6 @@ import ttkbootstrap as tb
 
 import src.lib.fits_handler as Fits_handler
 import src.lib.hips_handler as Hips_handler
-from src.controllers.widget_controller import Widget
 from src.lib.event_handler import EventHandler
 from src.widgets import image_widget as iw
 from src.widgets.image_standalone_toplevel import StandaloneImage
@@ -146,21 +145,9 @@ class ImageController(tb.Frame):
 
         return False
 
-    def update_image_table(self):
-        if self.root.widget_controller[Widget.IMAGE_TABLE] is None:
-            return
-
-        self.root.widget_controller[Widget.IMAGE_TABLE].update_images()
-
     def close_appended_image(self, image):
         image.destroy()
         self.open_windows.remove(image)
 
         self.set_selected_image(self.main_image)
         self.update_image_list_eh.invoke(self.get_selected_image(), self.get_images())
-
-    def update_stats_widget(self):
-        if self.root.widget_controller[Widget.STATISTICS] is None:
-            return
-
-        self.root.widget_controller[Widget.STATISTICS].update_open_images()
