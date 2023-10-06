@@ -3,6 +3,8 @@ from functools import partial
 
 import ttkbootstrap as tb
 
+from src.widgets.base_widget import BaseWidget
+
 scaling_options = [
     "Linear",
     "Log",
@@ -26,13 +28,12 @@ colour_map_options = [
 ]
 
 
-class RendererWidget(tk.Toplevel):
-    def __init__(self, root):
-        tk.Toplevel.__init__(self, root)
-        self.title("Render Configuration")
-        self.resizable(0, 0)
-        self.root = root
+class RendererWidget(BaseWidget):
+    label = "Renderer Configuration"
+    dropdown = True
 
+    def __init__(self, root):
+        BaseWidget.__init__(self, root)
         self.selected_image = self.root.image_controller.get_selected_image()
 
         if self.selected_image is None:
@@ -44,10 +45,6 @@ class RendererWidget(tk.Toplevel):
 
         self.histogram()
         self.render_options()
-
-        self.protocol(
-            "WM_DELETE_WINDOW", self.root.widget_controller.close_render_widget
-        )
 
     def histogram(self):
         frame = tb.Frame(self, bootstyle="light")

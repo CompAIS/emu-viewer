@@ -1,25 +1,42 @@
-from src.widgets import image_table_widget, renderer_widget
+from enum import Enum
+from functools import partial
+
+from src.widgets import (
+    contour_widget,
+    hips_selector_widget,
+    image_table_widget,
+    renderer_widget,
+)
+
+
+class Widget(Enum):
+    RENDERER = renderer_widget.RendererWidget
+    IMAGE_TABLE = image_table_widget.ImageTableWidget
+    CONTOURS = contour_widget.ContourWidget
+
+    HIPS_SELECT = hips_selector_widget.HipsSelectorWidget
 
 
 class WidgetController:
     def __init__(self, root):
         self.root = root
-        self.open_windows = {"Render Configuration": None, "Hips Survey Selector": None}
+        self.open_windows = {}
 
-        root.menu_controller.open_render_eh.add(self.open_render_widget)
+        root.menu_controller.open_widget_eh.add(self.open_widget)
 
-        root.menu_controller.open_image_table_eh.add(self.open_image_table_widget)
+    def open_widget(self, widget):
+        if widget.label not in self.open_windows:
+            self.open_windows[widget.label] = widget(self.root)
 
-    def open_render_widget(self):
-        if self.open_windows["Render Configuration"] is None:
-            new_render_widget = renderer_widget.RendererWidget(self.root)
-            self.open_windows["Render Configuration"] = new_render_widget
+            self.open_windows[widget.label].protocol(
+                "WM_DELETE_WINDOW",
+                partial(self.close_widget, widget),
+            )
 
-    def close_render_widget(self):
-        if self.open_windows["Render Configuration"] is not None:
-            self.open_windows["Render Configuration"].destroy()
-            self.open_windows["Render Configuration"] = None
+    def close_widget(self, widget):
+        if widget.label in self.open_windows:
+            self.open_windows[widget.label].destroy()
+            self.open_windows[widget.label] = None
 
-    def open_image_table_widget(self):
-        new_image_table = image_table_widget.ImageTableWidget(self.root)
-        self.open_windows.append(new_image_table)
+    def __getitem__(self, widget):
+        return self.open_windows.get(widget.value)
