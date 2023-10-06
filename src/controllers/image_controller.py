@@ -159,10 +159,10 @@ class ImageController(tb.Frame):
         return False
 
     def update_image_table(self):
-        if self.root.widget_controller.open_windows["Image Table"] is None:
+        if self.root.widget_controller[Widget.IMAGE_TABLE] is None:
             return
 
-        self.root.widget_controller.open_windows["Image Table"].update_images()
+        self.root.widget_controller[Widget.IMAGE_TABLE].update_images()
 
     def close_appended_image(self, image):
         image.destroy()
@@ -173,9 +173,7 @@ class ImageController(tb.Frame):
         self.update_stats_widget()
 
     def update_stats_widget(self):
-        if self.root.widget_controller.open_windows["Statistics Table"] is None:
+        if self.root.widget_controller[Widget.STATISTICS] is None:
             return
 
-        self.root.widget_controller.open_windows[
-            "Statistics Table"
-        ].update_open_images()
+        self.root.widget_controller[Widget.STATISTICS].update_open_images()
