@@ -46,6 +46,8 @@ class RendererWidget(BaseWidget):
         self.histogram()
         self.render_options()
 
+        self.root.image_controller.selected_image_eh.add(self.update_render_values)
+
     def histogram(self):
         frame = tb.Frame(self, bootstyle="light")
         frame.grid(column=0, row=0, sticky=tk.NSEW, padx=10, pady=10)
@@ -211,6 +213,11 @@ class RendererWidget(BaseWidget):
             self.selected_image.update_image_render()
             self.root.update()
 
+    def update_render_values(self, image):
+        self.update_selected_scaling(image.stretch)
+        self.update_selected_colour_map(image.colour_map)
+        self.root.update()
+
     def update_selected_scaling(self, option):
         self.selected_scaling_option = option
         self.scaling_dropdown["text"] = option
@@ -220,7 +227,7 @@ class RendererWidget(BaseWidget):
         self.colour_map_dropdown["text"] = option
 
     def check_if_image_selected(self):
-        if self.selected_image is None:
+        if self.root.image_controller.get_selected_image() is None:
             return False
 
         return True

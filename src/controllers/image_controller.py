@@ -6,6 +6,7 @@ import ttkbootstrap as tb
 import src.lib.fits_handler as Fits_handler
 import src.lib.hips_handler as Hips_handler
 from src.controllers.widget_controller import Widget
+from src.lib.event_handler import EventHandler
 from src.widgets import image_widget as iw
 from src.widgets.image_standalone_toplevel import StandaloneImage
 
@@ -32,6 +33,8 @@ class ImageController(tb.Frame):
         self.open_windows = []
 
         self.fits_image_data = {}
+
+        self.selected_image_eh = EventHandler()
 
     def open_image(self, file_path):
         self.close_windows()
@@ -69,9 +72,8 @@ class ImageController(tb.Frame):
         new_window = StandaloneImage(
             self, self.root, image_data, image_data_header, file_name, image_id
         )
-        self.set_selected_image(image_id)
-
         self.open_windows.append(new_window)
+        self.set_selected_image(image_id)
         self.update_image_table()
 
         self.update_stats_widget()
@@ -128,6 +130,8 @@ class ImageController(tb.Frame):
     def set_selected_image(self, image):
         self.selected_image = image
 
+        self.selected_image_eh.invoke(self.get_selected_image())
+
     def close_windows(self):
         for window in self.open_windows:
             window.destroy()
@@ -136,24 +140,10 @@ class ImageController(tb.Frame):
         self.set_selected_image(-1)
 
     def handle_focus(self, event):
-        if self.selected_image != -1:
-            self.set_selected_image(0)
-
-        if self.root.widget_controller[Widget.RENDERER] is None:
-            return
-
         if self.selected_image == -1:
             return
 
-        self.root.widget_controller[Widget.RENDERER].update_selected_scaling(
-            self.main_image.stretch
-        )
-
-        self.root.widget_controller[Widget.RENDERER].update_selected_colour_map(
-            self.main_image.colour_map
-        )
-
-        self.root.update()
+        self.set_selected_image(0)
 
     def fits_already_open(self, file_path):
         if self.fits_image_data.get(file_path) is not None:
@@ -174,6 +164,7 @@ class ImageController(tb.Frame):
         self.set_selected_image(0)
         self.update_image_table()
 
+        self.update_image_table()
         self.update_stats_widget()
 
     def update_stats_widget(self):
