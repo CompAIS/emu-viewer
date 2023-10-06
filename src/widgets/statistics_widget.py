@@ -23,6 +23,8 @@ class StatisticsWidget(BaseWidget):
 
         self.stats_window()
 
+        self.root.image_controller.update_image_list_eh.add(self.update_open_images)
+
     def stats_window(self):
         self.window = tb.Frame(self, bootstyle="light")
         self.window.grid(column=0, row=0, sticky=tk.NSEW, padx=10, pady=10)
@@ -71,10 +73,10 @@ class StatisticsWidget(BaseWidget):
     def insert_row(self, stat, value):
         self.table.insert("", tk.END, text=stat, values=value)
 
-    def update_open_images(self):
-        self.selected_image = self.root.image_controller.get_selected_image()
+    def update_open_images(self, selected_image, image_list):
+        self.selected_image = selected_image
 
-        self.open_images = self.root.image_controller.get_images()
+        self.open_images = image_list
 
         if self.image_dropdown is None:
             self.image_options(
@@ -95,3 +97,7 @@ class StatisticsWidget(BaseWidget):
             )
 
         self.image_dropdown["menu"] = dropdown_menu
+
+    def close(self):
+        self.root.image_controller.update_image_list_eh.remove(self.update_open_images)
+        super().close()

@@ -35,6 +35,7 @@ class ImageController(tb.Frame):
         self.fits_image_data = {}
 
         self.selected_image_eh = EventHandler()
+        self.update_image_list_eh = EventHandler()
 
     def open_image(self, file_path):
         self.close_windows()
@@ -48,9 +49,8 @@ class ImageController(tb.Frame):
             self, self.root, image_data, image_data_header, file_name
         )
         self.set_selected_image(0)
-        self.update_image_table()
 
-        self.update_stats_widget()
+        self.update_image_list_eh.invoke(self.get_selected_image(), self.get_images())
 
     def append_image(self, file_path):
         if self.main_image is None:
@@ -74,9 +74,8 @@ class ImageController(tb.Frame):
         )
         self.open_windows.append(new_window)
         self.set_selected_image(image_id)
-        self.update_image_table()
 
-        self.update_stats_widget()
+        self.update_image_list_eh.invoke(self.get_selected_image(), self.get_images())
 
     def open_hips(self, hips_survey):
         self.close_windows()
@@ -88,7 +87,7 @@ class ImageController(tb.Frame):
         )
         self.set_selected_image(0)
 
-        self.update_stats_widget()
+        self.update_image_list_eh.invoke(self.get_selected_image(), self.get_images())
 
     def append_hips(self, hips_survey):
         if self.main_image is None:
@@ -102,11 +101,11 @@ class ImageController(tb.Frame):
         new_window = StandaloneImage(
             self, self.root, image_data, None, hips_survey.survey, image_id
         )
-        self.set_selected_image(image_id)
 
         self.open_windows.append(new_window)
+        self.set_selected_image(image_id)
 
-        self.update_stats_widget()
+        self.update_image_list_eh.invoke(self.get_selected_image(), self.get_images())
 
     def get_selected_image(self):
         if self.selected_image == -1:
@@ -162,10 +161,7 @@ class ImageController(tb.Frame):
         self.open_windows.remove(image)
 
         self.set_selected_image(0)
-        self.update_image_table()
-
-        self.update_image_table()
-        self.update_stats_widget()
+        self.update_image_list_eh.invoke(self.get_selected_image(), self.get_images())
 
     def update_stats_widget(self):
         if self.root.widget_controller[Widget.STATISTICS] is None:

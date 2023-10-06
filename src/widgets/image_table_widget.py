@@ -24,6 +24,8 @@ class ImageTableWidget(BaseWidget):
 
         self.image_table()  # Create the image table widget
 
+        self.root.image_controller.update_image_list_eh.add(self.update_images)
+
     def image_table(self):
         table = tb.Frame(self, bootstyle="light")
         table.grid(column=0, row=0, sticky=tk.NSEW, padx=10, pady=10)
@@ -46,9 +48,9 @@ class ImageTableWidget(BaseWidget):
     def add_image(self, image_num, image_name):
         self.tree.insert("", "end", values=(image_num, image_name, "", ""))
 
-    def update_images(self):
-        self.selected_image = self.root.image_controller.get_selected_image()
-        self.open_images = self.root.image_controller.get_images()
+    def update_images(self, selected_image, image_list):
+        self.selected_image = selected_image
+        self.open_images = image_list
 
         for item in self.tree.get_children():
             self.tree.delete(item)
@@ -57,3 +59,8 @@ class ImageTableWidget(BaseWidget):
             self.add_image(i + 1, image.file_name)
 
         self.root.update()
+
+    def close(self):
+        self.root.image_controller.update_image_list_eh.remove(self.update_images)
+
+        super().close()
