@@ -10,10 +10,11 @@ from ttkbootstrap.dialogs.colorchooser import ColorChooserDialog
 from src.lib import contour_handler
 from src.widgets.base_widget import BaseWidget
 
-BAD_MEAN_SIGMA = "The Mean or Sigma field is invalid. They must be numbers"
+BAD_MEAN_SIGMA = "The Mean or Sigma field is invalid. They must be floats."
 BAD_LEVELS = (
     'The "Levels" field is invalid. It must be a comma separated list of numbers.'
 )
+BAD_LINEWIDTH = 'The "Line Width" field is invalid. It must be a float.'
 BAD_SIGMAS = (
     'The "Sigma List" field is invalid. It must be a comma separated list of numbers.'
 )
@@ -41,6 +42,7 @@ class ContourWidget(BaseWidget):
 
         self.data_source = None
         self.line_colour = "#03fc49"
+        self.line_opacity = 0.5
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -102,14 +104,14 @@ class ContourWidget(BaseWidget):
             bootstyle="success",
             command=self.generate_levels,
         )
-        generate_button.grid(column=0, row=5, columnspan=2, padx=10, pady=(10, 20))
+        generate_button.grid(column=1, row=5, padx=10, pady=(10, 20))
 
         # Levels
         levels_label = tb.Label(self.frame, text="Levels", bootstyle="inverse-light")
         levels_label.grid(column=0, row=6, padx=10, pady=10, sticky=tk.W)
 
         self.levels_entry = tb.Entry(self.frame)
-        self.levels_entry.grid(column=1, columnspan=2, row=6, padx=10, pady=10)
+        self.levels_entry.grid(column=1, row=6, padx=10, pady=10)
 
         # Apply / Close buttons
         self.buttons = tb.Frame(self.frame, bootstyle="light")
@@ -141,19 +143,6 @@ class ContourWidget(BaseWidget):
         )
         config_label.grid(column=2, row=1, padx=10, pady=10, sticky=tk.W)
 
-        lc_label = tb.Label(self.frame, text="Line Colour", bootstyle="inverse-light")
-        lc_label.grid(column=2, row=2, padx=10, pady=10, sticky=tk.W)
-
-        size = 23
-        self.lc_button = tk.Canvas(
-            self.frame, bg=self.line_colour, width=size + 1, height=size + 1
-        )
-        self.lc_button.grid(column=3, row=2, sticky=tk.W, padx=10)
-        self.lc_rect = self.lc_button.create_rectangle(
-            0, 0, size, size, outline="black", fill=self.line_colour
-        )
-        self.lc_button.bind("<Button-1>", self.choose_line_colour)
-
         # Styling
         styling_label = tb.Label(
             self.frame,
@@ -162,6 +151,38 @@ class ContourWidget(BaseWidget):
             font=("Helvetica bold", 10),
         )
         styling_label.grid(column=2, row=3, padx=10, pady=10, sticky=tk.W)
+
+        lc_label = tb.Label(self.frame, text="Line Colour", bootstyle="inverse-light")
+        lc_label.grid(column=2, row=4, padx=10, pady=10, sticky=tk.W)
+
+        size = 23
+        self.lc_button = tk.Canvas(
+            self.frame, bg=self.line_colour, width=size + 1, height=size + 1
+        )
+        self.lc_button.grid(column=3, row=4, sticky=tk.W, padx=10)
+        self.lc_rect = self.lc_button.create_rectangle(
+            0, 0, size, size, outline="black", fill=self.line_colour
+        )
+        self.lc_button.bind("<Button-1>", self.set_line_colour)
+
+        self.lo_label = tb.Label(
+            self.frame, text="Line Opacity (0.50)", bootstyle="inverse-light"
+        )
+        self.lo_label.grid(column=2, row=5, padx=10, pady=10, sticky=tk.W)
+
+        self.lo_slider = tb.Scale(
+            self.frame, command=self.set_line_opacity, value=self.line_opacity
+        )
+        self.lo_slider.grid(column=3, row=5, padx=10, pady=10, sticky=tk.W)
+
+        self.lw_label = tb.Label(
+            self.frame, text="Line Width", bootstyle="inverse-light"
+        )
+        self.lw_label.grid(column=2, row=6, padx=10, pady=10, sticky=tk.W)
+
+        self.lw_entry = tb.Entry(self.frame)
+        self.lw_entry.insert(0, 0.5)
+        self.lw_entry.grid(column=3, row=6, padx=10, pady=10, sticky=tk.W)
 
         self.update_dropdown(
             self.root.image_controller.get_selected_image(),
@@ -256,6 +277,15 @@ class ContourWidget(BaseWidget):
             messagebox.showerror(title=INVALID_INPUT, message=NO_DATA_SOURCE)
             return
 
+        try:
+            line_width = float(self.lw_entry.get())
+        except ValueError:
+            messagebox.showerror(
+                title=INVALID_INPUT,
+                message=BAD_LINEWIDTH,
+            )
+            return
+
         input = self.levels_entry.get().strip()
 
         # if the user input is bad spit out a warning and exit early
@@ -266,12 +296,17 @@ class ContourWidget(BaseWidget):
             )
             return
 
-        self.data_source.update_contours([float(x) for x in input.split(",")])
+        self.data_source.update_contours(
+            [float(x) for x in input.split(",")],
+            self.line_colour,
+            self.line_opacity,
+            line_width,
+        )
 
     def clear_contours(self):
         self.root.image_controller.get_selected_image().update_contours(None)
 
-    def choose_line_colour(self, _evt):
+    def set_line_colour(self, _evt):
         cd = ColorChooserDialog(
             initialcolor=self.line_colour, title="Choose Contour Line Colour"
         )
@@ -279,4 +314,9 @@ class ContourWidget(BaseWidget):
 
         self.line_colour = cd.result.hex
         self.lc_button.itemconfig(self.lc_rect, fill=self.line_colour)
-        self.grab_set()
+        # how to grab focus here
+
+    def set_line_opacity(self, value):
+        value = float(value)
+        self.line_opacity = value
+        self.lo_label["text"] = f"Line Opacity ({value:1.2f})"

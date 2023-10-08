@@ -64,7 +64,9 @@ def update_image_cmap(image, colour_map):
     return image
 
 
-def update_contours(fig, image_data, contour_levels, contour_set):
+def update_contours(
+    fig, image_data, contour_levels, contour_set, line_colour, line_opacity, line_width
+):
     if contour_set is not None:
         for contour in contour_set.collections:
             contour.remove()
@@ -79,7 +81,7 @@ def update_contours(fig, image_data, contour_levels, contour_set):
     return fig.axes[0].contour(
         image_data_smooth,
         levels=contour_levels,
-        colors="green",
-        alpha=0.5,
-        linewidths=0.5,
+        colors=line_colour,
+        alpha=line_opacity,
+        linewidths=line_width,
     )

@@ -78,10 +78,16 @@ class ImageFrame(tb.Frame):
         self.image = Render.update_image_cmap(self.image, self.colour_map)
         self.canvas.draw()
 
-    def update_contours(self, new_contours):
+    def update_contours(self, new_contours, line_colour, line_opacity, line_width):
         self.contour_levels = new_contours
 
         self.contour = Render.update_contours(
-            self.fig, self.image_data, self.contour_levels, self.contour
+            self.fig,
+            self.image_data,
+            self.contour_levels,
+            self.contour,
+            line_colour,
+            line_opacity,
+            line_width,
         )
         self.canvas.draw()
