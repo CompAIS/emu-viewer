@@ -3,6 +3,7 @@ import tkinter as tk
 from functools import partial
 from tkinter import messagebox
 
+import numpy as np
 import ttkbootstrap as tb
 
 from src.lib import contour_handler
@@ -53,12 +54,7 @@ class ContourWidget(BaseWidget):
             self.frame, text=NOTHING_OPEN, bootstyle="dark"
         )
         self.data_source_dropdown.grid(column=1, row=0, padx=10, pady=10)
-
         self.root.image_controller.update_image_list_eh.add(self.update_dropdown)
-        self.update_dropdown(
-            self.root.image_controller.get_selected_image(),
-            self.root.image_controller.get_images(),
-        )
 
         parameters_label = tb.Label(
             self.frame,
@@ -74,14 +70,12 @@ class ContourWidget(BaseWidget):
 
         self.mean_entry = tb.Entry(self.frame)
         self.mean_entry.grid(column=1, row=2, padx=10, pady=10)
-        self.mean_entry.insert(0, "9.87595285279187")
 
         sigma_label = tb.Label(self.frame, text="Sigma", bootstyle="inverse-light")
         sigma_label.grid(column=0, row=3, padx=10, pady=10, sticky=tk.W)
 
         self.sigma_entry = tb.Entry(self.frame)
         self.sigma_entry.grid(column=1, row=3, padx=10, pady=10)
-        self.sigma_entry.insert(0, "166.03529558173688")
 
         sigmas_label = tb.Label(
             self.frame, text="Sigma List", bootstyle="inverse-light"
@@ -90,7 +84,6 @@ class ContourWidget(BaseWidget):
 
         self.sigmas_entry = tb.Entry(self.frame)
         self.sigmas_entry.grid(column=1, row=4, padx=10, pady=10)
-        self.sigmas_entry.insert(0, "-5,5,9,13,17")
 
         # Generate Levels
         generate_button = tb.Button(
@@ -106,7 +99,6 @@ class ContourWidget(BaseWidget):
         levels_label.grid(column=0, row=6, padx=10, pady=10, sticky=tk.W)
 
         self.levels_entry = tb.Entry(self.frame)
-        self.levels_entry.insert(0, "")
         self.levels_entry.grid(column=1, columnspan=2, row=6, padx=10, pady=10)
 
         # Apply / Close buttons
@@ -130,10 +122,21 @@ class ContourWidget(BaseWidget):
         )
         self.close_button.grid(column=2, row=0, sticky=tk.SE)
 
+        self.update_dropdown(
+            self.root.image_controller.get_selected_image(),
+            self.root.image_controller.get_images(),
+        )
+
     def get_data_source(self):
         return self.data_source
 
     def set_data_source(self, image):
+        # clear inputs
+        self.mean_entry.delete(0, tk.END)
+        self.sigma_entry.delete(0, tk.END)
+        self.sigmas_entry.delete(0, tk.END)
+        self.levels_entry.delete(0, tk.END)
+
         if image is None:
             self.data_source = None
             self.data_source_dropdown["text"] = NOTHING_OPEN
@@ -141,6 +144,14 @@ class ContourWidget(BaseWidget):
 
         self.data_source = image
         self.data_source_dropdown["text"] = image.file_name
+
+        # TODO Potentially remember these between data sources so that you don't lose information?
+        # TODO I guess I'm more curious what behaviour we expect here. CARTA maintains it when switching
+        self.mean_entry.insert(0, str(np.nanmean(self.data_source.image_data)))
+        self.sigma_entry.insert(0, str(np.nanstd(self.data_source.image_data)))
+        # TODO better default? this is the default from carta
+        self.sigmas_entry.insert(0, "-5,5,9,13,17")
+        self.generate_levels()
 
     def update_dropdown(self, selected_image, image_list):
         # Always change the commands to match the current list
@@ -209,9 +220,7 @@ class ContourWidget(BaseWidget):
             )
             return
 
-        self.root.image_controller.get_selected_image().update_contours(
-            [float(x) for x in input.split(",")]
-        )
+        self.data_source.update_contours([float(x) for x in input.split(",")])
 
     def clear_contours(self):
         self.root.image_controller.get_selected_image().update_contours(None)
