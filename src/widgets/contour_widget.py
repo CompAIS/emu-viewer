@@ -10,11 +10,11 @@ from ttkbootstrap.dialogs.colorchooser import ColorChooserDialog
 from src.lib import contour_handler
 from src.widgets.base_widget import BaseWidget
 
-BAD_MEAN_SIGMA = "The Mean or Sigma field is invalid. They must be floats."
+BAD_MEAN_SIGMA = 'One of the "Mean" or "Sigma" fields is invalid. They must be floats.'
 BAD_LEVELS = (
     'The "Levels" field is invalid. It must be a comma separated list of numbers.'
 )
-BAD_LINEWIDTH = 'The "Line Width" field is invalid. It must be a float.'
+BAD_LINEWIDTH_GAUSSIAN = 'One of the "Line Width" or "Gaussian Factor" fields is invalid. They must be floats.'
 BAD_SIGMAS = (
     'The "Sigma List" field is invalid. It must be a comma separated list of numbers.'
 )
@@ -142,6 +142,15 @@ class ContourWidget(BaseWidget):
             font=("Helvetica bold", 10),
         )
         config_label.grid(column=2, row=1, padx=10, pady=10, sticky=tk.W)
+
+        gaussian_label = tb.Label(
+            self.frame, text="Gaussian Factor", bootstyle="inverse-light"
+        )
+        gaussian_label.grid(column=2, row=2, padx=10, pady=10, sticky=tk.W)
+
+        self.gaussian_entry = tb.Entry(self.frame)
+        self.gaussian_entry.grid(column=3, row=2, padx=10, pady=10, sticky=tk.W)
+        self.gaussian_entry.insert(0, "4")
 
         # Styling
         styling_label = tb.Label(
@@ -279,10 +288,11 @@ class ContourWidget(BaseWidget):
 
         try:
             line_width = float(self.lw_entry.get())
+            gaussian_factor = float(self.gaussian_entry.get())
         except ValueError:
             messagebox.showerror(
                 title=INVALID_INPUT,
-                message=BAD_LINEWIDTH,
+                message=BAD_LINEWIDTH_GAUSSIAN,
             )
             return
 
@@ -296,15 +306,18 @@ class ContourWidget(BaseWidget):
             )
             return
 
+        # TODO Should we instead just be applying this to the selected image?
         self.data_source.update_contours(
             [float(x) for x in input.split(",")],
+            gaussian_factor,
             self.line_colour,
             self.line_opacity,
             line_width,
         )
 
     def clear_contours(self):
-        self.root.image_controller.get_selected_image().update_contours(None)
+        # TODO Should we instead just be applying this to the selected image?
+        self.data_source.clear_contours()
 
     def set_line_colour(self, _evt):
         cd = ColorChooserDialog(
