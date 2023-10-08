@@ -92,7 +92,9 @@ class ContourWidget(BaseWidget):
         self.clear_button = tb.Button(self.buttons, bootstyle="warning", text="Clear")
         self.clear_button.grid(column=0, row=0, sticky=tk.SE)
 
-        self.apply_button = tb.Button(self.buttons, bootstyle="success", text="Apply")
+        self.apply_button = tb.Button(
+            self.buttons, bootstyle="success", text="Apply", command=self.apply_contours
+        )
         self.apply_button.grid(column=1, row=0, sticky=tk.SE)
 
         self.close_button = tb.Button(
@@ -135,3 +137,15 @@ class ContourWidget(BaseWidget):
             #   or we previously had nothing selected,
             #   pick the new selected
             self.set_data_source(selected_image)
+
+    def apply_contours(self):
+        """
+        We clicked "Apply".
+        """
+
+        self.root.image_controller.get_selected_image().contour_levels = [
+            158.91,
+            314.95,
+            627.02,
+        ]
+        # self.root.image_controller.get_selected_image().update_image_render()

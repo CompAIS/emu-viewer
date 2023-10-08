@@ -34,6 +34,7 @@ class ImageFrame(tb.Frame):
         self.vmin = 0.5
         self.vmax = 99.5
         self.stretch = "Linear"
+        self.contour_levels = None
 
         self.image_wcs = wcs.WCS(self.image_data_header)
         if self.image_wcs.world_n_dim > 2:
@@ -46,6 +47,7 @@ class ImageFrame(tb.Frame):
             self.vmin,
             self.vmax,
             self.stretch,
+            self.contour_levels,
         )
 
         self.create_image()

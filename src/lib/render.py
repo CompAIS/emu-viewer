@@ -4,7 +4,7 @@ from matplotlib import ticker
 from matplotlib.figure import Figure
 
 
-def create_figure(image_data, wcs, colour_map, min, max, s):
+def create_figure(image_data, wcs, colour_map, min, max, s, contour_levels):
     fig = Figure(figsize=(5, 5), dpi=150)
     fig.patch.set_facecolor("#afbac5")
     ax = fig.add_subplot(projection=wcs)
@@ -12,6 +12,10 @@ def create_figure(image_data, wcs, colour_map, min, max, s):
     ax.tick_params(axis="both", which="major", labelsize=5)
     ax.set_xlabel("Ra")
     ax.set_ylabel("Dec")
+
+    if contour_levels is not None:
+        print("I'm trying to contour!")
+        ax.contour(image_data, levels=contour_levels, colors="white", alpha=0.5)
 
     stretch = None
 
