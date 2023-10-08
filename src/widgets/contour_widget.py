@@ -5,6 +5,7 @@ from tkinter import messagebox
 
 import ttkbootstrap as tb
 
+from src.lib import contour_handler
 from src.widgets.base_widget import BaseWidget
 
 NOTHING_OPEN = "No image open"
@@ -16,7 +17,7 @@ def validate_list_entry(text):
 
     Specifically to be used for sigma list and level fields.
     """
-    r = re.search("^(\d+(\.\d+|))(,\d+(\.\d+|))*$", text)
+    r = re.search(r"^(-?\d+(\.\d+|))(,-?\d+(\.\d+|))*$", text)
     return r is not None
 
 
@@ -67,25 +68,33 @@ class ContourWidget(BaseWidget):
         mean_label = tb.Label(self.frame, text="Mean", bootstyle="inverse-light")
         mean_label.grid(column=0, row=2, padx=10, pady=10, sticky=tk.W)
 
-        mean_entry = tb.Entry(self.frame)
-        mean_entry.grid(column=1, row=2, padx=10, pady=10)
+        self.mean_entry = tb.Entry(self.frame)
+        self.mean_entry.grid(column=1, row=2, padx=10, pady=10)
+        self.mean_entry.insert(0, "9.87595285279187")
 
         sigma_label = tb.Label(self.frame, text="Sigma", bootstyle="inverse-light")
         sigma_label.grid(column=0, row=3, padx=10, pady=10, sticky=tk.W)
 
-        sigma_entry = tb.Entry(self.frame)
-        sigma_entry.grid(column=1, row=3, padx=10, pady=10)
+        self.sigma_entry = tb.Entry(self.frame)
+        self.sigma_entry.grid(column=1, row=3, padx=10, pady=10)
+        self.sigma_entry.insert(0, "166.03529558173688")
 
         sigmas_label = tb.Label(
             self.frame, text="Sigma List", bootstyle="inverse-light"
         )
         sigmas_label.grid(column=0, row=4, padx=10, pady=10, sticky=tk.W)
 
-        sigmas_entry = tb.Entry(self.frame)
-        sigmas_entry.grid(column=1, row=4, padx=10, pady=10)
+        self.sigmas_entry = tb.Entry(self.frame)
+        self.sigmas_entry.grid(column=1, row=4, padx=10, pady=10)
+        self.sigmas_entry.insert(0, "-5,5,9,13,17")
 
         # Generate Levels
-        generate_button = tb.Button(self.frame, text="Generate", bootstyle="success")
+        generate_button = tb.Button(
+            self.frame,
+            text="Generate",
+            bootstyle="success",
+            command=self.generate_levels,
+        )
         generate_button.grid(column=0, row=5, columnspan=2, padx=10, pady=(10, 20))
 
         # Levels
@@ -93,8 +102,7 @@ class ContourWidget(BaseWidget):
         levels_label.grid(column=0, row=6, padx=10, pady=10, sticky=tk.W)
 
         self.levels_entry = tb.Entry(self.frame)
-        # TODO better default text
-        self.levels_entry.insert(0, "158.91,314.95,627.02")
+        self.levels_entry.insert(0, "")
         self.levels_entry.grid(column=1, columnspan=2, row=6, padx=10, pady=10)
 
         # Apply / Close buttons
@@ -132,7 +140,7 @@ class ContourWidget(BaseWidget):
 
     def update_dropdown(self, selected_image, image_list):
         # Always change the commands to match the current list
-        self.data_source_menu = tk.Menu(self.data_source_dropdown)  # TODO set tearoff
+        self.data_source_menu = tk.Menu(self.data_source_dropdown, tearoff=0)
         self.data_source_dropdown["menu"] = self.data_source_menu
 
         selected_still_open = False
@@ -154,10 +162,48 @@ class ContourWidget(BaseWidget):
             #   pick the new selected
             self.set_data_source(selected_image)
 
+    def generate_levels(self):
+        """
+        We clicked "Generate".
+        """
+
+        if self.get_data_source() is None:
+            messagebox.showerror(
+                title="Invalid Input",
+                message="No data source is loaded.",
+            )
+            return
+
+        mean = float(self.mean_entry.get())
+        sigma = float(self.sigma_entry.get())
+        sigma_list = self.sigmas_entry.get().strip()
+
+        # if the user input is bad spit out a warning and exit early
+        if not validate_list_entry(sigma_list):
+            messagebox.showerror(
+                title="Invalid Input",
+                message='The input in the "Sigma List" box is invalid. It must be a comma separated list of numbers.',
+            )
+            return
+
+        sigma_list = [float(x) for x in sigma_list.split(",")]
+
+        levels = contour_handler.generate_levels(
+            self.data_source.image_data, mean, sigma, sigma_list
+        )
+        self.levels_entry.insert(0, ",".join(str(x) for x in levels))
+
     def apply_contours(self):
         """
         We clicked "Apply".
         """
+
+        if self.get_data_source() is None:
+            messagebox.showerror(
+                title="Invalid Input",
+                message="No data source is loaded.",
+            )
+            return
 
         input = self.levels_entry.get().strip()
 

@@ -2,6 +2,11 @@ import numpy as np
 
 from src.lib.fits_handler import open_fits_file
 
+
+def generate_levels(image_data, mean, sigma, sigma_list):
+    return [158.91, 314.95, 627.02]
+
+
 if __name__ == "__main__":
     image_data, image_data_header = open_fits_file("resources/data/Optical_r.fits")
 
