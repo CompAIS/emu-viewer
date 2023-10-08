@@ -37,7 +37,7 @@ class ImageFrame(tb.Frame):
 
         self.catalogue_set = None
 
-        self.image_wcs = wcs.WCS(self.image_data_header).celestial
+        self.image_wcs = wcs.WCS(self.image_data_header)
         if self.image_wcs.world_n_dim > 2:
             self.image_wcs = self.image_wcs.celestial
 

@@ -15,7 +15,7 @@ class CatalogueWidget(BaseWidget):
     dropdown = True
 
     def __init__(self, root):
-        super().__init__(self, root)
+        super().__init__(root)
         self.resizable(True, True)
         self.geometry("{}x{}".format(850, 735))
         self.root = root
