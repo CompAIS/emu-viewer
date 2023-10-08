@@ -63,5 +63,16 @@ if __name__ == "__main__":
 
     f_n, f_d = retrieve_field_data(f_)
 
-    for f in f_n:
-        print(f)
+    row_data = retrieve_row_data(c)
+
+    ra_coords = []
+    for data in row_data["ra_deg"]:
+        ra_coords.append(data)
+
+    dec_coords = []
+    for data in row_data["dec_deg"]:
+        dec_coords.append(data)
+
+    print("Drawing objects at coords: ")
+    for i in range(len(ra_coords)):
+        print("    RA: " + str(ra_coords[i]) + ", DEC: " + str(dec_coords[i]))

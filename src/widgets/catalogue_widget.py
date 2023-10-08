@@ -1,4 +1,5 @@
 import tkinter as tk
+from functools import partial
 from tkinter import ttk
 
 import ttkbootstrap as tb
@@ -16,7 +17,7 @@ class CatalogueWidget(BaseWidget):
     def __init__(self, root):
         super().__init__(self, root)
         self.resizable(True, True)
-        self.geometry("{}x{}".format(850, 700))
+        self.geometry("{}x{}".format(850, 735))
 
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
@@ -28,6 +29,9 @@ class CatalogueWidget(BaseWidget):
         self.field_data = None
         self.row_data = None
 
+        self.selected_ra = ""
+        self.selected_dec = ""
+
         self.chked_image = ImageTk.PhotoImage(
             Image.open("./resources/assets/checked_box.png")
         )
@@ -35,6 +39,11 @@ class CatalogueWidget(BaseWidget):
             Image.open("./resources/assets/unchecked_box.png")
         )
 
+        self.create_tables()
+
+        self.create_controls()
+
+    def create_tables(self):
         self.main_frame = tb.Frame(self, bootstyle="light")
         self.main_frame.grid(column=0, row=0, sticky=tk.NSEW, padx=10, pady=10)
         self.main_frame.columnconfigure(0, weight=1)
@@ -68,7 +77,7 @@ class CatalogueWidget(BaseWidget):
 
     def create_fields_table(self, parent, gridX, gridY):
         self.fields_table = ttk.Treeview(
-            parent, height=10, columns=("name", "units", "datatype")
+            parent, height=11, columns=("name", "units", "datatype")
         )
         self.fields_table.grid(
             column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10, columnspan=2
@@ -146,3 +155,132 @@ class CatalogueWidget(BaseWidget):
             if f_n == n["text"]:
                 self.main_table.unhide_selected_column(None, self.field_names.index(n))
                 return
+
+    def create_controls(self):
+        controls_frame = tb.Frame(self, bootstyle="light")
+        controls_frame.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
+        controls_frame.rowconfigure(0, weight=1)
+        controls_frame.columnconfigure((0, 1, 2, 3, 4), weight=1)
+
+        self.ra_dropdown_setup(controls_frame, "RA", "No options set", 0, 0)
+
+        self.dec_dropdown_setup(controls_frame, "DEC", "No options set", 2, 0)
+
+        self.buttons(controls_frame, 4, 0)
+
+    def ra_dropdown_setup(self, parent, text, ra, gridX, gridY):
+        ra_options = self.generate_ra_options()
+
+        label = tb.Label(parent, text=text, bootstyle="inverse-light")
+        label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
+
+        self.ra_dropdown = tb.Menubutton(parent, text=ra, bootstyle="dark")
+        self.ra_dropdown.grid(
+            column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
+        )
+
+        dropdown_menu = tk.Menu(self.ra_dropdown, tearoff=0)
+
+        for option in ra_options:
+            dropdown_menu.add_command(
+                label=option,
+                command=partial(self.select_ra, option),
+            )
+
+        self.ra_dropdown["menu"] = dropdown_menu
+
+    def generate_ra_options(self):
+        options = []
+
+        for n in self.field_data:
+            if (
+                n["name"].startswith("ra")
+                or n["name"].endswith("ra")
+                or n["name"].endswith("RA")
+            ):
+                options.append(n["name"])
+
+        return options
+
+    def select_ra(self, option):
+        self.selected_ra = option
+        self.ra_dropdown["text"] = option
+
+    def dec_dropdown_setup(self, parent, text, dec, gridX, gridY):
+        dec_options = self.generate_dec_options()
+
+        label = tb.Label(parent, text=text, bootstyle="inverse-light")
+        label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
+
+        self.dec_dropdown = tb.Menubutton(parent, text=dec, bootstyle="dark")
+        self.dec_dropdown.grid(
+            column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
+        )
+
+        dropdown_menu = tk.Menu(self.dec_dropdown, tearoff=0)
+
+        for option in dec_options:
+            dropdown_menu.add_command(
+                label=option,
+                command=partial(self.select_dec, option),
+            )
+
+        self.dec_dropdown["menu"] = dropdown_menu
+
+    def generate_dec_options(self):
+        options = []
+
+        for n in self.field_data:
+            if (
+                n["name"].startswith("dec")
+                or n["name"].endswith("dec")
+                or n["name"].endswith("DEC")
+            ):
+                options.append(n["name"])
+
+        return options
+
+    def select_dec(self, option):
+        self.selected_dec = option
+        self.dec_dropdown["text"] = option
+
+    def buttons(self, parent, gridX, gridY):
+        button_frame = tb.Frame(parent, bootstyle="light")
+        button_frame.grid(column=gridX, row=gridY, sticky=tk.SE, padx=10, pady=10)
+        button_frame.rowconfigure(0, weight=1)
+        button_frame.rowconfigure((0, 1), weight=1)
+
+        reset_button = tb.Button(
+            button_frame,
+            bootstyle="warning",
+            text="Reset",
+            command=self.reset_command,
+        )
+        reset_button.grid(column=0, row=0, sticky=tk.SE, padx=10)
+
+        apply_button = tb.Button(
+            button_frame,
+            bootstyle="success",
+            text="Apply",
+            command=self.apply_command,
+        )
+        apply_button.grid(column=1, row=0, sticky=tk.SE, padx=10)
+
+    def reset_command(self):
+        self.selected_ra = ""
+        self.selected_dec = ""
+        self.ra_dropdown["text"] = "Nothing selected"
+        self.dec_dropdown["text"] = "Nothing selected"
+
+    def apply_command(self):
+        ra_coords = []
+        for data in self.row_data[self.selected_ra]:
+            ra_coords.append(data)
+
+        dec_coords = []
+        for data in self.row_data[self.selected_dec]:
+            dec_coords.append(data)
+
+        print("Drawing objects at coords: ")
+        for i in range(len(ra_coords)):
+            print("    RA: " + ra_coords[i] + ", DEC: " + dec_coords[i])
