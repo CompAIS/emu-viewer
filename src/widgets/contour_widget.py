@@ -8,7 +8,11 @@ import ttkbootstrap as tb
 from src.lib import contour_handler
 from src.widgets.base_widget import BaseWidget
 
+BAD_LEVELS = 'The input in the "Levels" box is invalid. It must be a comma separated list of numbers.'
+BAD_SIGMAS = 'The input in the "Sigma List" box is invalid. It must be a comma separated list of numbers.'
 NOTHING_OPEN = "No image open"
+NO_DATA_SOURCE = "No data source is loaded."
+INVALID_INPUT = "Invalid Input"
 
 
 def validate_list_entry(text):
@@ -168,10 +172,7 @@ class ContourWidget(BaseWidget):
         """
 
         if self.get_data_source() is None:
-            messagebox.showerror(
-                title="Invalid Input",
-                message="No data source is loaded.",
-            )
+            messagebox.showerror(title=INVALID_INPUT, message=NO_DATA_SOURCE)
             return
 
         mean = float(self.mean_entry.get())
@@ -180,10 +181,7 @@ class ContourWidget(BaseWidget):
 
         # if the user input is bad spit out a warning and exit early
         if not validate_list_entry(sigma_list):
-            messagebox.showerror(
-                title="Invalid Input",
-                message='The input in the "Sigma List" box is invalid. It must be a comma separated list of numbers.',
-            )
+            messagebox.showerror(title=INVALID_INPUT, message=BAD_SIGMAS)
             return
 
         sigma_list = [float(x) for x in sigma_list.split(",")]
@@ -198,10 +196,7 @@ class ContourWidget(BaseWidget):
         """
 
         if self.get_data_source() is None:
-            messagebox.showerror(
-                title="Invalid Input",
-                message="No data source is loaded.",
-            )
+            messagebox.showerror(title=INVALID_INPUT, message=NO_DATA_SOURCE)
             return
 
         input = self.levels_entry.get().strip()
@@ -209,8 +204,8 @@ class ContourWidget(BaseWidget):
         # if the user input is bad spit out a warning and exit early
         if not validate_list_entry(input):
             messagebox.showerror(
-                title="Invalid Input",
-                message='The input in the "Levels" box is invalid. It must be a comma separated list of numbers.',
+                title=INVALID_INPUT,
+                message=BAD_LEVELS,
             )
             return
 
