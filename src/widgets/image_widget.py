@@ -81,7 +81,6 @@ class ImageFrame(tb.Frame):
     def update_contours(self, new_contours):
         self.contour_levels = new_contours
 
-        print(self.contour_levels, self.contour)
         self.contour = Render.update_contours(
             self.fig, self.image_data, self.contour_levels, self.contour
         )

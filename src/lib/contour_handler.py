@@ -3,8 +3,8 @@ import numpy as np
 from src.lib.fits_handler import open_fits_file
 
 
-def generate_levels(image_data, mean, sigma, sigma_list):
-    return [158.91, 314.95, 627.02]
+def generate_levels(mean, sigma, sigma_list):
+    return [mean + sigma * x for x in sigma_list]
 
 
 if __name__ == "__main__":
@@ -23,8 +23,8 @@ if __name__ == "__main__":
     # contour_levels = np.ones_like(image_data)
     # image_noise = calculate_noise()
     # contour_levels[image_data < 2 * image_noise] = 0
-    print(np.mean(image_data))
-    print(np.nanstd(image_data))
+    # print(np.mean(image_data))
+    # print(np.nanstd(image_data))
 
     # I need:
     # Mean

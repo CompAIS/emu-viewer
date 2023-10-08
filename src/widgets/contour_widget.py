@@ -188,9 +188,8 @@ class ContourWidget(BaseWidget):
 
         sigma_list = [float(x) for x in sigma_list.split(",")]
 
-        levels = contour_handler.generate_levels(
-            self.data_source.image_data, mean, sigma, sigma_list
-        )
+        levels = contour_handler.generate_levels(mean, sigma, sigma_list)
+        self.levels_entry.delete(0, tk.END)
         self.levels_entry.insert(0, ",".join(str(x) for x in levels))
 
     def apply_contours(self):
