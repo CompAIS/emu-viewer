@@ -68,7 +68,7 @@ def update_image_cmap(image, colour_map):
 
 def draw_catalogue(fig, ra_coords, dec_coords):
     ax = fig.axes[0]
-    ax.scatter(
+    catalogue_set = ax.scatter(
         ra_coords,
         dec_coords,
         s=25,
@@ -76,8 +76,6 @@ def draw_catalogue(fig, ra_coords, dec_coords):
         facecolor=None,
         transform=ax.get_transform("icrs"),
     )
-
-    catalogue_set = None
 
     return fig, catalogue_set
 
