@@ -18,6 +18,7 @@ class CatalogueWidget(BaseWidget):
         super().__init__(self, root)
         self.resizable(True, True)
         self.geometry("{}x{}".format(850, 735))
+        self.root = root
 
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
@@ -67,6 +68,7 @@ class CatalogueWidget(BaseWidget):
 
         if file_name == "":
             self.close()
+            return
 
         self.catalogue = catalogue_handler.open_catalogue(file_name)
         self.fields = catalogue_handler.retrieve_fields(self.catalogue)
@@ -271,6 +273,7 @@ class CatalogueWidget(BaseWidget):
         self.selected_dec = ""
         self.ra_dropdown["text"] = "Nothing selected"
         self.dec_dropdown["text"] = "Nothing selected"
+        self.root.image_controller.get_selected_image().reset_catalogue()
 
     def apply_command(self):
         ra_coords = []
@@ -281,6 +284,6 @@ class CatalogueWidget(BaseWidget):
         for data in self.row_data[self.selected_dec]:
             dec_coords.append(data)
 
-        print("Drawing objects at coords: ")
-        for i in range(len(ra_coords)):
-            print("    RA: " + ra_coords[i] + ", DEC: " + dec_coords[i])
+        self.root.image_controller.get_selected_image().draw_catalogue(
+            ra_coords, dec_coords
+        )

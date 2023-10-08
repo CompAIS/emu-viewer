@@ -35,7 +35,9 @@ class ImageFrame(tb.Frame):
         self.vmax = 99.5
         self.stretch = "Linear"
 
-        self.image_wcs = wcs.WCS(self.image_data_header)
+        self.catalogue_set = None
+
+        self.image_wcs = wcs.WCS(self.image_data_header).celestial
         if self.image_wcs.world_n_dim > 2:
             self.image_wcs = self.image_wcs.celestial
 
@@ -74,4 +76,16 @@ class ImageFrame(tb.Frame):
 
     def update_colour_map(self):
         self.image = Render.update_image_cmap(self.image, self.colour_map)
+        self.canvas.draw()
+
+    def draw_catalogue(self, ra_coords, dec_coords):
+        self.fig, self.catalogue_set = Render.draw_catalogue(
+            self.fig, ra_coords, dec_coords
+        )
+        self.canvas.draw()
+
+    def reset_catalogue(self):
+        self.fig, self.catalogue_set = Render.reset_catalogue(
+            self.fig, self.catalogue_set
+        )
         self.canvas.draw()
