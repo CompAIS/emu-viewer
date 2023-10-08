@@ -1,11 +1,23 @@
+import re
 import tkinter as tk
 from functools import partial
+from tkinter import messagebox
 
 import ttkbootstrap as tb
 
 from src.widgets.base_widget import BaseWidget
 
 NOTHING_OPEN = "No image open"
+
+
+def validate_list_entry(text):
+    """
+    Validates the given text matches the input for a "list" or "tag input"-like entry.
+
+    Specifically to be used for sigma list and level fields.
+    """
+    r = re.search("^(\d+(\.\d+|))(,\d+(\.\d+|))*$", text)
+    return r is not None
 
 
 class ContourWidget(BaseWidget):
@@ -80,8 +92,10 @@ class ContourWidget(BaseWidget):
         levels_label = tb.Label(self.frame, text="Levels", bootstyle="inverse-light")
         levels_label.grid(column=0, row=6, padx=10, pady=10, sticky=tk.W)
 
-        levels_entry = tb.Entry(self.frame)
-        levels_entry.grid(column=1, columnspan=2, row=6, padx=10, pady=10)
+        self.levels_entry = tb.Entry(self.frame)
+        # TODO better default text
+        self.levels_entry.insert(0, "158.91,314.95,627.02")
+        self.levels_entry.grid(column=1, columnspan=2, row=6, padx=10, pady=10)
 
         # Apply / Close buttons
         self.buttons = tb.Frame(self.frame, bootstyle="light")
@@ -145,12 +159,18 @@ class ContourWidget(BaseWidget):
         We clicked "Apply".
         """
 
+        input = self.levels_entry.get().strip()
+
+        # if the user input is bad spit out a warning and exit early
+        if not validate_list_entry(input):
+            messagebox.showerror(
+                title="Invalid Input",
+                message='The input in the "Levels" box is invalid. It must be a comma separated list of numbers.',
+            )
+            return
+
         self.root.image_controller.get_selected_image().update_contours(
-            [
-                158.91,
-                314.95,
-                627.02,
-            ]
+            [float(x) for x in input.split(",")]
         )
 
     def clear_contours(self):

@@ -79,9 +79,7 @@ def update_image_cmap(image, colour_map):
 
 def update_contours(fig, image_data, contour_levels, contour_set):
     if contour_set is not None:
-        print("Trying to clear contours...")
         for contour in contour_set.collections:
-            print(f"  Removing {contour}")
             contour.remove()
 
     if contour_levels is None:
