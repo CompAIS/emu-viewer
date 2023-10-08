@@ -2,6 +2,7 @@ import astropy.visualization as vis
 import numpy as np
 from matplotlib import ticker
 from matplotlib.figure import Figure
+from scipy.ndimage.filters import gaussian_filter
 
 
 def create_figure(image_data, wcs, colour_map, min, max, s, contour_levels):
@@ -15,7 +16,16 @@ def create_figure(image_data, wcs, colour_map, min, max, s, contour_levels):
 
     if contour_levels is not None:
         print("I'm trying to contour!")
-        ax.contour(image_data, levels=contour_levels, colors="white", alpha=0.5)
+
+        # https://stackoverflow.com/questions/12274529/how-to-smooth-matplotlib-contour-plot
+        image_data_smooth = gaussian_filter(image_data, 4)
+        ax.contour(
+            image_data_smooth,
+            levels=contour_levels,
+            colors="green",
+            alpha=0.5,
+            linewidths=0.5,
+        )
 
     stretch = None
 
