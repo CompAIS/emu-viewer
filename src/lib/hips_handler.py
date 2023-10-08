@@ -33,7 +33,9 @@ def open_hips(hips_survey):
 
         # some files have (1, 1, x, y) or (x, y, 1, 1) shape so we use .squeeze
         image_data = hdu.data.squeeze()
+        image_header = hdu.header
     else:
         image_data = result
+        image_header = None
 
-    return image_data
+    return image_data, image_header
