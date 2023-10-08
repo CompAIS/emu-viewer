@@ -79,17 +79,7 @@ class ImageFrame(tb.Frame):
         self.canvas.draw()
 
     def update_contours(self, new_contours):
-        # TODO make better
         self.contour_levels = new_contours
 
-        self.fig, self.image = Render.create_figure(
-            self.image_data,
-            self.image_wcs,
-            self.colour_map,
-            self.vmin,
-            self.vmax,
-            self.stretch,
-            self.contour_levels,
-        )
-
-        self.create_image()
+        Render.update_contours(self.fig, self.image_data, self.contour_levels)
+        self.canvas.draw()

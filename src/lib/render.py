@@ -75,3 +75,18 @@ def update_image_cmap(image, colour_map):
     image.set_cmap(colour_map)
 
     return image
+
+
+def update_contours(fig, image_data, contour_levels):
+    if contour_levels is not None:
+        print("I'm trying to contour!")
+
+        # https://stackoverflow.com/questions/12274529/how-to-smooth-matplotlib-contour-plot
+        image_data_smooth = gaussian_filter(image_data, 4)
+        fig.axes[0].contour(
+            image_data_smooth,
+            levels=contour_levels,
+            colors="green",
+            alpha=0.5,
+            linewidths=0.5,
+        )
