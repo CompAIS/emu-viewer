@@ -5,6 +5,7 @@ from tkinter import messagebox
 
 import numpy as np
 import ttkbootstrap as tb
+from ttkbootstrap.dialogs.colorchooser import ColorChooserDialog
 
 from src.lib import contour_handler
 from src.widgets.base_widget import BaseWidget
@@ -39,6 +40,7 @@ class ContourWidget(BaseWidget):
         super().__init__(root)
 
         self.data_source = None
+        self.line_colour = "#03fc49"
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -46,21 +48,25 @@ class ContourWidget(BaseWidget):
         self.frame = tb.Frame(self, bootstyle="light")
         self.frame.grid(column=0, row=0, sticky=tk.NSEW, padx=10, pady=10)
         self.frame.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1)
-        self.frame.grid_columnconfigure(0, weight=1)
-        self.frame.grid_columnconfigure(1, weight=2)
+        self.frame.grid_columnconfigure((0, 2), weight=1)
+        self.frame.grid_columnconfigure((1, 3), weight=2)
 
         # Data Source
+        data_source_frame = tb.Frame(self.frame, bootstyle="light")
+        data_source_frame.grid(column=0, row=0, columnspan=4, padx=10, pady=10)
+
         data_source_label = tb.Label(
-            self.frame, text="Data Source", bootstyle="inverse-light"
+            data_source_frame, text="Data Source", bootstyle="inverse-light"
         )
-        data_source_label.grid(column=0, row=0, padx=10, pady=10, sticky=tk.W)
+        data_source_label.grid(column=0, row=0, padx=(0, 20))
 
         self.data_source_dropdown = tb.Menubutton(
-            self.frame, text=NOTHING_OPEN, bootstyle="dark"
+            data_source_frame, text=NOTHING_OPEN, bootstyle="dark"
         )
-        self.data_source_dropdown.grid(column=1, row=0, padx=10, pady=10)
+        self.data_source_dropdown.grid(column=1, row=0)
         self.root.image_controller.update_image_list_eh.add(self.update_dropdown)
 
+        # Parameters
         parameters_label = tb.Label(
             self.frame,
             text="Parameters",
@@ -69,7 +75,6 @@ class ContourWidget(BaseWidget):
         )
         parameters_label.grid(column=0, row=1, padx=10, pady=10, sticky=tk.W)
 
-        # Parameters
         mean_label = tb.Label(self.frame, text="Mean", bootstyle="inverse-light")
         mean_label.grid(column=0, row=2, padx=10, pady=10, sticky=tk.W)
 
@@ -108,7 +113,7 @@ class ContourWidget(BaseWidget):
 
         # Apply / Close buttons
         self.buttons = tb.Frame(self.frame, bootstyle="light")
-        self.buttons.grid(column=1, row=7, sticky=tk.NSEW, padx=10, pady=10)
+        self.buttons.grid(column=3, row=7, sticky=tk.NSEW, padx=10, pady=10)
         self.buttons.rowconfigure(0, weight=1)
         self.buttons.columnconfigure(0, weight=1)
 
@@ -126,6 +131,37 @@ class ContourWidget(BaseWidget):
             self.buttons, bootstyle="danger-outline", text="Close", command=self.close
         )
         self.close_button.grid(column=2, row=0, sticky=tk.SE)
+
+        # Configuration
+        config_label = tb.Label(
+            self.frame,
+            text="Configuration",
+            bootstyle="inverse-light",
+            font=("Helvetica bold", 10),
+        )
+        config_label.grid(column=2, row=1, padx=10, pady=10, sticky=tk.W)
+
+        lc_label = tb.Label(self.frame, text="Line Colour", bootstyle="inverse-light")
+        lc_label.grid(column=2, row=2, padx=10, pady=10, sticky=tk.W)
+
+        size = 23
+        self.lc_button = tk.Canvas(
+            self.frame, bg=self.line_colour, width=size + 1, height=size + 1
+        )
+        self.lc_button.grid(column=3, row=2, sticky=tk.W, padx=10)
+        self.lc_rect = self.lc_button.create_rectangle(
+            0, 0, size, size, outline="black", fill=self.line_colour
+        )
+        self.lc_button.bind("<Button-1>", self.choose_line_colour)
+
+        # Styling
+        styling_label = tb.Label(
+            self.frame,
+            text="Styling",
+            bootstyle="inverse-light",
+            font=("Helvetica bold", 10),
+        )
+        styling_label.grid(column=2, row=3, padx=10, pady=10, sticky=tk.W)
 
         self.update_dropdown(
             self.root.image_controller.get_selected_image(),
@@ -234,3 +270,13 @@ class ContourWidget(BaseWidget):
 
     def clear_contours(self):
         self.root.image_controller.get_selected_image().update_contours(None)
+
+    def choose_line_colour(self, _evt):
+        cd = ColorChooserDialog(
+            initialcolor=self.line_colour, title="Choose Contour Line Colour"
+        )
+        cd.show()
+
+        self.line_colour = cd.result.hex
+        self.lc_button.itemconfig(self.lc_rect, fill=self.line_colour)
+        self.grab_set()
