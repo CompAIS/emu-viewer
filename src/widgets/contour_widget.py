@@ -93,7 +93,7 @@ class ContourWidget(BaseWidget):
         self.apply_button.grid(column=0, row=0, sticky=tk.SE)
 
         self.close_button = tb.Button(
-            self.buttons, bootstyle="danger-outline", text="Close"
+            self.buttons, bootstyle="danger-outline", text="Close", command=self.close
         )
         self.close_button.grid(column=1, row=0, sticky=tk.SE, padx=(10, 0))
 
@@ -129,13 +129,3 @@ class ContourWidget(BaseWidget):
 
     def get_data_source(self):
         return self.selected_image
-
-
-# On widget open:
-# If there is at least one image open, put that in the dropdown as the selected image
-# If not, put "No image open"
-
-# When the image list changes:
-# Update the dropdown
-# BUT: If the image that is currently selected is closed, then fill out box with the currently selected image
-# BUT: If all images are closed, fill in "No image open"
