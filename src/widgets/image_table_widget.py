@@ -16,8 +16,6 @@ class ImageTableWidget(BaseWidget):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        self.image_num = 0  # Initialize the image number
-
         self.open_windows = []
         self.selected_image = self.root.image_controller.get_selected_image()
         self.open_images = self.root.image_controller.get_images()
