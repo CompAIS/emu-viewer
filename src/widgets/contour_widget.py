@@ -89,7 +89,9 @@ class ContourWidget(BaseWidget):
         self.buttons.rowconfigure(0, weight=1)
         self.buttons.columnconfigure(0, weight=1)
 
-        self.clear_button = tb.Button(self.buttons, bootstyle="warning", text="Clear")
+        self.clear_button = tb.Button(
+            self.buttons, bootstyle="warning", text="Clear", command=self.clear_contours
+        )
         self.clear_button.grid(column=0, row=0, sticky=tk.SE)
 
         self.apply_button = tb.Button(
@@ -150,3 +152,6 @@ class ContourWidget(BaseWidget):
                 627.02,
             ]
         )
+
+    def clear_contours(self):
+        self.root.image_controller.get_selected_image().update_contours(None)

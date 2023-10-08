@@ -34,7 +34,7 @@ class ImageFrame(tb.Frame):
         self.vmin = 0.5
         self.vmax = 99.5
         self.stretch = "Linear"
-        self.contour_levels = None
+        self.contour_levels = self.contour = None
 
         self.image_wcs = wcs.WCS(self.image_data_header)
         if self.image_wcs.world_n_dim > 2:
@@ -81,5 +81,8 @@ class ImageFrame(tb.Frame):
     def update_contours(self, new_contours):
         self.contour_levels = new_contours
 
-        Render.update_contours(self.fig, self.image_data, self.contour_levels)
+        print(self.contour_levels, self.contour)
+        self.contour = Render.update_contours(
+            self.fig, self.image_data, self.contour_levels, self.contour
+        )
         self.canvas.draw()
