@@ -9,8 +9,13 @@ import ttkbootstrap as tb
 from src.lib import contour_handler
 from src.widgets.base_widget import BaseWidget
 
-BAD_LEVELS = 'The input in the "Levels" box is invalid. It must be a comma separated list of numbers.'
-BAD_SIGMAS = 'The input in the "Sigma List" box is invalid. It must be a comma separated list of numbers.'
+BAD_MEAN_SIGMA = "The Mean or Sigma field is invalid. They must be numbers"
+BAD_LEVELS = (
+    'The "Levels" field is invalid. It must be a comma separated list of numbers.'
+)
+BAD_SIGMAS = (
+    'The "Sigma List" field is invalid. It must be a comma separated list of numbers.'
+)
 NOTHING_OPEN = "No image open"
 NO_DATA_SOURCE = "No data source is loaded."
 INVALID_INPUT = "Invalid Input"
@@ -186,8 +191,13 @@ class ContourWidget(BaseWidget):
             messagebox.showerror(title=INVALID_INPUT, message=NO_DATA_SOURCE)
             return
 
-        mean = float(self.mean_entry.get())
-        sigma = float(self.sigma_entry.get())
+        try:
+            mean = float(self.mean_entry.get())
+            sigma = float(self.sigma_entry.get())
+        except ValueError:
+            messagebox.showerror(title=INVALID_INPUT, message=BAD_MEAN_SIGMA)
+            return
+
         sigma_list = self.sigmas_entry.get().strip()
 
         # if the user input is bad spit out a warning and exit early
