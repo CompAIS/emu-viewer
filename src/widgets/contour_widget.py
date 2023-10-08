@@ -15,7 +15,7 @@ class ContourWidget(BaseWidget):
     def __init__(self, root):
         super().__init__(root)
 
-        self.selected_image = None
+        self.data_source = None
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -89,19 +89,28 @@ class ContourWidget(BaseWidget):
         self.buttons.rowconfigure(0, weight=1)
         self.buttons.columnconfigure(0, weight=1)
 
+        self.clear_button = tb.Button(self.buttons, bootstyle="warning", text="Clear")
+        self.clear_button.grid(column=0, row=0, sticky=tk.SE)
+
         self.apply_button = tb.Button(self.buttons, bootstyle="success", text="Apply")
-        self.apply_button.grid(column=0, row=0, sticky=tk.SE)
+        self.apply_button.grid(column=1, row=0, sticky=tk.SE)
 
         self.close_button = tb.Button(
             self.buttons, bootstyle="danger-outline", text="Close", command=self.close
         )
-        self.close_button.grid(column=1, row=0, sticky=tk.SE, padx=(10, 0))
+        self.close_button.grid(column=2, row=0, sticky=tk.SE, padx=(10, 0))
 
-    def dropdown_select(self, image):
-        self.selected_image = image
-        self.data_source_dropdown["text"] = (
-            image.file_name if image is not None else NOTHING_OPEN
-        )
+    def get_data_source(self):
+        return self.data_source
+
+    def set_data_source(self, image):
+        if image is None:
+            self.data_source = None
+            self.data_source_dropdown["text"] = NOTHING_OPEN
+            return
+
+        self.data_source = image
+        self.data_source_dropdown["text"] = image.file_name
 
     def update_dropdown(self, selected_image, image_list):
         # Always change the commands to match the current list
@@ -112,20 +121,17 @@ class ContourWidget(BaseWidget):
         for image in image_list:
             self.data_source_menu.add_command(
                 label=image.file_name,
-                command=partial(self.dropdown_select, image),
+                command=partial(self.set_data_source, image),
             )
 
-            if image == self.selected_image:
+            if image == self.data_source:
                 selected_still_open = True
 
         if len(image_list) == 0:
             # If the image list is empty, default text in the dropdown
-            self.dropdown_select(None)
+            self.set_data_source(None)
         elif not selected_still_open or self.get_data_source() is None:
             # Otherwise if the selected image was closed
             #   or we previously had nothing selected,
             #   pick the new selected
-            self.dropdown_select(selected_image)
-
-    def get_data_source(self):
-        return self.selected_image
+            self.set_data_source(selected_image)
