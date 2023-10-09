@@ -127,10 +127,23 @@ class RendererWidget(BaseWidget):
         self.min_entry = self.custom_options(render, "Min", 0, 1)
         self.max_entry = self.custom_options(render, "Max", 0, 2)
 
-        self.dropdown_options(render, "Scaling", self.selected_scaling_option, 0, 3)
-
-        self.dropdown_options(
-            render, "Colour Map", self.selected_colour_map_option, 0, 4
+        self.scaling_dropdown = self.dropdown_options(
+            render,
+            "Scaling",
+            scaling_options,
+            self.selected_scaling_option,
+            self.select_scaling_option,
+            0,
+            3,
+        )
+        self.colour_map_dropdown = self.dropdown_options(
+            render,
+            "Colour Map",
+            colour_map_options,
+            self.selected_colour_map_option,
+            self.select_colour_map_option,
+            0,
+            4,
         )
 
     def custom_options(self, parent, text, gridX, gridY):
@@ -141,48 +154,25 @@ class RendererWidget(BaseWidget):
 
         return entry
 
-    def dropdown_options(self, parent, text, selected_option, gridX, gridY):
+    def dropdown_options(
+        self, parent, text, options, selected_option, func, gridX, gridY
+    ):
         label = tb.Label(parent, text=text, bootstyle="inverse-light")
         label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
 
-        if text == "Scaling":
-            self.scaling_dropdown = tb.Menubutton(
-                parent, text=selected_option, bootstyle="dark"
-            )
-            self.scaling_dropdown.grid(
-                column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
-            )
+        dropdown = tb.Menubutton(parent, text=selected_option, bootstyle="dark")
+        dropdown.grid(column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
+        dropdown_menu = tk.Menu(dropdown, tearoff=0)
 
-            dropdown_menu = tk.Menu(self.scaling_dropdown, tearoff=0)
-
-            for option in scaling_options:
-                dropdown_menu.add_command(
-                    label=option,
-                    command=partial(
-                        self.select_scaling_option, option, self.scaling_dropdown
-                    ),
-                )
-
-            self.scaling_dropdown["menu"] = dropdown_menu
-        elif text == "Colour Map":
-            self.colour_map_dropdown = tb.Menubutton(
-                parent, text=selected_option, bootstyle="dark"
-            )
-            self.colour_map_dropdown.grid(
-                column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
+        for option in options:
+            dropdown_menu.add_command(
+                label=option,
+                command=partial(func, option, dropdown),
             )
 
-            dropdown_menu = tk.Menu(self.colour_map_dropdown, tearoff=0)
+        dropdown["menu"] = dropdown_menu
 
-            for option in colour_map_options:
-                dropdown_menu.add_command(
-                    label=option,
-                    command=partial(
-                        self.select_colour_map_option, option, self.colour_map_dropdown
-                    ),
-                )
-
-            self.colour_map_dropdown["menu"] = dropdown_menu
+        return dropdown
 
     def select_scaling_option(self, option, menu_button):
         self.selected_scaling_option = option
