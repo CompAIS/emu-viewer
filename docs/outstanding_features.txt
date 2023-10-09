@@ -1,0 +1,6 @@
+TODO - Outstanding Features
+Create hips from open image wcs
+Open png files
+Remove colour bar and axes from jpg and png hips surveys
+Coordinate matching, choose image to match other selected images to
+Comment code for documentation purposes

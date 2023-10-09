@@ -18,7 +18,7 @@ class CatalogueWidget(BaseWidget):
     def __init__(self, root):
         super().__init__(root)
         self.resizable(True, True)
-        self.geometry("{}x{}".format(850, 735))
+        self.geometry("{}x{}".format(850, 775))
         self.root = root
 
         self.columnconfigure(0, weight=1)
@@ -61,7 +61,7 @@ class CatalogueWidget(BaseWidget):
 
         self.insert_fields_table()
 
-        # self.create_row_table(self.main_frame, 0, 1)
+        self.create_row_table(self.main_frame, 0, 1)
 
         self.create_controls()
 
@@ -316,15 +316,12 @@ class CatalogueWidget(BaseWidget):
             frame, text="Colour outline", bootstyle="inverse-light"
         )
         outline_label.grid(column=0, row=2, sticky=tk.NSEW, padx=10, pady=10)
-        #
-        # outline_entry = tb.Entry(frame)
-        # outline_entry.grid(column=1, row=2, sticky=tk.NSEW, padx=10, pady=10)
 
         box_size = 23
         self.outline_button = tk.Canvas(
             frame, bg=self.colour_outline, width=box_size + 1, height=box_size + 1
         )
-        self.outline_button.grid(column=1, row=2, sticky=tk.NSEW, padx=10)
+        self.outline_button.grid(column=1, row=2, sticky=tk.W, padx=10, pady=10)
         self.outline_rect = self.outline_button.create_rectangle(
             0, 0, box_size, box_size, outline="black", fill=self.colour_outline
         )
@@ -336,7 +333,7 @@ class CatalogueWidget(BaseWidget):
             text="Apply",
             command=partial(self.apply_config, config),
         )
-        apply_button.grid(column=1, row=3, sticky=tk.SE, padx=10)
+        apply_button.grid(column=1, row=3, sticky=tk.SE, padx=10, pady=10)
 
         config.grab_set()
 
