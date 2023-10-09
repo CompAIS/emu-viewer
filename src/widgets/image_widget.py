@@ -31,9 +31,10 @@ class ImageFrame(tb.Frame):
         # Default render config
         self.updating = False
         self.colour_map = "inferno"
-        self.vmin = 0.5
-        self.vmax = 99.5
         self.stretch = "Linear"
+        self.cached_percentiles = Render.get_percentiles(image_data)
+        self.selected_percentile = "99.5"
+        self.set_selected_percentile(self.selected_percentile)
 
         self.catalogue_set = None
         self.contour_levels = self.contour_set = None
@@ -65,6 +66,24 @@ class ImageFrame(tb.Frame):
         self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
 
         self.toolbar.update()
+
+    def set_vmin_vmax(self, vmin, vmax):
+        self.vmin = vmin
+        self.vmax = vmax
+
+    def set_selected_percentile(self, percentile):
+        self.selected_percentile = percentile
+
+        if percentile == "Custom":
+            return None, None
+
+        self.set_vmin_vmax(*self.cached_percentiles[self.selected_percentile])
+
+    def set_scaling(self, scaling):
+        self.stretch = scaling
+
+    def set_colour_map(self, colour_map):
+        self.colour_map = colour_map
 
     def update_norm(self):
         self.image = Render.update_image_norm(

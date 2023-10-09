@@ -129,6 +129,9 @@ class ImageController(tb.Frame):
         return images
 
     def set_selected_image(self, image):
+        if self.selected_image == image:
+            return
+
         self.selected_image = image
 
         self.selected_image_eh.invoke(self.get_selected_image())

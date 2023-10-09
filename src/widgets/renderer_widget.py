@@ -3,6 +3,7 @@ from functools import partial
 
 import ttkbootstrap as tb
 
+import src.lib.render as Render
 from src.widgets.base_widget import BaseWidget
 
 scaling_options = [
@@ -27,6 +28,8 @@ colour_map_options = [
     "hot",
 ]
 
+NO_IMAGE_OPEN = "No image open"
+
 
 class RendererWidget(BaseWidget):
     label = "Renderer Configuration"
@@ -34,19 +37,20 @@ class RendererWidget(BaseWidget):
 
     def __init__(self, root):
         super().__init__(root)
-        self.selected_image = self.root.image_controller.get_selected_image()
+        self.previously_image_loaded = self.check_if_image_selected()
 
-        if self.selected_image is None:
+        selected_image = self.root.image_controller.get_selected_image()
+        if selected_image is None:
             self.selected_scaling_option = scaling_options[0]
             self.selected_colour_map_option = colour_map_options[0]
         else:
-            self.selected_scaling_option = self.selected_image.stretch
-            self.selected_colour_map_option = self.selected_image.colour_map
+            self.selected_scaling_option = selected_image.stretch
+            self.selected_colour_map_option = selected_image.colour_map
 
         self.histogram()
         self.render_options()
 
-        self.root.image_controller.selected_image_eh.add(self.update_render_values)
+        self.root.image_controller.selected_image_eh.add(self.on_image_change)
 
     def histogram(self):
         frame = tb.Frame(self, bootstyle="light")
@@ -56,62 +60,14 @@ class RendererWidget(BaseWidget):
         self.histogram_buttons(frame)
 
     def histogram_buttons(self, parent):
-        button_90 = tb.Button(
-            parent,
-            text="90%",
-            bootstyle="dark",
-            command=partial(self.set_selected_image_histogram_scaling, 0.5, 90),
-        )
-        button_90.grid(column=0, row=0, sticky=tk.NSEW, padx=10, pady=10)
-
-        button_95 = tb.Button(
-            parent,
-            text="95%",
-            bootstyle="dark",
-            command=partial(self.set_selected_image_histogram_scaling, 0.5, 95),
-        )
-        button_95.grid(column=1, row=0, sticky=tk.NSEW, padx=10, pady=10)
-
-        button_99 = tb.Button(
-            parent,
-            text="99%",
-            bootstyle="dark",
-            command=partial(self.set_selected_image_histogram_scaling, 0.5, 99),
-        )
-        button_99.grid(column=2, row=0, sticky=tk.NSEW, padx=10, pady=10)
-
-        button_995 = tb.Button(
-            parent,
-            text="99.5%",
-            bootstyle="dark",
-            command=partial(self.set_selected_image_histogram_scaling, 0.5, 99.5),
-        )
-        button_995.grid(column=3, row=0, sticky=tk.NSEW, padx=10, pady=10)
-
-        button_custom = tb.Button(
-            parent,
-            text="Custom",
-            bootstyle="dark",
-            command=self.set_selected_image_histogram_scaling_custom,
-        )
-        button_custom.grid(column=4, row=0, sticky=tk.NSEW, padx=10, pady=10)
-
-    def set_selected_image_histogram_scaling_custom(self):
-        if self.min_entry.get() == "" or self.max_entry.get() == "":
-            return
-
-        self.set_selected_image_histogram_scaling(
-            float(self.min_entry.get()), float(self.max_entry.get())
-        )
-
-    def set_selected_image_histogram_scaling(self, vmin, vmax):
-        self.selected_image = self.root.image_controller.get_selected_image()
-
-        if self.check_if_image_selected():
-            self.selected_image.vmin = vmin
-            self.selected_image.vmax = vmax
-            self.selected_image.update_norm()
-            self.root.update()
+        for col, percentile in enumerate([*Render.PERCENTILES, "Custom"]):
+            button = tb.Button(
+                parent,
+                text=f"{percentile}%",
+                bootstyle="dark",
+                command=partial(self.set_percentile, str(percentile)),
+            )
+            button.grid(column=col, row=0, sticky=tk.NSEW, padx=10, pady=10)
 
     def histogram_graph(self, parent):
         histogram = tb.Frame(parent, bootstyle="dark")
@@ -131,8 +87,7 @@ class RendererWidget(BaseWidget):
             render,
             "Scaling",
             scaling_options,
-            self.selected_scaling_option,
-            self.select_scaling_option,
+            self.on_select_scaling,
             0,
             3,
         )
@@ -140,8 +95,7 @@ class RendererWidget(BaseWidget):
             render,
             "Colour Map",
             colour_map_options,
-            self.selected_colour_map_option,
-            self.select_colour_map_option,
+            self.on_select_colour_map,
             0,
             4,
         )
@@ -154,73 +108,131 @@ class RendererWidget(BaseWidget):
 
         return entry
 
-    def dropdown_options(
-        self, parent, text, options, selected_option, func, gridX, gridY
-    ):
+    def dropdown_options(self, parent, text, options, func, gridX, gridY):
         label = tb.Label(parent, text=text, bootstyle="inverse-light")
         label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
 
-        dropdown = tb.Menubutton(parent, text=selected_option, bootstyle="dark")
+        dropdown = tb.Menubutton(parent, text=NO_IMAGE_OPEN, bootstyle="dark")
         dropdown.grid(column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
         dropdown_menu = tk.Menu(dropdown, tearoff=0)
 
         for option in options:
-            dropdown_menu.add_command(
-                label=option,
-                command=partial(func, option, dropdown),
-            )
+            dropdown_menu.add_command(label=option, command=partial(func, option))
 
         dropdown["menu"] = dropdown_menu
 
         return dropdown
 
-    def select_scaling_option(self, option, menu_button):
-        self.selected_scaling_option = option
-        menu_button["text"] = option
+    # These four functions update state of the UI with the new elements,
+    #   and will update the image data, but will not re-render the image
+    def set_scaling(self, option):
+        if option is None:
+            self.scaling_dropdown["text"] = NO_IMAGE_OPEN
+            return
 
-        self.selected_image = self.root.image_controller.get_selected_image()
+        self.scaling_dropdown["text"] = option
 
-        if self.check_if_image_selected():
-            self.selected_image.stretch = self.selected_scaling_option
-            self.selected_image.update_norm()
-            self.root.update()
+        if not self.check_if_image_selected():
+            return
 
-    def select_colour_map_option(self, option, menu_button):
-        self.selected_colour_map_option = option
-        menu_button["text"] = option
+        self.root.image_controller.get_selected_image().set_scaling(option)
 
-        self.selected_image = self.root.image_controller.get_selected_image()
+    def set_colour_map(self, option):
+        if option is None:
+            self.colour_map_dropdown["text"] = NO_IMAGE_OPEN
+            return
 
-        if self.check_if_image_selected():
-            self.selected_image.colour_map = self.selected_colour_map_option
-            self.selected_image.update_colour_map()
-            self.root.update()
+        self.colour_map_dropdown["text"] = option
 
-    def update_render_values(self, image):
+        if not self.check_if_image_selected():
+            return
+
+        self.root.image_controller.get_selected_image().set_colour_map(option)
+
+    def set_vmin_vmax(self, image):
+        # Update entries with new percentiles, from cached
+        self.min_entry.delete(0, tk.END)
+        self.max_entry.delete(0, tk.END)
+
+        if image is not None:
+            self.min_entry.insert(0, str(image.vmin))
+            self.max_entry.insert(0, str(image.vmax))
+
+    def set_percentile(self, percentile):
+        if not self.check_if_image_selected():
+            return
+
+        if percentile is None:
+            self.set_vmin_vmax(None)
+            # TODO update UI element here-ish for button
+            return
+
+        selected_image = self.root.image_controller.get_selected_image()
+        selected_image.set_selected_percentile(percentile)
+        # TODO update UI element here-ish for button
+        self.set_vmin_vmax(selected_image)
+
+    # These functions listen to events and behave accordingly
+    def on_select_scaling(self, option):
+        if not self.check_if_image_selected():
+            return
+
+        self.set_scaling(option)
+        self.root.image_controller.get_selected_image().update_norm()
+        self.root.update()
+
+    def on_select_colour_map(self, option):
+        if not self.check_if_image_selected():
+            return
+
+        self.set_colour_map(option)
+        self.root.image_controller.get_selected_image().update_colour_map()
+        self.root.update()
+
+    def on_image_change(self, image):
         if image is None:
-            self.selected_scaling_option = scaling_options[0]
-            self.selected_colour_map_option = colour_map_options[0]
-        else:
-            self.update_selected_scaling(image.stretch)
-            self.update_selected_colour_map(image.colour_map)
+            self.set_scaling(None)
+            self.set_colour_map(None)
+            self.set_percentile(None)
+            self.previously_image_loaded = False
+            return
+
+        self.set_vmin_vmax(image)
+        self.set_scaling(image.stretch)
+        self.set_colour_map(image.colour_map)
+
+        if self.previously_image_loaded:
+            image.update_image_render()
+
+        self.previously_image_loaded = True
 
         self.root.update()
 
-    def update_selected_scaling(self, option):
-        self.selected_scaling_option = option
-        self.scaling_dropdown["text"] = option
-
-    def update_selected_colour_map(self, option):
-        self.selected_colour_map_option = option
-        self.colour_map_dropdown["text"] = option
-
     def check_if_image_selected(self):
-        if self.root.image_controller.get_selected_image() is None:
-            return False
-
-        return True
+        return self.root.image_controller.get_selected_image() is not None
 
     def close(self):
-        self.root.image_controller.selected_image_eh.remove(self.update_render_values)
+        self.root.image_controller.selected_image_eh.remove(self.on_image_change)
 
         super().close()
+
+
+# When the user selects a new colour map or scaling:
+# - The dropdown should update
+# - The image should re-render
+
+# When the user selects a new percentile:
+# - The selected percentile should update
+# - The vmin/vmax should update
+# - The image should re-render
+
+# When the user changes the vmin/vmax
+# - The selected percentile should update to Custom
+# - The vmin/vmax on the image should change to the custom one
+# - The image should re-render
+
+# When a new image is chosen
+# - The selected percentile should update
+# - The vmin/vmax should update
+# - The dropdowns should update
+# - The image should re-render
