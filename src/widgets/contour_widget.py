@@ -306,8 +306,7 @@ class ContourWidget(BaseWidget):
             )
             return
 
-        # TODO Should we instead just be applying this to the selected image?
-        self.data_source.update_contours(
+        self.root.image_controller.get_selected_image().update_contours(
             [float(x) for x in input.split(",")],
             gaussian_factor,
             self.line_colour,
@@ -316,8 +315,7 @@ class ContourWidget(BaseWidget):
         )
 
     def clear_contours(self):
-        # TODO Should we instead just be applying this to the selected image?
-        self.data_source.clear_contours()
+        self.root.image_controller.get_selected_image().clear_contours()
 
     def set_line_colour(self, _evt):
         cd = ColorChooserDialog(
