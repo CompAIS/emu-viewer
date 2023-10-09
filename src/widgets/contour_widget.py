@@ -327,7 +327,8 @@ class ContourWidget(BaseWidget):
 
         self.line_colour = cd.result.hex
         self.lc_button.itemconfig(self.lc_rect, fill=self.line_colour)
-        # how to grab focus here
+        # https://stackoverflow.com/a/22751955
+        self.after(1, lambda: self.focus_set())
 
     def set_line_opacity(self, value):
         value = float(value)
