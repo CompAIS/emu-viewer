@@ -124,9 +124,8 @@ class RendererWidget(BaseWidget):
         label = tb.Label(render, text="Render Options", bootstyle="inverse-light")
         label.grid(column=0, columnspan=2, row=0, sticky=tk.NSEW, padx=10, pady=10)
 
-        self.custom_options(render, "Min", 0, 1)
-
-        self.custom_options(render, "Max", 0, 2)
+        self.min_entry = self.custom_options(render, "Min", 0, 1)
+        self.max_entry = self.custom_options(render, "Max", 0, 2)
 
         self.dropdown_options(render, "Scaling", self.selected_scaling_option, 0, 3)
 
@@ -137,16 +136,10 @@ class RendererWidget(BaseWidget):
     def custom_options(self, parent, text, gridX, gridY):
         label = tb.Label(parent, text=text, bootstyle="inverse-light")
         label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
-        if text == "Min":
-            self.min_entry = tb.Entry(parent, bootstyle="dark")
-            self.min_entry.grid(
-                column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
-            )
-        elif text == "Max":
-            self.max_entry = tb.Entry(parent, bootstyle="dark")
-            self.max_entry.grid(
-                column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
-            )
+        entry = tb.Entry(parent, bootstyle="dark")
+        entry.grid(column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
+
+        return entry
 
     def dropdown_options(self, parent, text, selected_option, gridX, gridY):
         label = tb.Label(parent, text=text, bootstyle="inverse-light")
