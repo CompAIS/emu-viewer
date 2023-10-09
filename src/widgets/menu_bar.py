@@ -76,7 +76,7 @@ class MenuBar(tb.Frame):
         self.append_image_eh.invoke(file_name)
 
     def open_hips(self):
-        hips_selector = HipsSelectorWidget(self)
+        hips_selector = HipsSelectorWidget(self.parent, self)
         self.parent.wait_window(hips_selector)
 
         hips_survey = hips_selector.hips_survey
@@ -91,7 +91,7 @@ class MenuBar(tb.Frame):
         self.open_hips_eh.invoke(hips_survey)
 
     def append_hips(self):
-        hips_selector = HipsSelectorWidget(self)
+        hips_selector = HipsSelectorWidget(self.parent, self)
         self.parent.wait_window(hips_selector)
 
         hips_survey = hips_selector.hips_survey

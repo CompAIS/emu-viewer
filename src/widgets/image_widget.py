@@ -35,9 +35,10 @@ class ImageFrame(tb.Frame):
         self.vmax = 99.5
         self.stretch = "Linear"
 
-        self.image_wcs = wcs.WCS(self.image_data_header)
-        if self.image_wcs.world_n_dim > 2:
-            self.image_wcs = self.image_wcs.celestial
+        if self.image_data_header is not None:
+            self.image_wcs = wcs.WCS(self.image_data_header)
+            if self.image_wcs.world_n_dim > 2:
+                self.image_wcs = self.image_wcs.celestial
 
         self.fig, self.image = Render.create_figure(
             self.image_data,
