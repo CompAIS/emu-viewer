@@ -78,14 +78,18 @@ class ImageFrame(tb.Frame):
         self.image = Render.update_image_cmap(self.image, self.colour_map)
         self.canvas.draw()
 
-    def draw_catalogue(self, ra_coords, dec_coords):
+    def draw_catalogue(self, ra_coords, dec_coords, size, colour_outline, colour_fill):
         self.fig, self.catalogue_set = Render.draw_catalogue(
-            self.fig, ra_coords, dec_coords
+            self.fig,
+            self.catalogue_set,
+            ra_coords,
+            dec_coords,
+            size,
+            colour_outline,
+            colour_fill,
         )
         self.canvas.draw()
 
     def reset_catalogue(self):
-        self.fig, self.catalogue_set = Render.reset_catalogue(
-            self.fig, self.catalogue_set
-        )
+        self.catalogue_set = Render.reset_catalogue(self.catalogue_set)
         self.canvas.draw()

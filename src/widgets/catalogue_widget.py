@@ -33,6 +33,10 @@ class CatalogueWidget(BaseWidget):
         self.selected_ra = ""
         self.selected_dec = ""
 
+        self.size = 25
+        self.colour_outline = "green"
+        self.colour_fill = "none"
+
         self.chked_image = ImageTk.PhotoImage(
             Image.open("./resources/assets/checked_box.png")
         )
@@ -250,7 +254,15 @@ class CatalogueWidget(BaseWidget):
         button_frame = tb.Frame(parent, bootstyle="light")
         button_frame.grid(column=gridX, row=gridY, sticky=tk.SE, padx=10, pady=10)
         button_frame.rowconfigure(0, weight=1)
-        button_frame.rowconfigure((0, 1), weight=1)
+        button_frame.rowconfigure((0, 1, 2), weight=1)
+
+        config_button = tb.Button(
+            button_frame,
+            bootstyle="dark",
+            text="Config",
+            command=self.config_command,
+        )
+        config_button.grid(column=0, row=0, sticky=tk.SE, padx=10)
 
         reset_button = tb.Button(
             button_frame,
@@ -258,7 +270,7 @@ class CatalogueWidget(BaseWidget):
             text="Reset",
             command=self.reset_command,
         )
-        reset_button.grid(column=0, row=0, sticky=tk.SE, padx=10)
+        reset_button.grid(column=1, row=0, sticky=tk.SE, padx=10)
 
         apply_button = tb.Button(
             button_frame,
@@ -266,16 +278,83 @@ class CatalogueWidget(BaseWidget):
             text="Apply",
             command=self.apply_command,
         )
-        apply_button.grid(column=1, row=0, sticky=tk.SE, padx=10)
+        apply_button.grid(column=2, row=0, sticky=tk.SE, padx=10)
+
+    def config_command(self):
+        config = tk.Toplevel(self)
+        config.title("Catalogue Config")
+        config.resizable(False, False)
+
+        config.columnconfigure(0, weight=1)
+        config.rowconfigure(0, weight=1)
+
+        frame = tb.Frame(config, bootstyle="light")
+        frame.grid(column=0, row=0, sticky=tk.NSEW, padx=10, pady=10)
+
+        config.columnconfigure((0, 1), weight=1)
+        config.rowconfigure((0, 1, 2, 3), weight=1)
+
+        title_label = tb.Label(frame, text="Config Options", bootstyle="inverse-light")
+        title_label.grid(
+            column=0, row=0, columnspan=2, sticky=tk.NSEW, padx=10, pady=10
+        )
+
+        size_label = tb.Label(frame, text="Size (25)", bootstyle="inverse-light")
+        size_label.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
+
+        size_slider = tb.Scale(
+            frame,
+            from_=5,
+            to=100,
+            command=partial(self.set_size, size_label),
+            value=self.size,
+        )
+        size_slider.grid(column=1, row=1, padx=10, pady=10, sticky=tk.NSEW)
+
+        outline_label = tb.Label(
+            frame, text="Colour outline", bootstyle="inverse-light"
+        )
+        outline_label.grid(column=0, row=2, sticky=tk.NSEW, padx=10, pady=10)
+
+        outline_entry = tb.Entry(frame)
+        outline_entry.grid(column=1, row=2, sticky=tk.NSEW, padx=10, pady=10)
+
+        apply_button = tb.Button(
+            frame,
+            bootstyle="success",
+            text="Apply",
+            command=partial(self.apply_config, config, outline_entry),
+        )
+        apply_button.grid(column=1, row=3, sticky=tk.SE, padx=10)
+
+        config.grab_set()
+
+    def set_size(self, size_label, value):
+        value = float(value)
+        self.size = value
+        size_label["text"] = f"Size ({value:1.2f})"
+
+    def apply_config(self, config, outline_entry):
+        if outline_entry.get() != "":
+            self.colour_outline = outline_entry.get()
+
+        config.destroy()
 
     def reset_command(self):
         self.selected_ra = ""
         self.selected_dec = ""
         self.ra_dropdown["text"] = "Nothing selected"
         self.dec_dropdown["text"] = "Nothing selected"
+
+        if self.root.image_controller.get_selected_image().catalogue_set is None:
+            return
+
         self.root.image_controller.get_selected_image().reset_catalogue()
 
     def apply_command(self):
+        if self.selected_ra == "" or self.selected_dec == "":
+            return
+
         ra_coords = []
         for data in self.row_data[self.selected_ra]:
             ra_coords.append(data)
@@ -285,5 +364,5 @@ class CatalogueWidget(BaseWidget):
             dec_coords.append(data)
 
         self.root.image_controller.get_selected_image().draw_catalogue(
-            ra_coords, dec_coords
+            ra_coords, dec_coords, self.size, self.colour_outline, self.colour_fill
         )

@@ -66,23 +66,34 @@ def update_image_cmap(image, colour_map):
     return image
 
 
-def draw_catalogue(fig, ra_coords, dec_coords):
+def draw_catalogue(
+    fig, catalogue_set, ra_coords, dec_coords, size, colour_outline, colour_fill
+):
+    if catalogue_set is not None:
+        catalogue_set.remove()
+
     ax = fig.axes[0]
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+
     catalogue_set = ax.scatter(
         ra_coords,
         dec_coords,
-        s=25,
-        edgecolor="green",
-        facecolor=None,
-        transform=ax.get_transform("icrs"),
+        s=size,
+        edgecolor=colour_outline,
+        facecolor=colour_fill,
+        transform=ax.get_transform("world"),
     )
+
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
 
     return fig, catalogue_set
 
 
-def reset_catalogue(fig, catalogue_set):
+def reset_catalogue(catalogue_set):
     if catalogue_set is not None:
         catalogue_set.remove()
         catalogue_set = None
 
-    return fig, catalogue_set
+    return catalogue_set

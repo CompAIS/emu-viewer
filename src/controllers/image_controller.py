@@ -101,7 +101,7 @@ class ImageController(tb.Frame):
         image_data, image_header = Hips_handler.open_hips(hips_survey)
 
         new_window = StandaloneImage(
-            self, self.root, image_data, hips_survey.survey, hips_survey.survey
+            self, self.root, image_data, image_header, hips_survey.survey
         )
 
         self.open_windows.append(new_window)
