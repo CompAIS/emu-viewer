@@ -4,6 +4,7 @@ from tkinter import ttk
 
 import ttkbootstrap as tb
 from PIL import Image, ImageTk
+from ttkbootstrap.dialogs.colorchooser import ColorChooserDialog
 from ttkbootstrap.tableview import Tableview
 
 import src.lib.catalogue_handler as catalogue_handler
@@ -60,7 +61,7 @@ class CatalogueWidget(BaseWidget):
 
         self.insert_fields_table()
 
-        self.create_row_table(self.main_frame, 0, 1)
+        # self.create_row_table(self.main_frame, 0, 1)
 
         self.create_controls()
 
@@ -315,15 +316,25 @@ class CatalogueWidget(BaseWidget):
             frame, text="Colour outline", bootstyle="inverse-light"
         )
         outline_label.grid(column=0, row=2, sticky=tk.NSEW, padx=10, pady=10)
+        #
+        # outline_entry = tb.Entry(frame)
+        # outline_entry.grid(column=1, row=2, sticky=tk.NSEW, padx=10, pady=10)
 
-        outline_entry = tb.Entry(frame)
-        outline_entry.grid(column=1, row=2, sticky=tk.NSEW, padx=10, pady=10)
+        box_size = 23
+        self.outline_button = tk.Canvas(
+            frame, bg=self.colour_outline, width=box_size + 1, height=box_size + 1
+        )
+        self.outline_button.grid(column=1, row=2, sticky=tk.NSEW, padx=10)
+        self.outline_rect = self.outline_button.create_rectangle(
+            0, 0, box_size, box_size, outline="black", fill=self.colour_outline
+        )
+        self.outline_button.bind("<Button-1>", self.set_colour_outline)
 
         apply_button = tb.Button(
             frame,
             bootstyle="success",
             text="Apply",
-            command=partial(self.apply_config, config, outline_entry),
+            command=partial(self.apply_config, config),
         )
         apply_button.grid(column=1, row=3, sticky=tk.SE, padx=10)
 
@@ -334,10 +345,19 @@ class CatalogueWidget(BaseWidget):
         self.size = value
         size_label["text"] = f"Size ({value:1.2f})"
 
-    def apply_config(self, config, outline_entry):
-        if outline_entry.get() != "":
-            self.colour_outline = outline_entry.get()
+    def set_colour_outline(self, _evt):
+        cd = ColorChooserDialog(
+            initialcolor=self.colour_outline, title="Choose Outline Colour"
+        )
+        cd.show()
 
+        self.colour_outline = cd.result.hex
+        self.outline_button.itemconfig(self.outline_rect, fill=self.colour_outline)
+
+        # I don't know, ask mitchell
+        self.after(1, lambda: self.focus_set())
+
+    def apply_config(self, config):
         config.destroy()
 
     def reset_command(self):
