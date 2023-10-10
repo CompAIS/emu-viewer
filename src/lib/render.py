@@ -5,7 +5,7 @@ from matplotlib import ticker
 from matplotlib.figure import Figure
 from scipy.ndimage.filters import gaussian_filter
 
-PERCENTILES = [90, 95, 99, 99.5, 100]
+PERCENTILES = [90, 95, 99, 99.5, 99.9, 100]
 
 
 def create_figure(image_data, wcs, colour_map, vmin, vmax, s, contour_levels):
@@ -136,20 +136,16 @@ def update_contours(
 
 
 def get_percentiles(image_data):
-    ret = {}
-
     edges = []
     for percentile in PERCENTILES:
         edge = (100 - percentile) / 2
         lp, rp = edge, 100 - edge
         edges.extend([lp, rp])
 
-    print(edges)
     values = np.nanpercentile(image_data, tuple(edges))
-    print(values)
 
+    ret = {}
     for i, percentile in enumerate(PERCENTILES):
-        print(str(percentile), values[i * 2], values[i * 2 + 1])
         ret[str(percentile)] = (values[i * 2], values[i * 2 + 1])
 
     return ret

@@ -67,17 +67,21 @@ class ImageFrame(tb.Frame):
 
         self.toolbar.update()
 
-    def set_vmin_vmax(self, vmin, vmax):
+    def set_vmin_vmax_custom(self, vmin, vmax):
+        if (vmin, vmax) == (self.vmin, self.vmax):
+            return
+
         self.vmin = vmin
         self.vmax = vmax
+        self.selected_percentile = "Custom"
 
     def set_selected_percentile(self, percentile):
         self.selected_percentile = percentile
 
         if percentile == "Custom":
-            return None, None
+            return
 
-        self.set_vmin_vmax(*self.cached_percentiles[self.selected_percentile])
+        self.vmin, self.vmax = self.cached_percentiles[self.selected_percentile]
 
     def set_scaling(self, scaling):
         self.stretch = scaling

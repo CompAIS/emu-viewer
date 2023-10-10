@@ -61,9 +61,10 @@ class RendererWidget(BaseWidget):
 
     def histogram_buttons(self, parent):
         for col, percentile in enumerate([*Render.PERCENTILES, "Custom"]):
+            text = f"{percentile}%" if percentile != "Custom" else percentile
             button = tb.Button(
                 parent,
-                text=f"{percentile}%",
+                text=text,
                 bootstyle="dark",
                 command=partial(self.set_percentile, str(percentile)),
             )
@@ -71,7 +72,8 @@ class RendererWidget(BaseWidget):
 
     def histogram_graph(self, parent):
         histogram = tb.Frame(parent, bootstyle="dark")
-        histogram.grid(column=0, columnspan=5, row=1, sticky=tk.NSEW, padx=10, pady=10)
+        c = len(Render.PERCENTILES) + 1
+        histogram.grid(column=0, columnspan=c, row=1, sticky=tk.NSEW, padx=10, pady=10)
 
     def render_options(self):
         render = tb.Frame(self, width=100, bootstyle="light")
@@ -104,6 +106,7 @@ class RendererWidget(BaseWidget):
         label = tb.Label(parent, text=text, bootstyle="inverse-light")
         label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
         entry = tb.Entry(parent, bootstyle="dark")
+        entry.bind("<FocusOut>", self.on_entry_focusout)
         entry.grid(column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
 
         return entry
@@ -171,6 +174,7 @@ class RendererWidget(BaseWidget):
         selected_image.set_selected_percentile(percentile)
         # TODO update UI element here-ish for button
         self.set_vmin_vmax(selected_image)
+        self.root.image_controller.get_selected_image().update_norm()
 
     # These functions listen to events and behave accordingly
     def on_select_scaling(self, option):
@@ -187,6 +191,16 @@ class RendererWidget(BaseWidget):
 
         self.set_colour_map(option)
         self.root.image_controller.get_selected_image().update_colour_map()
+        self.root.update()
+
+    def on_entry_focusout(self, event):
+        if not self.check_if_image_selected():
+            return
+
+        vmin = float(self.min_entry.get())
+        vmax = float(self.max_entry.get())
+        self.root.image_controller.get_selected_image().set_vmin_vmax_custom(vmin, vmax)
+        self.root.image_controller.get_selected_image().update_norm()
         self.root.update()
 
     def on_image_change(self, image):
