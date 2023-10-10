@@ -37,7 +37,6 @@ class RendererWidget(BaseWidget):
 
     def __init__(self, root):
         super().__init__(root)
-        self.previously_image_loaded = self.check_if_image_selected()
 
         selected_image = self.root.image_controller.get_selected_image()
         if selected_image is None:
@@ -224,18 +223,12 @@ class RendererWidget(BaseWidget):
             self.set_scaling(None)
             self.set_colour_map(None)
             self.set_percentile(None)
-            self.previously_image_loaded = False
             return
 
         self.update_percentile_buttons()
         self.set_vmin_vmax(image)
         self.set_scaling(image.stretch)
         self.set_colour_map(image.colour_map)
-
-        if self.previously_image_loaded:
-            image.update_image_render()
-
-        self.previously_image_loaded = True
 
         self.root.update()
 
