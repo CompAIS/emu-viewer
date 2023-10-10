@@ -352,11 +352,14 @@ class ContourWidget(BaseWidget):
             initialcolor=self.line_colour, title="Choose Contour Line Colour"
         )
         cd.show()
+        # https://stackoverflow.com/a/22751955
+        self.after(1, lambda: self.focus_set())
+
+        if cd.result is None:
+            return
 
         self.line_colour = cd.result.hex
         self.lc_button.itemconfig(self.lc_rect, fill=self.line_colour)
-        # https://stackoverflow.com/a/22751955
-        self.after(1, lambda: self.focus_set())
 
     def set_line_opacity(self, value):
         value = float(value)

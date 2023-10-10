@@ -34,6 +34,8 @@ class ImageFrame(tb.Frame):
         self.vmin = 0.5
         self.vmax = 99.5
         self.stretch = "Linear"
+
+        self.catalogue_set = None
         self.contour_levels = self.contour_set = None
 
         self.image_wcs = wcs.WCS(self.image_data_header)
@@ -50,6 +52,7 @@ class ImageFrame(tb.Frame):
             self.contour_levels,
         )
         self.create_image()
+        self.canvas.draw()
 
     def create_image(self):
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.parent)
@@ -76,6 +79,21 @@ class ImageFrame(tb.Frame):
     def update_colour_map(self):
         self.image = Render.update_image_cmap(self.image, self.colour_map)
         self.canvas.draw()
+
+    def draw_catalogue(self, ra_coords, dec_coords, size, colour_outline, colour_fill):
+        self.fig, self.catalogue_set = Render.draw_catalogue(
+            self.fig,
+            self.catalogue_set,
+            ra_coords,
+            dec_coords,
+            size,
+            colour_outline,
+            colour_fill,
+        )
+        self.canvas.draw()
+
+    def reset_catalogue(self):
+        self.catalogue_set = Render.reset_catalogue(self.catalogue_set)
 
     def update_contours(
         self, new_contours, gaussian_factor, line_colour, line_opacity, line_width
