@@ -1,4 +1,3 @@
-import astropy.units as u
 import astropy.visualization as vis
 import numpy as np
 from matplotlib import ticker
@@ -14,7 +13,8 @@ def create_figure(image_data, wcs, colour_map, vmin, vmax, s, contour_levels):
 
     ax = fig.add_subplot(projection=wcs)
     fig.subplots_adjust(top=0.95, bottom=0.2, right=0.95, left=0.2, hspace=0, wspace=0)
-    ax.coords[0].set_format_unit(u.deg)
+    # Unsure whether to leave this or not
+    # ax.coords[0].set_format_unit(u.deg)
     ax.tick_params(axis="both", which="major", labelsize=5)
     ax.set_xlabel("Ra")
     ax.set_ylabel("Dec")
@@ -110,6 +110,7 @@ def clear_contours(contour_set):
 def update_contours(
     fig,
     image_data,
+    wcs,
     contour_levels,
     contour_set,
     gaussian_factor,
@@ -132,6 +133,7 @@ def update_contours(
         colors=line_colour,
         alpha=line_opacity,
         linewidths=line_width,
+        transform=fig.axes[0].get_transform(wcs),
     )
 
 

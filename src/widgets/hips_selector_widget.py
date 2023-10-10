@@ -41,9 +41,11 @@ class HipsSelectorWidget(BaseWidget):
 
     def __init__(self, root):
         super().__init__(root)
+
         self.selected_projection = ""
         self.selected_hips_survey = ""
         self.selected_image_type = ""
+        self.selected_wcs = None
 
         self.hips_survey = HipsSurvey()
 
@@ -55,39 +57,88 @@ class HipsSelectorWidget(BaseWidget):
         frame = tb.Frame(self, width=100, bootstyle="light")
         frame.grid(column=0, row=0, sticky=tk.NSEW, padx=10, pady=10)
 
-        self.ra_option(frame, "Ra", 0, 0)
+        frame.columnconfigure((0, 1, 2, 3), weight=1)
+        frame.rowconfigure((0, 1, 2, 3, 4, 5), weight=1)
 
-        self.dec_option(frame, "Dec", 0, 1)
+        self.ra_entry = tb.Entry(frame, bootstyle="dark")
+        self.dec_entry = tb.Entry(frame, bootstyle="dark")
+        self.FOV_entry = tb.Entry(frame, bootstyle="dark")
 
-        self.FOV_option(frame, "FOV", 0, 2)
+        self.image_options(frame, "Open Images", 0, 0)
 
-        self.projection_options(frame, "Projection", self.selected_projection, 0, 3)
+        self.ra_option(frame, "Ra", 0, 1)
+
+        self.dec_option(frame, "Dec", 0, 2)
+
+        self.FOV_option(frame, "FOV", 0, 3)
+
+        self.projection_options(frame, "Projection", self.selected_projection, 0, 4)
 
         self.optical_survey_options(
-            frame, "Optical Hips Surveys", self.selected_hips_survey, 2, 0
+            frame, "Optical Hips Surveys", self.selected_hips_survey, 2, 1
         )
 
         self.infrared_survey_options(
-            frame, "Infrared Hips Surveys", self.selected_hips_survey, 2, 1
+            frame, "Infrared Hips Surveys", self.selected_hips_survey, 2, 2
         )
 
         self.radio_survey_options(
-            frame, "Radio Hips Surveys", self.selected_hips_survey, 2, 2
+            frame, "Radio Hips Surveys", self.selected_hips_survey, 2, 3
         )
 
         self.xray_survey_options(
-            frame, "X-Ray Hips Surveys", self.selected_hips_survey, 2, 3
+            frame, "X-Ray Hips Surveys", self.selected_hips_survey, 2, 4
         )
 
-        self.image_type_options(frame, "Image Type", self.selected_image_type, 0, 4)
+        self.image_type_options(frame, "Image Type", self.selected_image_type, 2, 0)
 
-        self.confirm_button(frame, "Select Survey", 2, 4)
+        self.confirm_button(frame, "Select Survey", 2, 5)
+
+    def image_options(self, parent, text, gridX, gridY):
+        label = tb.Label(parent, text=text, bootstyle="inverse-light")
+        label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
+
+        dropdown = tb.Menubutton(parent, text="No image selected", bootstyle="dark")
+        dropdown.grid(column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
+
+        dropdown_menu = tk.Menu(dropdown, tearoff=0)
+
+        dropdown_menu.add_command(
+            label="No image selected",
+            command=partial(self.select_image, None, dropdown),
+        )
+
+        valid_images = []
+        for image in self.root.image_controller.get_images():
+            if image.image_data_header is not None:
+                valid_images.append(image)
+
+        for option in valid_images:
+            dropdown_menu.add_command(
+                label=option.file_name,
+                command=partial(self.select_image, option, dropdown),
+            )
+
+        dropdown["menu"] = dropdown_menu
+
+    def select_image(self, image, menu_button):
+        if image is None:
+            self.selected_wcs = None
+            menu_button["text"] = "No image selected"
+            self.ra_entry.configure(state="enabled")
+            self.dec_entry.configure(state="enabled")
+            self.FOV_entry.configure(state="enabled")
+        else:
+            self.selected_wcs = image.image_wcs
+            menu_button["text"] = image.file_name
+            self.ra_entry.configure(state="disabled")
+            self.dec_entry.configure(state="disabled")
+            self.FOV_entry.configure(state="disabled")
 
     def ra_option(self, parent, text, gridX, gridY):
         label = tb.Label(parent, text=text, bootstyle="inverse-light")
         label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
 
-        self.ra_entry = tb.Entry(parent, bootstyle="dark")
         self.ra_entry.grid(
             column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
         )
@@ -96,7 +147,6 @@ class HipsSelectorWidget(BaseWidget):
         label = tb.Label(parent, text=text, bootstyle="inverse-light")
         label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
 
-        self.dec_entry = tb.Entry(parent, bootstyle="dark")
         self.dec_entry.grid(
             column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
         )
@@ -105,7 +155,6 @@ class HipsSelectorWidget(BaseWidget):
         label = tb.Label(parent, text=text, bootstyle="inverse-light")
         label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
 
-        self.FOV_entry = tb.Entry(parent, bootstyle="dark")
         self.FOV_entry.grid(
             column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
         )
@@ -272,27 +321,39 @@ class HipsSelectorWidget(BaseWidget):
         button = tb.Button(
             parent,
             text=text,
-            bootstyle="dark",
+            bootstyle="success",
             command=partial(self.select_survey),
         )
         button.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
 
     def select_survey(self):
-        if (
-            self.ra_entry.get() == ""
-            or self.dec_entry.get() == ""
-            or self.FOV_entry.get() == ""
-            or self.selected_projection == ""
-            or self.selected_hips_survey == ""
-            or self.selected_image_type == ""
-        ):
-            return
+        if self.selected_wcs is None:
+            if (
+                self.ra_entry.get() == ""
+                or self.dec_entry.get() == ""
+                or self.FOV_entry.get() == ""
+                or self.selected_projection == ""
+                or self.selected_hips_survey == ""
+                or self.selected_image_type == ""
+            ):
+                return
 
-        self.hips_survey.ra = float(self.ra_entry.get())
-        self.hips_survey.dec = float(self.dec_entry.get())
-        self.hips_survey.FOV = float(self.FOV_entry.get())
-        self.hips_survey.projection = self.selected_projection
-        self.hips_survey.survey = self.selected_hips_survey
-        self.hips_survey.image_type = self.selected_image_type
+            self.hips_survey.ra = float(self.ra_entry.get())
+            self.hips_survey.dec = float(self.dec_entry.get())
+            self.hips_survey.FOV = float(self.FOV_entry.get())
+            self.hips_survey.projection = self.selected_projection
+            self.hips_survey.survey = self.selected_hips_survey
+            self.hips_survey.image_type = self.selected_image_type
+        else:
+            if (
+                self.selected_projection == ""
+                or self.selected_hips_survey == ""
+                or self.selected_image_type == ""
+            ):
+                return
+
+            self.hips_survey.projection = self.selected_projection
+            self.hips_survey.survey = self.selected_hips_survey
+            self.hips_survey.image_type = self.selected_image_type
 
         self.close()
