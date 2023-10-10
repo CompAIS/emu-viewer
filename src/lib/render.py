@@ -3,9 +3,10 @@ import astropy.visualization as vis
 import numpy as np
 from matplotlib import ticker
 from matplotlib.figure import Figure
+from scipy.ndimage.filters import gaussian_filter
 
 
-def create_figure(image_data, wcs, colour_map, min, max, s):
+def create_figure(image_data, wcs, colour_map, min, max, s, contour_levels):
     fig = Figure(figsize=(5, 5), dpi=150)
     fig.patch.set_facecolor("#afbac5")
 
@@ -65,7 +66,6 @@ def update_image_cmap(image, colour_map):
 
     return image
 
-
 def draw_catalogue(
     fig, catalogue_set, ra_coords, dec_coords, size, colour_outline, colour_fill
 ):
@@ -97,3 +97,37 @@ def reset_catalogue(catalogue_set):
         catalogue_set = None
 
     return catalogue_set
+
+  def clear_contours(contour_set):
+    if contour_set is not None:
+        for contour in contour_set.collections:
+            contour.remove()
+    return None
+
+
+def update_contours(
+    fig,
+    image_data,
+    contour_levels,
+    contour_set,
+    gaussian_factor,
+    line_colour,
+    line_opacity,
+    line_width,
+):
+    clear_contours(contour_set)
+
+    if contour_levels is None:
+        return None
+
+    print("I'm trying to contour!")
+
+    # https://stackoverflow.com/questions/12274529/how-to-smooth-matplotlib-contour-plot
+    image_data_smooth = gaussian_filter(image_data, gaussian_factor)
+    return fig.axes[0].contour(
+        image_data_smooth,
+        levels=contour_levels,
+        colors=line_colour,
+        alpha=line_opacity,
+        linewidths=line_width,
+    )
