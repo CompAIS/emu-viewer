@@ -38,14 +38,6 @@ class RendererWidget(BaseWidget):
     def __init__(self, root):
         super().__init__(root)
 
-        selected_image = self.root.image_controller.get_selected_image()
-        if selected_image is None:
-            self.selected_scaling_option = scaling_options[0]
-            self.selected_colour_map_option = colour_map_options[0]
-        else:
-            self.selected_scaling_option = selected_image.stretch
-            self.selected_colour_map_option = selected_image.colour_map
-
         self.histogram()
         self.render_options()
 
