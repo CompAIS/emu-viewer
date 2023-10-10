@@ -10,7 +10,6 @@ from ttkbootstrap.dialogs.colorchooser import ColorChooserDialog
 from src.lib import contour_handler
 from src.widgets.base_widget import BaseWidget
 
-
 BAD_MEAN_SIGMA = 'One of the "Mean" or "Sigma" fields is invalid. They must be floats.'
 BAD_LEVELS = (
     'The "Levels" field is invalid. It must be a comma separated list of numbers.'
@@ -117,7 +116,7 @@ class ContourWidget(BaseWidget):
 
         self.levels_entry = tb.Entry(self.frame)
         self.levels_entry.grid(column=1, row=6, padx=10, pady=10)
-  
+
         # Apply / Close buttons
         self.buttons = tb.Frame(self.frame, bootstyle="light")
         self.buttons.grid(column=3, row=7, sticky=tk.NSEW, padx=10, pady=10)
