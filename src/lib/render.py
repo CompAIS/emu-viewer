@@ -31,7 +31,9 @@ def create_figure(image_data, wcs, colour_map, min, max, s, contour_levels):
     norm = vis.ImageNormalize(stretch=stretch, vmin=vmin, vmax=vmax)
 
     # Render the scaled image data onto the figure
-    image = ax.imshow(image_data, cmap=colour_map, origin="lower", norm=norm)
+    image = ax.imshow(
+        image_data, cmap=colour_map, origin="lower", norm=norm, interpolation="nearest"
+    )
 
     cbar = fig.colorbar(image, shrink=0.5)
     tick_locator = ticker.MaxNLocator(nbins=10)
