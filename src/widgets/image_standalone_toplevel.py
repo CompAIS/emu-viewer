@@ -7,7 +7,7 @@ from src.widgets import tool_bar as tool_bar
 
 class StandaloneImage(tk.Toplevel):
     def __init__(self, parent, root, image_data, image_data_header, file_name):
-        tk.Toplevel.__init__(self, root)
+        super().__init__(root)
 
         self.parent = parent
         self.root = root

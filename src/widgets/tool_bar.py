@@ -20,7 +20,7 @@ def open_icon(file_name):
 
 class ToolBar(tb.Frame):
     def __init__(self, parent):
-        tb.Frame.__init__(self, parent, width=SIZE, bootstyle="medium")
+        super().__init__(parent, width=SIZE, bootstyle="medium")
         self.grid(column=0, row=0, sticky=tk.NSEW)
         self.grid_propagate(True)
         self.rowconfigure((0, 1, 2, 3), weight=0, uniform="a")

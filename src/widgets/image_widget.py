@@ -14,11 +14,10 @@ warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
 # Create an Image Frame
 class ImageFrame(tb.Frame):
     def __init__(self, parent, root, image_data, image_data_header, file_name):
-        tb.Frame.__init__(self, parent)
+        super().__init__(parent)
 
         # basic layout
         self.root = root
-        self.parent = parent
         self.grid(column=0, row=0, padx=10, pady=10, sticky=tk.NSEW)
         self.rowconfigure(0, weight=1, uniform="a")
         self.columnconfigure(0, weight=1, uniform="a")
@@ -58,13 +57,13 @@ class ImageFrame(tb.Frame):
         self.canvas.draw()
 
     def create_image(self):
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.parent)
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.canvas.get_tk_widget().grid(
             column=0, row=0, sticky=tk.NSEW, padx=10, pady=10
         )
         self.canvas.draw()
 
-        self.toolbar = NavigationToolbar(self.canvas, self.parent, False)
+        self.toolbar = NavigationToolbar(self.canvas, self, False)
         self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
 
         self.toolbar.update()

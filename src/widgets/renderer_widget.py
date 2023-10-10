@@ -215,6 +215,8 @@ class RendererWidget(BaseWidget):
             self.set_scaling(None)
             self.set_colour_map(None)
             self.set_percentile(None)
+            self.set_vmin_vmax(None)
+            self.update_percentile_buttons()
             return
 
         self.update_percentile_buttons()

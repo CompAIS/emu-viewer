@@ -10,11 +10,13 @@ from src.lib.event_handler import EventHandler
 from src.widgets import image_widget as iw
 from src.widgets.image_standalone_toplevel import StandaloneImage
 
+CLOSE_CONFIRM = "Are you sure you want to close all currently open images? All changes will not be saved."
+
 
 # Create Image Controller Frame
 class ImageController(tb.Frame):
     def __init__(self, parent, root):
-        tb.Frame.__init__(self, parent, bootstyle="dark")
+        super().__init__(parent, bootstyle="dark")
 
         self.root = root
         self.grid(column=1, row=0, sticky=tk.NSEW)
@@ -24,96 +26,63 @@ class ImageController(tb.Frame):
         self.selected_image = None
 
         # Add open_image as an event listener to open file
-        root.menu_controller.open_file_eh.add(self.open_image)
-        root.menu_controller.append_image_eh.add(self.append_image)
+        root.menu_controller.open_file_eh.add(self.open_fits)  # TODO handle PNG
         root.menu_controller.open_hips_eh.add(self.open_hips)
-        root.menu_controller.append_hips_eh.add(self.append_hips)
+        root.menu_controller.close_images_eh.add(self.close_images)
 
         self.main_image = None
         self.open_windows = []
 
-        self.fits_image_data = {}
-
         self.selected_image_eh = EventHandler()
         self.update_image_list_eh = EventHandler()
 
-    def open_image(self, file_path):
-        t = "You are opening another Image. Changes made will reset. Do you want to continue?"
+    def open_image(self, image_data, image_data_header, file_name):
+        if self.main_image is None:
+            self.main_image = iw.ImageFrame(
+                self, self.root, image_data, image_data_header, file_name
+            )
+            self.set_selected_image(self.main_image)
+        else:
+            new_window = StandaloneImage(
+                self, self.root, image_data, image_data_header, file_name
+            )
+            self.open_windows.append(new_window)
+            self.set_selected_image(new_window)
+
+        self.update_image_list_eh.invoke(self.get_selected_image(), self.get_images())
+
+    def open_fits(self, file_path):
+        image_data, image_data_header = Fits_handler.open_fits_file(file_path)
+        file_name = os.path.basename(file_path)
+        self.open_image(image_data, image_data_header, file_name)
+
+    def open_hips(self, hips_survey, wcs):
+        if wcs is None:
+            image_data, image_header = Hips_handler.open_hips(hips_survey)
+        else:
+            image_data, image_header = Hips_handler.open_hips_with_wcs(hips_survey, wcs)
+
+        self.open_image(image_data, image_header, hips_survey.survey)
+
+    def close_images(self):
         if self.get_selected_image() is not None and not messagebox.askyesno(
-            title="Confirmation", message=t
+            title="Confirmation", message=CLOSE_CONFIRM
         ):
             return
 
-        self.close_windows()
+        print("Closing all images...")
+        for window in self.open_windows:
+            window.destroy()
 
-        image_data, image_data_header = Fits_handler.open_fits_file(file_path)
-        self.fits_image_data[file_path] = image_data
+        self.open_windows = []
 
-        file_name = os.path.basename(file_path)
+        if self.main_image is not None:
+            self.main_image.destroy()
+            self.main_image = None
+            self.set_selected_image(None)
 
-        self.main_image = iw.ImageFrame(
-            self, self.root, image_data, image_data_header, file_name
-        )
-        self.set_selected_image(self.main_image)
-
-        self.update_image_list_eh.invoke(self.get_selected_image(), self.get_images())
-
-    def append_image(self, file_path):
-        if self.main_image is None:
-            self.open_image(file_path)
-            return
-
-        if self.fits_already_open(file_path):
-            # TODO save image header in fit_image_data with tuple???
-            # image_data = self.fits_image_data[file_path]
-            image_data, image_data_header = Fits_handler.open_fits_file(file_path)
-        else:
-            image_data, image_data_header = Fits_handler.open_fits_file(file_path)
-            self.fits_image_data[file_path] = image_data
-
-        file_name = os.path.basename(file_path)
-
-        new_window = StandaloneImage(
-            self, self.root, image_data, image_data_header, file_name
-        )
-        self.open_windows.append(new_window)
-        self.set_selected_image(new_window)
-
-        self.update_image_list_eh.invoke(self.get_selected_image(), self.get_images())
-
-    def open_hips(self, hips_survey, wcs):
-        self.close_windows()
-
-        if wcs is None:
-            image_data, image_header = Hips_handler.open_hips(hips_survey)
-        else:
-            image_data, image_header = Hips_handler.open_hips_with_wcs(hips_survey, wcs)
-
-        self.main_image = iw.ImageFrame(
-            self, self.root, image_data, image_header, hips_survey.survey
-        )
-        self.set_selected_image(self.main_image)
-
-        self.update_image_list_eh.invoke(self.get_selected_image(), self.get_images())
-
-    def append_hips(self, hips_survey, wcs):
-        if self.main_image is None:
-            self.open_hips(hips_survey)
-            return
-
-        if wcs is None:
-            image_data, image_header = Hips_handler.open_hips(hips_survey)
-        else:
-            image_data, image_header = Hips_handler.open_hips_with_wcs(hips_survey, wcs)
-
-        new_window = StandaloneImage(
-            self, self.root, image_data, image_header, hips_survey.survey
-        )
-
-        self.open_windows.append(new_window)
-        self.set_selected_image(new_window)
-
-        self.update_image_list_eh.invoke(self.get_selected_image(), self.get_images())
+        self.root.update()
+        self.update_image_list_eh.invoke(None, [])
 
     def get_selected_image(self):
         if self.selected_image is None:
@@ -142,28 +111,16 @@ class ImageController(tb.Frame):
 
         self.selected_image_eh.invoke(self.get_selected_image())
 
-    def close_windows(self):
-        for window in self.open_windows:
-            window.destroy()
-
-        self.open_windows = []
-        self.set_selected_image(None)
-
     def handle_focus(self, event):
         if self.selected_image is None:
             return
 
         self.set_selected_image(self.main_image)
 
-    def fits_already_open(self, file_path):
-        if self.fits_image_data.get(file_path) is not None:
-            return True
-
-        return False
-
     def close_appended_image(self, image):
         image.destroy()
         self.open_windows.remove(image)
 
         self.set_selected_image(self.main_image)
+        self.after(1, lambda: self.root.focus_set())
         self.update_image_list_eh.invoke(self.get_selected_image(), self.get_images())
