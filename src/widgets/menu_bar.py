@@ -16,12 +16,12 @@ class MenuBar(tb.Frame):
     append_hips_eh = EventHandler()
     open_widget_eh = EventHandler()
 
-    def __init__(self, parent):
-        tb.Frame.__init__(self, parent)
-        self.parent = parent
+    def __init__(self, root):
+        super().__init__(self, root)
+        self.root = root
         self.grid(column=0, row=0)
 
-        self.menu = tb.Menu(self.parent)
+        self.menu = tb.Menu(self.root)
 
         self.file_menu_creation()
         self.widget_menu_creation()
@@ -34,7 +34,7 @@ class MenuBar(tb.Frame):
         file_menu.add_command(label="Append Image", command=self.append_image)
         file_menu.add_command(label="Open Hips Survey", command=self.open_hips)
         file_menu.add_command(label="Append Hips Survey", command=self.append_hips)
-        file_menu.add_command(label="Exit", command=self.parent.quit)
+        file_menu.add_command(label="Exit", command=self.root.quit)
 
     def widget_menu_creation(self):
         widget_menu = tb.Menu(self.menu, tearoff=0)
@@ -76,8 +76,8 @@ class MenuBar(tb.Frame):
         self.append_image_eh.invoke(file_name)
 
     def open_hips(self):
-        hips_selector = HipsSelectorWidget(self.parent, self)
-        self.parent.wait_window(hips_selector)
+        hips_selector = HipsSelectorWidget(self.root)
+        self.root.wait_window(hips_selector)
 
         hips_survey = hips_selector.hips_survey
         wcs = hips_selector.selected_wcs
@@ -92,8 +92,8 @@ class MenuBar(tb.Frame):
         self.open_hips_eh.invoke(hips_survey, wcs)
 
     def append_hips(self):
-        hips_selector = HipsSelectorWidget(self.parent, self)
-        self.parent.wait_window(hips_selector)
+        hips_selector = HipsSelectorWidget(self.root)
+        self.root.wait_window(hips_selector)
 
         hips_survey = hips_selector.hips_survey
         wcs = hips_selector.selected_wcs

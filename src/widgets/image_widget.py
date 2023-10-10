@@ -37,9 +37,9 @@ class ImageFrame(tb.Frame):
         self.set_selected_percentile(self.selected_percentile)
 
         if self.image_data_header is not None:
-            self.image_wcs = wcs.WCS(self.image_data_header)
-            if self.image_wcs.world_n_dim > 2:
-                self.image_wcs = self.image_wcs.celestial
+            self.image_wcs = wcs.WCS(self.image_data_header).celestial
+            # if self.image_wcs.world_n_dim > 2:
+            #     self.image_wcs = self.image_wcs.celestial
 
         self.catalogue_set = None
         self.contour_levels = self.contour_set = None
@@ -121,13 +121,19 @@ class ImageFrame(tb.Frame):
         self.catalogue_set = Render.reset_catalogue(self.catalogue_set)
 
     def update_contours(
-        self, new_contours, gaussian_factor, line_colour, line_opacity, line_width
+        self,
+        data_source,
+        new_contours,
+        gaussian_factor,
+        line_colour,
+        line_opacity,
+        line_width,
     ):
         self.contour_levels = new_contours
 
         self.contour_set = Render.update_contours(
             self.fig,
-            self.image_data,
+            data_source,
             self.contour_levels,
             self.contour_set,
             gaussian_factor,

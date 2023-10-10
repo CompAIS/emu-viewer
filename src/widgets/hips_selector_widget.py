@@ -39,9 +39,8 @@ class HipsSelectorWidget(BaseWidget):
     label = "Hips Survey Selector"
     dropdown = False
 
-    def __init__(self, root, parent):
-        super().__init__(parent)
-        self.root = root
+    def __init__(self, root):
+        super().__init__(root)
 
         self.selected_projection = ""
         self.selected_hips_survey = ""
