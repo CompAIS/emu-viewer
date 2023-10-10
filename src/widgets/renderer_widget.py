@@ -239,24 +239,3 @@ class RendererWidget(BaseWidget):
         self.root.image_controller.selected_image_eh.remove(self.on_image_change)
 
         super().close()
-
-
-# When the user selects a new colour map or scaling:
-# - The dropdown should update
-# - The image should re-render
-
-# When the user selects a new percentile:
-# - The selected percentile should update
-# - The vmin/vmax should update
-# - The image should re-render
-
-# When the user changes the vmin/vmax
-# - The selected percentile should update to Custom
-# - The vmin/vmax on the image should change to the custom one
-# - The image should re-render
-
-# When a new image is chosen
-# - The selected percentile should update
-# - The vmin/vmax should update
-# - The dropdowns should update
-# - The image should re-render
