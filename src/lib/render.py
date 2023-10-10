@@ -5,8 +5,10 @@ from matplotlib import ticker
 from matplotlib.figure import Figure
 from scipy.ndimage.filters import gaussian_filter
 
+PERCENTILES = [90, 95, 99, 99.5, 99.9, 100]
 
-def create_figure(image_data, wcs, colour_map, min, max, s, contour_levels):
+
+def create_figure(image_data, wcs, colour_map, vmin, vmax, s, contour_levels):
     fig = Figure(figsize=(5, 5), dpi=150)
     fig.patch.set_facecolor("#afbac5")
 
@@ -26,8 +28,6 @@ def create_figure(image_data, wcs, colour_map, min, max, s, contour_levels):
     elif s == "Sqrt":
         stretch = vis.SqrtStretch()
 
-    vmin, vmax = np.nanpercentile(image_data, (min, max))
-
     norm = vis.ImageNormalize(stretch=stretch, vmin=vmin, vmax=vmax)
 
     # Render the scaled image data onto the figure
@@ -44,7 +44,7 @@ def create_figure(image_data, wcs, colour_map, min, max, s, contour_levels):
     return fig, image
 
 
-def update_image_norm(image, image_data, min, max, s):
+def update_image_norm(image, image_data, vmin, vmax, s):
     stretch = None
 
     if s == "Linear":
@@ -53,8 +53,6 @@ def update_image_norm(image, image_data, min, max, s):
         stretch = vis.LogStretch()
     elif s == "Sqrt":
         stretch = vis.SqrtStretch()
-
-    vmin, vmax = np.nanpercentile(image_data, (min, max))
 
     norm = vis.ImageNormalize(stretch=stretch, vmin=vmin, vmax=vmax)
 
@@ -135,3 +133,19 @@ def update_contours(
         alpha=line_opacity,
         linewidths=line_width,
     )
+
+
+def get_percentiles(image_data):
+    edges = []
+    for percentile in PERCENTILES:
+        edge = (100 - percentile) / 2
+        lp, rp = edge, 100 - edge
+        edges.extend([lp, rp])
+
+    values = np.nanpercentile(image_data, tuple(edges))
+
+    ret = {}
+    for i, percentile in enumerate(PERCENTILES):
+        ret[str(percentile)] = (values[i * 2], values[i * 2 + 1])
+
+    return ret
