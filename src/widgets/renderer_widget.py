@@ -60,15 +60,30 @@ class RendererWidget(BaseWidget):
         self.histogram_buttons(frame)
 
     def histogram_buttons(self, parent):
+        self.percentile_buttons = {}
         for col, percentile in enumerate([*Render.PERCENTILES, "Custom"]):
             text = f"{percentile}%" if percentile != "Custom" else percentile
-            button = tb.Button(
+            self.percentile_buttons[percentile] = tb.Button(
                 parent,
                 text=text,
                 bootstyle="dark",
                 command=partial(self.set_percentile, str(percentile)),
             )
-            button.grid(column=col, row=0, sticky=tk.NSEW, padx=10, pady=10)
+            self.percentile_buttons[percentile].grid(
+                column=col, row=0, sticky=tk.NSEW, padx=10, pady=10
+            )
+
+        self.update_percentile_buttons()
+
+    def update_percentile_buttons(self):
+        for percentile, button in self.percentile_buttons.items():
+            button.configure(bootstyle="dark")
+
+            if self.check_if_image_selected() and (
+                str(percentile)
+                == self.root.image_controller.get_selected_image().selected_percentile
+            ):
+                button.configure(bootstyle="medium")
 
     def histogram_graph(self, parent):
         histogram = tb.Frame(parent, bootstyle="dark")
@@ -167,12 +182,12 @@ class RendererWidget(BaseWidget):
 
         if percentile is None:
             self.set_vmin_vmax(None)
-            # TODO update UI element here-ish for button
+            self.update_percentile_buttons()
             return
 
         selected_image = self.root.image_controller.get_selected_image()
         selected_image.set_selected_percentile(percentile)
-        # TODO update UI element here-ish for button
+        self.update_percentile_buttons()
         self.set_vmin_vmax(selected_image)
         self.root.image_controller.get_selected_image().update_norm()
 
@@ -200,6 +215,7 @@ class RendererWidget(BaseWidget):
         vmin = float(self.min_entry.get())
         vmax = float(self.max_entry.get())
         self.root.image_controller.get_selected_image().set_vmin_vmax_custom(vmin, vmax)
+        self.update_percentile_buttons()
         self.root.image_controller.get_selected_image().update_norm()
         self.root.update()
 
@@ -211,6 +227,7 @@ class RendererWidget(BaseWidget):
             self.previously_image_loaded = False
             return
 
+        self.update_percentile_buttons()
         self.set_vmin_vmax(image)
         self.set_scaling(image.stretch)
         self.set_colour_map(image.colour_map)
