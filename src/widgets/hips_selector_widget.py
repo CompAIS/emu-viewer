@@ -328,21 +328,33 @@ class HipsSelectorWidget(BaseWidget):
         button.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
 
     def select_survey(self):
-        if (
-            self.ra_entry.get() == ""
-            or self.dec_entry.get() == ""
-            or self.FOV_entry.get() == ""
-            or self.selected_projection == ""
-            or self.selected_hips_survey == ""
-            or self.selected_image_type == ""
-        ):
-            return
+        if self.selected_wcs is None:
+            if (
+                self.ra_entry.get() == ""
+                or self.dec_entry.get() == ""
+                or self.FOV_entry.get() == ""
+                or self.selected_projection == ""
+                or self.selected_hips_survey == ""
+                or self.selected_image_type == ""
+            ):
+                return
 
-        self.hips_survey.ra = float(self.ra_entry.get())
-        self.hips_survey.dec = float(self.dec_entry.get())
-        self.hips_survey.FOV = float(self.FOV_entry.get())
-        self.hips_survey.projection = self.selected_projection
-        self.hips_survey.survey = self.selected_hips_survey
-        self.hips_survey.image_type = self.selected_image_type
+            self.hips_survey.ra = float(self.ra_entry.get())
+            self.hips_survey.dec = float(self.dec_entry.get())
+            self.hips_survey.FOV = float(self.FOV_entry.get())
+            self.hips_survey.projection = self.selected_projection
+            self.hips_survey.survey = self.selected_hips_survey
+            self.hips_survey.image_type = self.selected_image_type
+        else:
+            if (
+                self.selected_projection == ""
+                or self.selected_hips_survey == ""
+                or self.selected_image_type == ""
+            ):
+                return
+
+            self.hips_survey.projection = self.selected_projection
+            self.hips_survey.survey = self.selected_hips_survey
+            self.hips_survey.image_type = self.selected_image_type
 
         self.close()

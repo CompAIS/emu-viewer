@@ -81,10 +81,13 @@ class ImageController(tb.Frame):
 
         self.update_image_list_eh.invoke(self.get_selected_image(), self.get_images())
 
-    def open_hips(self, hips_survey):
+    def open_hips(self, hips_survey, wcs):
         self.close_windows()
 
-        image_data, image_header = Hips_handler.open_hips(hips_survey)
+        if wcs is None:
+            image_data, image_header = Hips_handler.open_hips(hips_survey)
+        else:
+            image_data, image_header = Hips_handler.open_hips_with_wcs(hips_survey, wcs)
 
         self.main_image = iw.ImageFrame(
             self, self.root, image_data, image_header, hips_survey.survey
@@ -93,12 +96,15 @@ class ImageController(tb.Frame):
 
         self.update_image_list_eh.invoke(self.get_selected_image(), self.get_images())
 
-    def append_hips(self, hips_survey):
+    def append_hips(self, hips_survey, wcs):
         if self.main_image is None:
             self.open_hips(hips_survey)
             return
 
-        image_data, image_header = Hips_handler.open_hips(hips_survey)
+        if wcs is None:
+            image_data, image_header = Hips_handler.open_hips(hips_survey)
+        else:
+            image_data, image_header = Hips_handler.open_hips_with_wcs(hips_survey, wcs)
 
         new_window = StandaloneImage(
             self, self.root, image_data, image_header, hips_survey.survey

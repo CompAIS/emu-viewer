@@ -80,6 +80,7 @@ class MenuBar(tb.Frame):
         self.parent.wait_window(hips_selector)
 
         hips_survey = hips_selector.hips_survey
+        wcs = hips_selector.selected_wcs
 
         if (
             hips_survey.projection == ""
@@ -88,13 +89,14 @@ class MenuBar(tb.Frame):
         ):
             return
 
-        self.open_hips_eh.invoke(hips_survey)
+        self.open_hips_eh.invoke(hips_survey, wcs)
 
     def append_hips(self):
         hips_selector = HipsSelectorWidget(self.parent, self)
         self.parent.wait_window(hips_selector)
 
         hips_survey = hips_selector.hips_survey
+        wcs = hips_selector.selected_wcs
 
         if (
             hips_survey.projection == ""
@@ -103,4 +105,4 @@ class MenuBar(tb.Frame):
         ):
             return
 
-        self.append_hips_eh.invoke(hips_survey)
+        self.append_hips_eh.invoke(hips_survey, wcs)
