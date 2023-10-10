@@ -63,6 +63,7 @@ def update_image_cmap(image, colour_map):
 
     return image
 
+
 def update_contours(fig, image_data, contour_levels, contour_set):
     if contour_set is not None:
         for contour in contour_set.collections:
