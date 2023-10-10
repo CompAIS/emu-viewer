@@ -44,6 +44,18 @@ def create_figure(image_data, wcs, colour_map, vmin, vmax, s, contour_levels):
     return fig, image
 
 
+def create_figure_png(image_data):
+    fig = Figure(figsize=(5, 5), dpi=150)
+    fig.patch.set_facecolor("#afbac5")
+    ax = fig.add_subplot()
+    fig.subplots_adjust(top=0.95, bottom=0.2, right=0.95, left=0.2, hspace=0, wspace=0)
+    ax.tick_params(axis="both", which="major", labelsize=5)
+
+    image = ax.imshow(image_data)
+
+    return fig, image
+
+
 def update_image_norm(image, image_data, vmin, vmax, s):
     stretch = None
 

@@ -16,6 +16,11 @@ class HipsSurvey:
 
 
 def open_hips(hips_survey):
+    """
+    This is opens the hips survey
+    :param hips_survey:
+    :return: image_data, image_header
+    """
     result = hips2fits.query(
         hips=hips_survey.survey,
         width=1000,
@@ -32,13 +37,9 @@ def open_hips(hips_survey):
         hdu = result[0]
 
         # some files have (1, 1, x, y) or (x, y, 1, 1) shape so we use .squeeze
-        image_data = hdu.data.squeeze()
-        image_header = hdu.header
-    else:
-        image_data = result
-        image_header = None
+        return hdu.data.squeeze(), hdu.header
 
-    return image_data, image_header
+    return result, None
 
 
 def open_hips_with_wcs(hips_survey, wcs):

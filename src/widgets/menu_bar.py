@@ -10,7 +10,8 @@ from src.widgets.hips_selector_widget import HipsSelectorWidget
 
 # Create Menu bar for tkinter window
 class MenuBar(tb.Frame):
-    open_file_eh = EventHandler()
+    open_fits_eh = EventHandler()
+    open_png_eh = EventHandler()
     open_hips_eh = EventHandler()
     close_images_eh = EventHandler()
     open_widget_eh = EventHandler()
@@ -50,14 +51,21 @@ class MenuBar(tb.Frame):
     # Open command for option in menu
     def open_file(self):
         file_name = filedialog.askopenfilename(
-            title="Select .fits file",
-            filetypes=(("Fits files", "*.fits"), ("All files", "*.*")),
+            title="Select file",
+            filetypes=(
+                ("Fits files", "*.fits"),
+                ("PNG files", "*.png"),
+                ("All files", "*.*"),
+            ),
         )
 
         if file_name == "":
             return
 
-        self.open_file_eh.invoke(file_name)
+        if file_name.endswith("fits"):
+            self.open_fits_eh.invoke(file_name)
+        elif file_name.endswith("png"):
+            self.open_png_eh.invoke(file_name)
 
     def open_hips(self):
         hips_selector = HipsSelectorWidget(self.root)

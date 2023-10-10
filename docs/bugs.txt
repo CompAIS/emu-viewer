@@ -1,3 +1,4 @@
 TODO Bugs to fix
 Catalogue widget, columns table doesn't like it when you click the headings and not a row
 Bug when closing down catalogue widget without selecting a file
+Going home on image resets render config???

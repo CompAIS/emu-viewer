@@ -6,6 +6,7 @@ import ttkbootstrap as tb
 
 import src.lib.fits_handler as Fits_handler
 import src.lib.hips_handler as Hips_handler
+import src.lib.png_handler as png_handler
 from src.lib.event_handler import EventHandler
 from src.widgets import image_widget as iw
 from src.widgets.image_standalone_toplevel import StandaloneImage
@@ -26,7 +27,8 @@ class ImageController(tb.Frame):
         self.selected_image = None
 
         # Add open_image as an event listener to open file
-        root.menu_controller.open_file_eh.add(self.open_fits)  # TODO handle PNG
+        root.menu_controller.open_fits_eh.add(self.open_fits)
+        root.menu_controller.open_png_eh.add(self.open_png)
         root.menu_controller.open_hips_eh.add(self.open_hips)
         root.menu_controller.close_images_eh.add(self.close_images)
 
@@ -36,15 +38,15 @@ class ImageController(tb.Frame):
         self.selected_image_eh = EventHandler()
         self.update_image_list_eh = EventHandler()
 
-    def open_image(self, image_data, image_data_header, file_name):
+    def open_image(self, image_data, image_data_header, file_name, file_type):
         if self.main_image is None:
             self.main_image = iw.ImageFrame(
-                self, self.root, image_data, image_data_header, file_name
+                self, self.root, image_data, image_data_header, file_name, file_type
             )
             self.set_selected_image(self.main_image)
         else:
             new_window = StandaloneImage(
-                self, self.root, image_data, image_data_header, file_name
+                self, self.root, image_data, image_data_header, file_name, file_type
             )
             self.open_windows.append(new_window)
             self.set_selected_image(new_window)
@@ -54,7 +56,12 @@ class ImageController(tb.Frame):
     def open_fits(self, file_path):
         image_data, image_data_header = Fits_handler.open_fits_file(file_path)
         file_name = os.path.basename(file_path)
-        self.open_image(image_data, image_data_header, file_name)
+        self.open_image(image_data, image_data_header, file_name, "fits")
+
+    def open_png(self, file_path):
+        image_data = png_handler.open_png_file(file_path)
+        file_name = os.path.basename(file_path)
+        self.open_image(image_data, None, file_name, "png")
 
     def open_hips(self, hips_survey, wcs):
         if wcs is None:
@@ -62,7 +69,9 @@ class ImageController(tb.Frame):
         else:
             image_data, image_header = Hips_handler.open_hips_with_wcs(hips_survey, wcs)
 
-        self.open_image(image_data, image_header, hips_survey.survey)
+        self.open_image(
+            image_data, image_header, hips_survey.survey, hips_survey.image_type
+        )
 
     def close_images(self):
         if self.get_selected_image() is not None and not messagebox.askyesno(

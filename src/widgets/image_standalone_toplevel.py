@@ -6,7 +6,9 @@ from src.widgets import tool_bar as tool_bar
 
 
 class StandaloneImage(tk.Toplevel):
-    def __init__(self, parent, root, image_data, image_data_header, file_name):
+    def __init__(
+        self, parent, root, image_data, image_data_header, file_name, file_type
+    ):
         super().__init__(root)
 
         self.parent = parent
@@ -26,7 +28,7 @@ class StandaloneImage(tk.Toplevel):
         self.dummy_frame.grid_columnconfigure(0, weight=1)
 
         self.image_frame = iw.ImageFrame(
-            self.dummy_frame, root, image_data, image_data_header, file_name
+            self.dummy_frame, root, image_data, image_data_header, file_name, file_type
         )
 
         self.bind("<FocusIn>", self.handle_focus)
