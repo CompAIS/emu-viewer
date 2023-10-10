@@ -49,9 +49,8 @@ class ImageFrame(tb.Frame):
             self.stretch,
             self.contour_levels,
         )
-
         self.create_image()
-
+  
     def create_image(self):
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.parent)
         self.canvas.get_tk_widget().grid(

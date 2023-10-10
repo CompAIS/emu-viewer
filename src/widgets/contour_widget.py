@@ -10,11 +10,16 @@ from ttkbootstrap.dialogs.colorchooser import ColorChooserDialog
 from src.lib import contour_handler
 from src.widgets.base_widget import BaseWidget
 
+
 BAD_MEAN_SIGMA = 'One of the "Mean" or "Sigma" fields is invalid. They must be floats.'
 BAD_LEVELS = (
     'The "Levels" field is invalid. It must be a comma separated list of numbers.'
 )
 BAD_LINEWIDTH_GAUSSIAN = 'One of the "Line Width" or "Gaussian Factor" fields is invalid. They must be floats.'
+BAD_MEAN_SIGMA = "The Mean or Sigma field is invalid. They must be numbers"
+BAD_LEVELS = (
+    'The "Levels" field is invalid. It must be a comma separated list of numbers.'
+)
 BAD_SIGMAS = (
     'The "Sigma List" field is invalid. It must be a comma separated list of numbers.'
 )
@@ -112,7 +117,7 @@ class ContourWidget(BaseWidget):
 
         self.levels_entry = tb.Entry(self.frame)
         self.levels_entry.grid(column=1, row=6, padx=10, pady=10)
-
+  
         # Apply / Close buttons
         self.buttons = tb.Frame(self.frame, bootstyle="light")
         self.buttons.grid(column=3, row=7, sticky=tk.NSEW, padx=10, pady=10)
@@ -197,6 +202,32 @@ class ContourWidget(BaseWidget):
             self.root.image_controller.get_selected_image(),
             self.root.image_controller.get_images(),
         )
+
+    def get_data_source(self):
+        return self.data_source
+
+    def set_data_source(self, image):
+        # clear inputs
+        self.mean_entry.delete(0, tk.END)
+        self.sigma_entry.delete(0, tk.END)
+        self.sigmas_entry.delete(0, tk.END)
+        self.levels_entry.delete(0, tk.END)
+
+        if image is None:
+            self.data_source = None
+            self.data_source_dropdown["text"] = NOTHING_OPEN
+            return
+
+        self.data_source = image
+        self.data_source_dropdown["text"] = image.file_name
+
+        # TODO Potentially remember these between data sources so that you don't lose information?
+        # TODO I guess I'm more curious what behaviour we expect here. CARTA maintains it when switching
+        self.mean_entry.insert(0, str(np.nanmean(self.data_source.image_data)))
+        self.sigma_entry.insert(0, str(np.nanstd(self.data_source.image_data)))
+        # TODO better default? this is the default from carta
+        self.sigmas_entry.insert(0, "-5,5,9,13,17")
+        self.generate_levels()
 
     def get_data_source(self):
         return self.data_source
