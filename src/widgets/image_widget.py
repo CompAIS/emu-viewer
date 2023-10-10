@@ -123,6 +123,7 @@ class ImageFrame(tb.Frame):
     def update_contours(
         self,
         data_source,
+        data_source_wcs,
         new_contours,
         gaussian_factor,
         line_colour,
@@ -134,6 +135,7 @@ class ImageFrame(tb.Frame):
         self.contour_set = Render.update_contours(
             self.fig,
             data_source,
+            data_source_wcs,
             self.contour_levels,
             self.contour_set,
             gaussian_factor,

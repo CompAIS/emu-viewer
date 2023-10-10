@@ -110,6 +110,7 @@ def clear_contours(contour_set):
 def update_contours(
     fig,
     image_data,
+    wcs,
     contour_levels,
     contour_set,
     gaussian_factor,
@@ -132,6 +133,7 @@ def update_contours(
         colors=line_colour,
         alpha=line_opacity,
         linewidths=line_width,
+        transform=fig.axes[0].get_transform(wcs),
     )
 
 

@@ -338,6 +338,7 @@ class ContourWidget(BaseWidget):
 
         self.root.image_controller.get_selected_image().update_contours(
             self.data_source.image_data,
+            self.data_source.image_wcs,
             [float(x) for x in input.split(",")],
             gaussian_factor,
             self.line_colour,

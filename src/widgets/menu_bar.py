@@ -17,7 +17,7 @@ class MenuBar(tb.Frame):
     open_widget_eh = EventHandler()
 
     def __init__(self, root):
-        super().__init__(self, root)
+        super().__init__(root)
         self.root = root
         self.grid(column=0, row=0)
 
