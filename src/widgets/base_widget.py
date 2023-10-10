@@ -11,7 +11,7 @@ class BaseWidget(tk.Toplevel):
     dropdown = None
 
     def __init__(self, root):
-        tk.Toplevel.__init__(self, root)
+        super().__init__(root)
         self.root = root
 
         if self.__class__.label is None or self.__class__.dropdown is None:

@@ -9,7 +9,7 @@ from src.widgets import tool_bar as tool_bar
 # Create Main Tkinter Window
 class MainWindow(tb.Window):
     def __init__(self):
-        tb.Window.__init__(self, themename="superhero")
+        super().__init__(themename="superhero")
         self.title("FITS Image Viewer")
         self.geometry("800x800")
 
