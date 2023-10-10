@@ -24,7 +24,7 @@ class MainWindow(tb.Window):
         self.image_controller = ic.ImageController(self, self)
         self.widget_controller = wc.WidgetController(self)
         self.widget_controller.open_widget(wc.Widget.RENDERER)
-        self.after(1, self.focus_set())
+        self.after(1, lambda: self.focus_set())
 
         self.config(menu=self.menu_controller.menu)
         self.bind("<FocusIn>", self.image_controller.handle_focus)

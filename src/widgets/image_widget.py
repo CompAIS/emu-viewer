@@ -79,7 +79,7 @@ class ImageFrame(tb.Frame):
     def update_colour_map(self):
         self.image = Render.update_image_cmap(self.image, self.colour_map)
         self.canvas.draw()
-        
+
     def draw_catalogue(self, ra_coords, dec_coords, size, colour_outline, colour_fill):
         self.fig, self.catalogue_set = Render.draw_catalogue(
             self.fig,

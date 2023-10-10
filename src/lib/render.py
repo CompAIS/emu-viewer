@@ -66,6 +66,7 @@ def update_image_cmap(image, colour_map):
 
     return image
 
+
 def draw_catalogue(
     fig, catalogue_set, ra_coords, dec_coords, size, colour_outline, colour_fill
 ):
@@ -98,7 +99,8 @@ def reset_catalogue(catalogue_set):
 
     return catalogue_set
 
-  def clear_contours(contour_set):
+
+def clear_contours(contour_set):
     if contour_set is not None:
         for contour in contour_set.collections:
             contour.remove()

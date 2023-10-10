@@ -347,12 +347,13 @@ class CatalogueWidget(BaseWidget):
             initialcolor=self.colour_outline, title="Choose Outline Colour"
         )
         cd.show()
+        self.after(1, lambda: self.focus_set())
+
+        if cd.result is None:
+            return
 
         self.colour_outline = cd.result.hex
         self.outline_button.itemconfig(self.outline_rect, fill=self.colour_outline)
-
-        # I don't know, ask mitchell
-        self.after(1, lambda: self.focus_set())
 
     def apply_config(self, config):
         config.destroy()
