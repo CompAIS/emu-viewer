@@ -24,6 +24,7 @@ BAD_SIGMAS = (
 )
 NOTHING_OPEN = "No image open"
 NO_DATA_SOURCE = "No data source is loaded."
+INVALID_IMAGE = "Cannot apply contours to png images."
 INVALID_INPUT = "Invalid Input"
 
 
@@ -212,7 +213,7 @@ class ContourWidget(BaseWidget):
         self.sigmas_entry.delete(0, tk.END)
         self.levels_entry.delete(0, tk.END)
 
-        if image is None:
+        if image is None or image.file_type == "png":
             self.data_source = None
             self.data_source_dropdown["text"] = NOTHING_OPEN
             return
@@ -291,6 +292,11 @@ class ContourWidget(BaseWidget):
             messagebox.showerror(title=INVALID_INPUT, message=NO_DATA_SOURCE)
             return
 
+        image = self.root.image_controller.get_selected_image()
+        if image is None or image.file_type == "png":
+            messagebox.showerror(title=INVALID_INPUT, message=INVALID_IMAGE)
+            return
+
         try:
             line_width = float(self.lw_entry.get())
             gaussian_factor = float(self.gaussian_entry.get())
@@ -311,7 +317,7 @@ class ContourWidget(BaseWidget):
             )
             return
 
-        self.root.image_controller.get_selected_image().update_contours(
+        image.update_contours(
             self.data_source.image_data,
             self.data_source.image_wcs,
             [float(x) for x in input.split(",")],
