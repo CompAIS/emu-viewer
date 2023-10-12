@@ -114,6 +114,7 @@ class RendererWidget(BaseWidget):
         entry = tb.Entry(parent, bootstyle="dark")
         entry.bind("<FocusOut>", self.on_entry_focusout)
         entry.grid(column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
+        entry.configure(state="disabled")
 
         return entry
 
@@ -164,8 +165,13 @@ class RendererWidget(BaseWidget):
         self.max_entry.delete(0, tk.END)
 
         if image is not None:
+            self.min_entry.configure(state="enabled")
+            self.max_entry.configure(state="enabled")
             self.min_entry.insert(0, str(image.vmin))
             self.max_entry.insert(0, str(image.vmax))
+        else:
+            self.min_entry.configure(state="disabled")
+            self.max_entry.configure(state="disabled")
 
     def set_percentile(self, percentile):
         if not self.check_if_image_selected():
@@ -211,7 +217,7 @@ class RendererWidget(BaseWidget):
         self.root.update()
 
     def on_image_change(self, image):
-        if image is None:
+        if image is None or image.file_type == "png":
             self.set_scaling(None)
             self.set_colour_map(None)
             self.set_percentile(None)
@@ -227,7 +233,8 @@ class RendererWidget(BaseWidget):
         self.root.update()
 
     def check_if_image_selected(self):
-        return self.root.image_controller.get_selected_image() is not None
+        image = self.root.image_controller.get_selected_image()
+        return image is not None and image.file_type != "png"
 
     def close(self):
         self.root.image_controller.selected_image_eh.remove(self.on_image_change)
