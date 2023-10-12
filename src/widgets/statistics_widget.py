@@ -17,9 +17,6 @@ class StatisticsWidget(BaseWidget):
         self.grid_columnconfigure(0, weight=1)
 
         self.image_dropdown = None
-        self.selected_image = self.root.image_controller.get_selected_image()
-
-        self.open_images = self.root.image_controller.get_images()
 
         self.stats_window()
 
@@ -29,10 +26,15 @@ class StatisticsWidget(BaseWidget):
         self.window = tb.Frame(self, bootstyle="light")
         self.window.grid(column=0, row=0, sticky=tk.NSEW, padx=10, pady=10)
 
-        if self.selected_image is not None:
-            self.image_options(
-                self.window, "Select Image", self.selected_image.file_name, 0, 0
-            )
+        if self.root.image_controller.get_selected_image() is not None:
+            if self.root.image_controller.get_selected_image().image_wcs is not None:
+                self.image_options(
+                    self.window,
+                    "Select Image",
+                    self.root.image_controller.get_selected_image().file_name,
+                    0,
+                    0,
+                )
 
         self.image_stats_table(self.window, 0, 1)
 
@@ -47,18 +49,20 @@ class StatisticsWidget(BaseWidget):
             column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
         )
 
-        dropdown_menu = tk.Menu(self.image_dropdown, tearoff=0)
+        self.update_dropdown(self.root.image_controller.get_images())
 
-        for option in self.open_images:
-            dropdown_menu.add_command(
-                label=option.file_name,
-                command=partial(self.select_image, option.file_name),
-            )
+    def update_dropdown(self, image_list):
+        dropdown_menu = tk.Menu(self.image_dropdown, tearoff=0)
+        for image in image_list:
+            if image.image_wcs is not None:
+                dropdown_menu.add_command(
+                    label=image.file_name,
+                    command=partial(self.select_image, image.file_name),
+                )
 
         self.image_dropdown["menu"] = dropdown_menu
 
     def select_image(self, option):
-        self.selected_image = option
         self.image_dropdown["text"] = option
 
     def image_stats_table(self, parent, gridX, gridY):
@@ -74,29 +78,15 @@ class StatisticsWidget(BaseWidget):
         self.table.insert("", tk.END, text=stat, values=value)
 
     def update_open_images(self, selected_image, image_list):
-        self.selected_image = selected_image
-
-        self.open_images = image_list
-
         if self.image_dropdown is None:
-            self.image_options(
-                self.window, "Select Image", self.selected_image.file_name, 0, 0
-            )
+            if selected_image.image_wcs is not None:
+                self.image_options(
+                    self.window, "Select Image", selected_image.file_name, 0, 0
+                )
         else:
-            self.update_image_options()
+            self.update_dropdown(image_list)
 
         self.root.update()
-
-    def update_image_options(self):
-        dropdown_menu = tk.Menu(self.image_dropdown, tearoff=0)
-
-        for option in self.open_images:
-            dropdown_menu.add_command(
-                label=option.file_name,
-                command=partial(self.select_image, option.file_name),
-            )
-
-        self.image_dropdown["menu"] = dropdown_menu
 
     def close(self):
         self.root.image_controller.update_image_list_eh.remove(self.update_open_images)
