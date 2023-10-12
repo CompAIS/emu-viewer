@@ -101,3 +101,19 @@ class NavigationToolbar(NavigationToolbar2Tk):
             fig.savefig(fname, bbox_inches=extent)
         except Exception as e:
             tkinter.messagebox.showerror("Error saving file", str(e))
+
+    @staticmethod
+    def _mouse_event_to_message(event):
+        """
+        Stolen from base class. The base class was attaching some extra text to our tooltip.
+        We don't want that, so I've forcibly removed it here.
+        """
+
+        if event.inaxes and event.inaxes.get_navigate():
+            try:
+                s = event.inaxes.format_coord(event.xdata, event.ydata)
+            except (ValueError, OverflowError) as e:
+                print(e)
+            else:
+                return s.rstrip()
+        return ""

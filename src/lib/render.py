@@ -19,6 +19,21 @@ def create_figure(image_data, wcs, colour_map, vmin, vmax, s, contour_levels):
     ax.set_xlabel("Ra")
     ax.set_ylabel("Dec")
 
+    def format_coord(x, y):
+        c = wcs.pixel_to_world(x, y)
+
+        decimal = c.to_string(style="decimal", precision=2).replace(" ", ", ")
+        sexigesimal = c.to_string(
+            style="hmsdms", sep=":", pad=True, precision=2
+        ).replace(" ", ", ")
+        # Yes, round, not floor.
+        pix = f"{round(x)}, {round(y)}"
+
+        return f"WCS: ({decimal}); ({sexigesimal}); Image: ({pix})"
+
+    # https://matplotlib.org/stable/gallery/images_contours_and_fields/image_zcoord.html
+    ax.format_coord = format_coord
+
     stretch = None
 
     if s == "Linear":
