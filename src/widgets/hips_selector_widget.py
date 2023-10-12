@@ -110,7 +110,7 @@ class HipsSelectorWidget(BaseWidget):
 
         valid_images = []
         for image in self.root.image_controller.get_images():
-            if image.image_data_header is not None:
+            if image.image_wcs is not None:
                 valid_images.append(image)
 
         for option in valid_images:

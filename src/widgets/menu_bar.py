@@ -53,8 +53,7 @@ class MenuBar(tb.Frame):
         file_name = filedialog.askopenfilename(
             title="Select file",
             filetypes=(
-                ("Fits files", "*.fits"),
-                ("PNG files", "*.png"),
+                ("Fits/Png files", "*.fits *.png"),
                 ("All files", "*.*"),
             ),
         )

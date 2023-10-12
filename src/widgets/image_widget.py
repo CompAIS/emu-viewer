@@ -27,6 +27,7 @@ class ImageFrame(tb.Frame):
         # Image data and file name
         self.image_data = image_data
         self.image_data_header = image_data_header
+        self.image_wcs = None
         self.file_name = file_name
         self.file_type = file_type
 
@@ -98,7 +99,6 @@ class ImageFrame(tb.Frame):
     def update_norm(self):
         self.image = Render.update_image_norm(
             self.image,
-            self.image_data,
             self.vmin,
             self.vmax,
             self.stretch,
@@ -123,6 +123,7 @@ class ImageFrame(tb.Frame):
 
     def reset_catalogue(self):
         self.catalogue_set = Render.reset_catalogue(self.catalogue_set)
+        self.canvas.draw()
 
     def update_contours(
         self,

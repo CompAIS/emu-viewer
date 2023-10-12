@@ -228,32 +228,6 @@ class ContourWidget(BaseWidget):
         self.sigmas_entry.insert(0, "-5,5,9,13,17")
         self.generate_levels()
 
-    def get_data_source(self):
-        return self.data_source
-
-    def set_data_source(self, image):
-        # clear inputs
-        self.mean_entry.delete(0, tk.END)
-        self.sigma_entry.delete(0, tk.END)
-        self.sigmas_entry.delete(0, tk.END)
-        self.levels_entry.delete(0, tk.END)
-
-        if image is None:
-            self.data_source = None
-            self.data_source_dropdown["text"] = NOTHING_OPEN
-            return
-
-        self.data_source = image
-        self.data_source_dropdown["text"] = image.file_name
-
-        # TODO Potentially remember these between data sources so that you don't lose information?
-        # TODO I guess I'm more curious what behaviour we expect here. CARTA maintains it when switching
-        self.mean_entry.insert(0, str(np.nanmean(self.data_source.image_data)))
-        self.sigma_entry.insert(0, str(np.nanstd(self.data_source.image_data)))
-        # TODO better default? this is the default from carta
-        self.sigmas_entry.insert(0, "-5,5,9,13,17")
-        self.generate_levels()
-
     def update_dropdown(self, selected_image, image_list):
         # Always change the commands to match the current list
         self.data_source_menu = tk.Menu(self.data_source_dropdown, tearoff=0)
@@ -261,13 +235,14 @@ class ContourWidget(BaseWidget):
 
         selected_still_open = False
         for image in image_list:
-            self.data_source_menu.add_command(
-                label=image.file_name,
-                command=partial(self.set_data_source, image),
-            )
+            if image.image_wcs is not None:
+                self.data_source_menu.add_command(
+                    label=image.file_name,
+                    command=partial(self.set_data_source, image),
+                )
 
-            if image == self.data_source:
-                selected_still_open = True
+                if image == self.data_source:
+                    selected_still_open = True
 
         if len(image_list) == 0:
             # If the image list is empty, default text in the dropdown
