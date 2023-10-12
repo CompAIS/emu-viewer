@@ -20,30 +20,16 @@ def create_figure(image_data, wcs, colour_map, vmin, vmax, s, contour_levels):
     ax.set_ylabel("Dec")
 
     def format_coord(x, y):
-        try:
-            o = ""
-            c = wcs.pixel_to_world(x, y)
+        c = wcs.pixel_to_world(x, y)
 
-            # speculating how we might allow the user to change the formatting here
-            # multiple checkboxes for each format, we display the selected
-            if True:
-                decimal = c.to_string(style="decimal", precision=2).replace(" ", ", ")
-                o += f"\n({decimal})"
+        decimal = c.to_string(style="decimal", precision=2).replace(" ", ", ")
+        sexigesimal = c.to_string(
+            style="hmsdms", sep=":", pad=True, precision=2
+        ).replace(" ", ", ")
+        # Yes, round, not floor.
+        pix = f"{round(x)}, {round(y)}"
 
-            if True:
-                sexigesimal = c.to_string(
-                    style="hmsdms", sep=":", pad=True, precision=2
-                ).replace(" ", ", ")
-                o += f"\n({sexigesimal})"
-
-            # pixel values
-            if True:
-                o += f"\nImage: ({round(x)}, {round(y)})"  # Yes, round, not floor.
-
-            return o.lstrip()
-        except Exception as e:
-            print(e)
-            return ""
+        return f"WCS: ({decimal}); ({sexigesimal}); Image: ({pix})"
 
     # https://matplotlib.org/stable/gallery/images_contours_and_fields/image_zcoord.html
     ax.format_coord = format_coord
