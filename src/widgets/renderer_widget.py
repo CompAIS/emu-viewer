@@ -91,7 +91,7 @@ class RendererWidget(BaseWidget):
             return
 
         # get fits data
-        image_data = self.selected_image.fits_file[0].data.squeeze()
+        image_data = self.root.image_controller.get_selected_image().image_data
 
         # create histogram
         plt.figure()
