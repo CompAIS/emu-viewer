@@ -236,14 +236,16 @@ class ContourWidget(BaseWidget):
 
         selected_still_open = False
         for image in image_list:
-            if image.image_wcs is not None:
-                self.data_source_menu.add_command(
-                    label=image.file_name,
-                    command=partial(self.set_data_source, image),
-                )
+            if image.image_wcs is None:
+                continue
 
-                if image == self.data_source:
-                    selected_still_open = True
+            self.data_source_menu.add_command(
+                label=image.file_name,
+                command=partial(self.set_data_source, image),
+            )
+
+            if image == self.data_source:
+                selected_still_open = True
 
         if len(image_list) == 0:
             # If the image list is empty, default text in the dropdown

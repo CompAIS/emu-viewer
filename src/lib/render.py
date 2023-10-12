@@ -49,7 +49,6 @@ def create_figure_png(image_data):
     fig.patch.set_facecolor("#afbac5")
     ax = fig.add_subplot()
     fig.subplots_adjust(top=0.95, bottom=0.2, right=0.95, left=0.2, hspace=0, wspace=0)
-    # ax.tick_params(axis="both", which="major", labelsize=5)
     ax.tick_params(
         labelbottom=False,
         labeltop=False,

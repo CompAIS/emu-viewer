@@ -16,11 +16,6 @@ class HipsSurvey:
 
 
 def open_hips(hips_survey):
-    """
-    This is opens the hips survey
-    :param hips_survey:
-    :return: image_data, image_header
-    """
     result = hips2fits.query(
         hips=hips_survey.survey,
         width=1000,
