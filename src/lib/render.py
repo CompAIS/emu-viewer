@@ -173,3 +173,29 @@ def get_percentiles(image_data):
         ret[str(percentile)] = (values[i * 2], values[i * 2 + 1])
 
     return ret
+
+
+def histogram(image_data):
+    fig = Figure(figsize=(3.24, 1.2), dpi=150)
+    fig.patch.set_facecolor("#afbac5")
+    ax = fig.add_subplot()
+    fig.subplots_adjust(top=1, bottom=0.25, right=1, left=0, hspace=0, wspace=0)
+    ax.tick_params(
+        which="major",
+        labelsize=5,
+        labelleft=False,
+        left=False,
+    )
+    ax.set_xlabel("")
+    ax.set_ylabel("")
+
+    ax.set_yscale("log")
+
+    counts, bins = np.histogram(
+        image_data,
+        bins=1000,
+    )
+
+    image = ax.stairs(counts, bins)
+
+    return fig, image

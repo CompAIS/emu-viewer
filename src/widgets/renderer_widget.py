@@ -2,6 +2,7 @@ import tkinter as tk
 from functools import partial
 
 import ttkbootstrap as tb
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import src.lib.render as Render
 from src.widgets.base_widget import BaseWidget
@@ -44,11 +45,13 @@ class RendererWidget(BaseWidget):
         self.root.image_controller.selected_image_eh.add(self.on_image_change)
 
     def histogram(self):
-        frame = tb.Frame(self, bootstyle="light")
-        frame.grid(column=0, row=0, sticky=tk.NSEW, padx=10, pady=10)
+        self.histogram_main_frame = tb.Frame(self, bootstyle="light")
+        self.histogram_main_frame.grid(
+            column=0, row=0, sticky=tk.NSEW, padx=10, pady=10
+        )
 
-        self.histogram_graph(frame)
-        self.histogram_buttons(frame)
+        self.histogram_graph(self.histogram_main_frame)
+        self.histogram_buttons(self.histogram_main_frame)
 
     def histogram_buttons(self, parent):
         self.percentile_buttons = {}
@@ -79,7 +82,24 @@ class RendererWidget(BaseWidget):
     def histogram_graph(self, parent):
         histogram = tb.Frame(parent, bootstyle="dark")
         c = len(Render.PERCENTILES) + 1
-        histogram.grid(column=0, columnspan=c, row=1, sticky=tk.NSEW, padx=10, pady=10)
+        histogram.grid(
+            column=0, columnspan=c, row=1, sticky=tk.NSEW, padx=10, pady=(10, 0)
+        )
+
+        # self.fig = None
+        # self.canvas = None
+
+        if self.check_if_image_selected():
+            image_selected = self.root.image_controller.get_selected_image()
+
+            fig, image = Render.histogram(
+                image_selected.image_data,
+            )
+
+            canvas = FigureCanvasTkAgg(fig, master=histogram)
+            canvas.get_tk_widget().grid(column=0, row=0, sticky=tk.NSEW)
+
+            canvas.draw()
 
     def render_options(self):
         render = tb.Frame(self, width=100, bootstyle="light")
@@ -214,6 +234,7 @@ class RendererWidget(BaseWidget):
         self.root.image_controller.get_selected_image().set_vmin_vmax_custom(vmin, vmax)
         self.update_percentile_buttons()
         self.root.image_controller.get_selected_image().update_norm()
+        self.histogram_graph(self.histogram_main_frame)
         self.root.update()
 
     def on_image_change(self, image):
@@ -229,6 +250,7 @@ class RendererWidget(BaseWidget):
         self.set_vmin_vmax(image)
         self.set_scaling(image.stretch)
         self.set_colour_map(image.colour_map)
+        self.histogram_graph(self.histogram_main_frame)
 
         self.root.update()
 
