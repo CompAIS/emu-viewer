@@ -57,6 +57,9 @@ class ImageFrame(tb.Frame):
                 self.contour_levels,
             )
 
+            self.vmin_line = None
+            self.vmax_line = None
+
             self.histogram = Render.create_histogram(
                 self.image_data, *self.cached_percentiles["100"]
             )
@@ -157,3 +160,8 @@ class ImageFrame(tb.Frame):
     def clear_contours(self):
         self.contour_set = Render.clear_contours(self.contour_set)
         self.canvas.draw()
+
+    def update_histogram_lines(self):
+        self.histogram, self.vmin_line, self.vmax_line = Render.update_histogram_lines(
+            self.histogram, self.vmin, self.vmax, self.vmin_line, self.vmax_line
+        )

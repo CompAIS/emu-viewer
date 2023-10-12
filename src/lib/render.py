@@ -176,7 +176,7 @@ def get_percentiles(image_data):
 
 
 def create_histogram(image_data, min, max):
-    fig = Figure(figsize=(3.24, 1.2), dpi=150)
+    fig = Figure(figsize=(3.24, 1.1733333), dpi=150)
     fig.patch.set_facecolor("#afbac5")
     ax = fig.add_subplot()
     fig.subplots_adjust(top=1, bottom=0.25, right=1, left=0, hspace=0, wspace=0)
@@ -191,8 +191,26 @@ def create_histogram(image_data, min, max):
 
     ax.set_yscale("log")
 
-    counts, bins = np.histogram(image_data, bins=1000, range=(min, max))
+    counts, bins = np.histogram(image_data, bins=10000, range=(min, max))
 
     ax.stairs(counts, bins)
 
     return fig
+
+
+def update_histogram_lines(fig, vmin, vmax, min_line, max_line):
+    if min_line is not None:
+        min_line.remove()
+
+    if max_line is not None:
+        max_line.remove()
+
+    ax = fig.axes[0]
+    min_line = ax.axvline(
+        vmin, color="red", label="Min", linestyle="solid", linewidth=0.5
+    )
+    max_line = ax.axvline(
+        vmax, color="red", label="Max", linestyle="solid", linewidth=0.5
+    )
+
+    return fig, min_line, max_line

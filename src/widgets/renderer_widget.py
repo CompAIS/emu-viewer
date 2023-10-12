@@ -88,13 +88,14 @@ class RendererWidget(BaseWidget):
             column=0, columnspan=c, row=1, sticky=tk.NSEW, padx=10, pady=(10, 0)
         )
 
-        if self.canvas is not None:
-            self.canvas.get_tk_widget().destroy()
-
         if self.check_if_image_selected():
             image_selected = self.root.image_controller.get_selected_image()
 
+            image_selected.update_histogram_lines()
             fig = image_selected.histogram
+
+            if self.canvas is not None:
+                self.canvas.get_tk_widget().destroy()
 
             self.canvas = FigureCanvasTkAgg(fig, master=histogram)
             self.canvas.get_tk_widget().grid(column=0, row=0, sticky=tk.NSEW)
@@ -205,6 +206,7 @@ class RendererWidget(BaseWidget):
         selected_image.set_selected_percentile(percentile)
         self.update_percentile_buttons()
         self.set_vmin_vmax(selected_image)
+        self.histogram_graph(self.histogram_main_frame)
         self.root.image_controller.get_selected_image().update_norm()
 
     # These functions listen to events and behave accordingly
