@@ -381,6 +381,9 @@ class CatalogueWidget(BaseWidget):
         for data in self.row_data[self.selected_dec]:
             dec_coords.append(data)
 
+        if self.root.image_controller.get_selected_image().image_wcs is None:
+            return
+
         self.root.image_controller.get_selected_image().draw_catalogue(
             ra_coords, dec_coords, self.size, self.colour_outline, self.colour_fill
         )

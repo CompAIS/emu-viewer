@@ -1,3 +1,4 @@
 # use this folder to store your own example data
 *.fits
 *.xml
+*.png

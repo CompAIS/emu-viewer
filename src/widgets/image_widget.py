@@ -13,7 +13,9 @@ warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
 
 # Create an Image Frame
 class ImageFrame(tb.Frame):
-    def __init__(self, parent, root, image_data, image_data_header, file_name):
+    def __init__(
+        self, parent, root, image_data, image_data_header, file_name, file_type
+    ):
         super().__init__(parent)
 
         # basic layout
@@ -25,7 +27,9 @@ class ImageFrame(tb.Frame):
         # Image data and file name
         self.image_data = image_data
         self.image_data_header = image_data_header
+        self.image_wcs = None
         self.file_name = file_name
+        self.file_type = file_type
 
         # Default render config
         self.updating = False
@@ -42,16 +46,18 @@ class ImageFrame(tb.Frame):
 
         self.catalogue_set = None
         self.contour_levels = self.contour_set = None
-
-        self.fig, self.image = Render.create_figure(
-            self.image_data,
-            self.image_wcs,
-            self.colour_map,
-            self.vmin,
-            self.vmax,
-            self.stretch,
-            self.contour_levels,
-        )
+        if file_type == "fits":
+            self.fig, self.image = Render.create_figure(
+                self.image_data,
+                self.image_wcs,
+                self.colour_map,
+                self.vmin,
+                self.vmax,
+                self.stretch,
+                self.contour_levels,
+            )
+        else:
+            self.fig, self.image = Render.create_figure_png(self.image_data)
 
         self.create_image()
         self.canvas.draw()
@@ -93,7 +99,6 @@ class ImageFrame(tb.Frame):
     def update_norm(self):
         self.image = Render.update_image_norm(
             self.image,
-            self.image_data,
             self.vmin,
             self.vmax,
             self.stretch,
@@ -118,6 +123,7 @@ class ImageFrame(tb.Frame):
 
     def reset_catalogue(self):
         self.catalogue_set = Render.reset_catalogue(self.catalogue_set)
+        self.canvas.draw()
 
     def update_contours(
         self,

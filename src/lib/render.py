@@ -44,7 +44,30 @@ def create_figure(image_data, wcs, colour_map, vmin, vmax, s, contour_levels):
     return fig, image
 
 
-def update_image_norm(image, image_data, vmin, vmax, s):
+def create_figure_png(image_data):
+    fig = Figure(figsize=(5, 5), dpi=150)
+    fig.patch.set_facecolor("#afbac5")
+    ax = fig.add_subplot()
+    fig.subplots_adjust(top=0.95, bottom=0.2, right=0.95, left=0.2, hspace=0, wspace=0)
+    ax.tick_params(
+        labelbottom=False,
+        labeltop=False,
+        labelleft=False,
+        labelright=False,
+        bottom=False,
+        top=False,
+        left=False,
+        right=False,
+    )
+    ax.set_xlabel("")
+    ax.set_ylabel("")
+
+    image = ax.imshow(image_data)
+
+    return fig, image
+
+
+def update_image_norm(image, vmin, vmax, s):
     stretch = None
 
     if s == "Linear":
@@ -95,9 +118,8 @@ def draw_catalogue(
 def reset_catalogue(catalogue_set):
     if catalogue_set is not None:
         catalogue_set.remove()
-        catalogue_set = None
 
-    return catalogue_set
+    return None
 
 
 def clear_contours(contour_set):
