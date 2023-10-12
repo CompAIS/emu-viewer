@@ -175,7 +175,7 @@ def get_percentiles(image_data):
     return ret
 
 
-def histogram(image_data):
+def create_histogram(image_data, min, max):
     fig = Figure(figsize=(3.24, 1.2), dpi=150)
     fig.patch.set_facecolor("#afbac5")
     ax = fig.add_subplot()
@@ -191,11 +191,8 @@ def histogram(image_data):
 
     ax.set_yscale("log")
 
-    counts, bins = np.histogram(
-        image_data,
-        bins=1000,
-    )
+    counts, bins = np.histogram(image_data, bins=1000, range=(min, max))
 
-    image = ax.stairs(counts, bins)
+    ax.stairs(counts, bins)
 
-    return fig, image
+    return fig

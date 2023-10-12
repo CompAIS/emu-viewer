@@ -39,6 +39,8 @@ class RendererWidget(BaseWidget):
     def __init__(self, root):
         super().__init__(root)
 
+        self.canvas = None
+
         self.histogram()
         self.render_options()
 
@@ -80,26 +82,23 @@ class RendererWidget(BaseWidget):
                 button.configure(bootstyle="medium")
 
     def histogram_graph(self, parent):
-        histogram = tb.Frame(parent, bootstyle="dark")
+        histogram = tb.Frame(parent, bootstyle="light")
         c = len(Render.PERCENTILES) + 1
         histogram.grid(
             column=0, columnspan=c, row=1, sticky=tk.NSEW, padx=10, pady=(10, 0)
         )
 
-        # self.fig = None
-        # self.canvas = None
+        if self.canvas is not None:
+            self.canvas.get_tk_widget().destroy()
 
         if self.check_if_image_selected():
             image_selected = self.root.image_controller.get_selected_image()
 
-            fig, image = Render.histogram(
-                image_selected.image_data,
-            )
+            fig = image_selected.histogram
 
-            canvas = FigureCanvasTkAgg(fig, master=histogram)
-            canvas.get_tk_widget().grid(column=0, row=0, sticky=tk.NSEW)
-
-            canvas.draw()
+            self.canvas = FigureCanvasTkAgg(fig, master=histogram)
+            self.canvas.get_tk_widget().grid(column=0, row=0, sticky=tk.NSEW)
+            self.canvas.draw()
 
     def render_options(self):
         render = tb.Frame(self, width=100, bootstyle="light")

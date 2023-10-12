@@ -56,6 +56,10 @@ class ImageFrame(tb.Frame):
                 self.stretch,
                 self.contour_levels,
             )
+
+            self.histogram = Render.create_histogram(
+                self.image_data, *self.cached_percentiles["100"]
+            )
         else:
             self.fig, self.image = Render.create_figure_png(self.image_data)
 
