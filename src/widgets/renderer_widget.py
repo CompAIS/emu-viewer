@@ -100,7 +100,6 @@ class RendererWidget(BaseWidget):
         plt.ylabel("Frequency")
         plt.title("Histogram")
         plt.yscale("log")
-        
         plt.show()
 
         self.histogram_canvas.update()
