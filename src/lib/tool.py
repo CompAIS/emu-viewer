@@ -59,13 +59,13 @@ class NavigationToolbar(NavigationToolbar2Tk):
                 "type_figure",
             ),
             (None, None, None, None),
-            (
-                "Erase",
-                "Erase  annotations on figure",
-                f"{ASSETS_FOLDER}/bin",
-                "erase_annotations",
-            ),
-            (None, None, None, None),
+            # (
+            #     "Erase",
+            #     "Erase  annotations on figure",
+            #     f"{ASSETS_FOLDER}/bin",
+            #     "erase_annotations",
+            # ),
+            # (None, None, None, None),
             (
                 "Clear",
                 "Clear all annotations on figure",
@@ -83,27 +83,52 @@ class NavigationToolbar(NavigationToolbar2Tk):
             ("Save", "Save the figure", "filesave", "save_figure"),
         )
         super().__init__(canvas, parent, pack_toolbar=pack)
+        # Initialize button_press_callback and motion_notify_callback
+        self.button_press_callback = None
+        self.motion_notify_callback = None
 
-    def erase_annotations(self):
-        print("Erase annotations")
+    # def erase_annotations(self):
+    #     # Disconnect the event handlers for the "Type" tool
+    #     if hasattr(self, "button_press_callback") and self.button_press_callback is not None:
+    #         self.canvas.mpl_disconnect(self.button_press_callback)
+
+    #     # Disconnect the event handlers for the "Line" tool
+    #     if hasattr(self, "motion_notify_callback") and self.motion_notify_callback is not None:
+    #         self.canvas.mpl_disconnect(self.motion_notify_callback)
+
+    #     # Connect the event handlers for erasing
+    #     self.canvas.mpl_connect("button_press_event", self.on_click_to_erase)
+    #     self.canvas.mpl_connect("motion_notify_event", self.on_drag_to_erase)
+
+    # def on_click_to_erase(self, event):
+    #     print("on click erase active")
+
+    # def on_drag_to_erase(self, event):
+    #     print("on click drag erase active")
 
     def draw_line(self):
+        # Disconnect the event handlers for the "Type" tool
+        if hasattr(self, "button_press_callback"):
+            self.canvas.mpl_disconnect(self.button_press_callback)
+
+        self.canvas.mpl_disconnect(
+            self.button_press_callback
+        )  # Make sure text button isn't active
         if not self.canvas.widgetlock.available(self):
             self.set_message("line tool unavailable")
             return
         if self.mode == "line_tool":
             self.mode = ""
             self.canvas.widgetlock.release(self)
-            self.canvas.mpl_disconnect(self.button_press_callback)
-            self.canvas.mpl_disconnect(
-                self.motion_notify_callback
-            )  # Disconnect motion event
         elif self.mode != "line_tool":
             self.canvas.widgetlock(self)
             self.mode = "line_tool"
-            self.canvas.mpl_connect("button_press_event", self.on_left_click)
-            self.canvas.mpl_connect("motion_notify_event", self.on_motion_notify)
-
+            self.button_press_callback = self.canvas.mpl_connect(
+                "button_press_event", self.on_left_click
+            )
+            self.motion_notify_callback = self.canvas.mpl_connect(
+                "motion_notify_event", self.on_motion_notify
+            )
         self.clicked_points = []
 
     def on_left_click(self, event):
@@ -151,22 +176,21 @@ class NavigationToolbar(NavigationToolbar2Tk):
             self.canvas.draw()
 
     def type_figure(self):
-        if not self.canvas.widgetlock.available(self):
-            self.set_message("type tool unavailable")
-            return
-        if self.mode == "type_tool":
-            self.mode = ""
-            self.canvas.widgetlock.release(self)
+        # Disconnect the event handlers for the "Line" tool
+        if hasattr(self, "button_press_callback"):
             self.canvas.mpl_disconnect(self.button_press_callback)
-        elif self.mode != "type_tool":
-            self.canvas.widgetlock(self)
-            self.mode = "type_tool"
-            self.set_message("Click on the figure to place text")
+        if hasattr(self, "motion_notify_callback"):
+            self.canvas.mpl_disconnect(self.motion_notify_callback)
 
-            if not hasattr(self, "button_press_callback"):
-                self.button_press_callback = self.canvas.mpl_connect(
-                    "button_press_event", self.on_click
-                )
+        # Activate the "Type" tool
+        self.canvas.widgetlock(self)
+        self.mode = "type_tool"
+        self.set_message("Click on the figure to place text")
+
+        # Connect a new event handler for the button press event
+        self.button_press_callback = self.canvas.mpl_connect(
+            "button_press_event", self.on_click
+        )
 
     def on_click(self, event):
         # On click event for the typing button
@@ -174,7 +198,7 @@ class NavigationToolbar(NavigationToolbar2Tk):
             x, y = event.xdata, event.ydata
             ax = event.inaxes
 
-            # Prompt user to enter text
+            # Prompt the user to enter text
             text = simpledialog.askstring("Type on Figure", "Enter text:")
 
             if text:
@@ -182,7 +206,10 @@ class NavigationToolbar(NavigationToolbar2Tk):
                 self.canvas.draw()
                 self.set_message("")
 
-        self.canvas.mpl_disconnect(self.button_press_callback)
+            if self.button_press_callback is not None:
+                # Disconnect the event handler
+                self.canvas.mpl_disconnect(self.button_press_callback)
+                self.button_press_callback = None
 
     def clear_all(self):
         # Clear annotations button, creates a popup to allow user to select
