@@ -5,6 +5,7 @@ import tkinter.simpledialog
 from tkinter import simpledialog, ttk
 
 import matplotlib as mpl
+import ttkbootstrap as tb
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 
 # Very janky fix to get custom images to display, not sure how to edit matplotlib cbook images
@@ -76,7 +77,7 @@ class NavigationToolbar(NavigationToolbar2Tk):
             (
                 "Settings",
                 "Annotation Settings",
-                f"{ASSETS_FOLDER}/settings",
+                "subplots",
                 "annotation_settings",
             ),
             (None, None, None, None),
@@ -212,42 +213,47 @@ class NavigationToolbar(NavigationToolbar2Tk):
                 self.button_press_callback = None
 
     def clear_all(self):
-        # Clear annotations button, creates a popup to allow user to select
-        # lines, text or all
+        # Clear annotations button, creates a popup to allow the user to select
+        # lines, text, or all
         input_window = tk.Toplevel(self)
         input_window.title("Clear Annotations")
-        input_window.geometry("250x125")
+        input_window.geometry("125x155")
 
+        # Create a frame to contain the buttons
         frame = tk.Frame(input_window)
-        frame.pack(pady=10)
+        frame.grid(row=0, column=0, padx=10, pady=10)
 
         button_clear_lines = tk.Button(
             frame,
             text="Clear Lines",
             command=lambda: self.clear_annotations(clear_lines=True, clear_text=False),
+            width=12,  # Set all buttons to same width
         )
         button_clear_text = tk.Button(
             frame,
             text="Clear Text",
             command=lambda: self.clear_annotations(clear_lines=False, clear_text=True),
+            width=12,
         )
-        button_clear_both = tk.Button(
-            input_window,
-            text="Clear All ",
+        button_clear_all = tk.Button(
+            frame,
+            text="Clear All",
             command=lambda: self.clear_annotations(clear_lines=True, clear_text=True),
+            width=12,
         )
 
-        button_clear_lines.pack(side="left", padx=10)
-        button_clear_text.pack(side="left", padx=10)
+        # Grid layout for buttons
+        button_clear_lines.grid(row=1, column=0, padx=10, pady=5, sticky="w")
+        button_clear_text.grid(row=2, column=0, padx=10, pady=5, sticky="w")
+        button_clear_all.grid(row=3, column=0, padx=10, pady=5, sticky="w")
 
-        # Button isnt red, needs work
-        button_close = tk.Button(
-            input_window,
+        button_close = tb.Button(
+            frame,
+            bootstyle="danger-outline",
             text="Close",
             command=input_window.destroy,
         )
-        button_clear_both.pack(pady=10)
-        button_close.pack(pady=10)
+        button_close.grid(row=4, column=0, pady=10, padx=10, columnspan=2)
 
     def clear_annotations(self, clear_lines=False, clear_text=False):
         for ax in self.canvas.figure.get_axes():
@@ -264,7 +270,7 @@ class NavigationToolbar(NavigationToolbar2Tk):
     def annotation_settings(self):
         input_window = tk.Toplevel()
         input_window.title("Annotation Settings")
-        input_window.geometry("300x300")
+        input_window.geometry("250x300")
 
         for i in range(2):
             input_window.grid_columnconfigure(i, weight=1)
@@ -318,17 +324,19 @@ class NavigationToolbar(NavigationToolbar2Tk):
         )
         text_size_menu.grid(row=3, column=1, padx=10, pady=10)
 
-        apply_all_button = tk.Button(
-            input_window, text="Apply All", command=lambda: self.apply_all(input_window)
+        apply_all_button = tb.Button(
+            input_window,
+            bootstyle="success",
+            text="Apply All",
+            command=lambda: self.apply_all(input_window),
         )
         apply_all_button.grid(row=4, column=1, padx=10, pady=10)
 
-        cancel_button = tk.Button(
+        cancel_button = tb.Button(
             input_window,
             text="Close",
+            bootstyle="danger-outline",
             command=input_window.destroy,
-            bg="red",
-            fg="white",
         )
         cancel_button.grid(row=4, column=0, padx=10, pady=10)
 
