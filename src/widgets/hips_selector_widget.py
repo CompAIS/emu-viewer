@@ -49,18 +49,19 @@ class HipsSelectorWidget(BaseWidget):
 
     def __init__(self, root):
         super().__init__(root)
-        # self.geometry("750x325")
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
 
-        self.selected_projection = ""
-        self.selected_hips_survey = ""
-        self.selected_image_type = ""
+        self.selected_projection = None
+        self.selected_hips_survey = None
+        self.selected_image_type = None
         self.selected_wcs = None
 
         self.hips_survey = HipsSurvey()
 
         self.setup()
+
+        self.root.image_controller.update_image_list_eh.add(self.update_valid_images)
 
     def setup(self):
         frame = tb.Frame(self, bootstyle="light")
@@ -115,7 +116,9 @@ class HipsSelectorWidget(BaseWidget):
             3,
         )
 
-        self.dropdown_options(
+        self.custom_survey = self.entry_options(frame, "Custom Survey", 0, 4)
+
+        self.image_type_dropdown = self.dropdown_options(
             frame,
             "Image Type",
             NO_IMAGE_TYPE_SELECTED,
@@ -126,36 +129,25 @@ class HipsSelectorWidget(BaseWidget):
             5,
         )
 
-        self.ra_entry = tb.Entry(frame, bootstyle="dark")
-        self.dec_entry = tb.Entry(frame, bootstyle="dark")
-        self.FOV_entry = tb.Entry(frame, bootstyle="dark")
-
-        # Might remove when sorting out right click option
-        valid_images = []
-        for image in self.root.image_controller.get_images():
-            if image.image_wcs is None:
-                continue
-
-            valid_images.append(image)
-
-        self.dropdown_options(
-            frame,
-            "Open Images",
-            NO_IMAGE_SELECTED,
-            valid_images,
-            self.select_image,
-            col_widths[0],
-            2,
-            0,
+        image_select_label = tb.Label(
+            frame, text="Open Images", bootstyle="inverse-light"
         )
+        image_select_label.grid(column=2, row=0, sticky=tk.NSEW, padx=10, pady=10)
 
-        self.ra_option(frame, "Ra", 2, 1)
+        self.image_select_dropdown = tb.Menubutton(
+            frame, text=NO_IMAGE_SELECTED, width=col_widths[0], bootstyle="dark"
+        )
+        self.image_select_dropdown.grid(column=3, row=0, sticky=tk.EW, padx=10, pady=10)
 
-        self.dec_option(frame, "Dec", 2, 2)
+        self.update_valid_images(None, self.root.image_controller.get_images())
 
-        self.FOV_option(frame, "FOV", 2, 3)
+        self.ra_entry = self.entry_options(frame, "RA", 2, 1)
 
-        self.dropdown_options(
+        self.dec_entry = self.entry_options(frame, "Dec", 2, 2)
+
+        self.FOV_entry = self.entry_options(frame, "FOV", 2, 3)
+
+        self.projection_dropdown = self.dropdown_options(
             frame,
             "Projection",
             NO_PROJECTION_SELECTED,
@@ -166,44 +158,17 @@ class HipsSelectorWidget(BaseWidget):
             4,
         )
 
-        self.confirm_button(frame, "Select Survey", 3, 5)
+        button_frame = tb.Frame(frame, bootstyle="light")
+        button_frame.grid(column=2, columnspan=2, row=5, sticky=tk.NSEW)
 
-    def select_image(self, image, dropdown):
-        if image is None:
-            self.selected_wcs = None
-            dropdown["text"] = "No image selected"
-            self.ra_entry.configure(state="enabled")
-            self.dec_entry.configure(state="enabled")
-            self.FOV_entry.configure(state="enabled")
-        else:
-            self.selected_wcs = image.image_wcs
-            dropdown["text"] = image.file_name
-            self.ra_entry.configure(state="disabled")
-            self.dec_entry.configure(state="disabled")
-            self.FOV_entry.configure(state="disabled")
+        button_frame.columnconfigure((0, 1), weight=1)
+        button_frame.rowconfigure(0, weight=1)
 
-    def ra_option(self, parent, text, gridX, gridY):
-        label = tb.Label(parent, text=text, bootstyle="inverse-light")
-        label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
-
-        self.ra_entry.grid(
-            column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
+        self.custom_button(
+            button_frame, "Reset", "warning", self.reset_all_options, 0, 0
         )
-
-    def dec_option(self, parent, text, gridX, gridY):
-        label = tb.Label(parent, text=text, bootstyle="inverse-light")
-        label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
-
-        self.dec_entry.grid(
-            column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
-        )
-
-    def FOV_option(self, parent, text, gridX, gridY):
-        label = tb.Label(parent, text=text, bootstyle="inverse-light")
-        label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
-
-        self.FOV_entry.grid(
-            column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
+        self.custom_button(
+            button_frame, "Select Survey", "success", self.select_survey, 1, 0
         )
 
     def dropdown_options(
@@ -264,14 +229,56 @@ class HipsSelectorWidget(BaseWidget):
         self.selected_image_type = image_type
         dropdown["text"] = image_type
 
-    def confirm_button(self, parent, text, gridX, gridY):
+    def select_image(self, image, dropdown):
+        if image is None:
+            self.selected_wcs = None
+            dropdown["text"] = "No image selected"
+            self.ra_entry.configure(state="enabled")
+            self.dec_entry.configure(state="enabled")
+            self.FOV_entry.configure(state="enabled")
+        else:
+            self.selected_wcs = image.image_wcs
+            dropdown["text"] = image.file_name
+            self.ra_entry.configure(state="disabled")
+            self.dec_entry.configure(state="disabled")
+            self.FOV_entry.configure(state="disabled")
+
+    def entry_options(self, parent, text, gridX, gridY):
+        label = tb.Label(parent, text=text, bootstyle="inverse-light")
+        label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
+
+        entry = tb.Entry(parent, bootstyle="dark")
+        entry.grid(column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
+
+        return entry
+
+    def custom_button(self, parent, text, style, func, gridX, gridY):
         button = tb.Button(
             parent,
             text=text,
-            bootstyle="success",
-            command=partial(self.select_survey),
+            bootstyle=style,
+            command=partial(func),
         )
-        button.grid(column=gridX, row=gridY, sticky=tk.SE, padx=10, pady=10)
+        button.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
+
+    def reset_all_options(self):
+        self.selected_projection = None
+        self.selected_hips_survey = None
+        self.selected_image_type = None
+        self.selected_wcs = None
+
+        self.optical_dropdown["text"] = NO_SURVEY_SELECTED
+        self.infrared_dropdown["text"] = NO_SURVEY_SELECTED
+        self.radio_dropdown["text"] = NO_SURVEY_SELECTED
+        self.xray_dropdown["text"] = NO_SURVEY_SELECTED
+        self.custom_survey.delete(0, tk.END)
+        self.image_type_dropdown["text"] = NO_IMAGE_TYPE_SELECTED
+
+        self.image_select_dropdown["text"] = NO_IMAGE_SELECTED
+        self.ra_entry.delete(0, tk.END)
+        self.dec_entry.delete(0, tk.END)
+        self.FOV_entry.delete(0, tk.END)
+        self.projection_dropdown["text"] = NO_PROJECTION_SELECTED
 
     def select_survey(self):
         if self.selected_wcs is None:
@@ -304,3 +311,31 @@ class HipsSelectorWidget(BaseWidget):
             self.hips_survey.image_type = self.selected_image_type
 
         self.root.image_controller.open_hips(self.hips_survey, self.selected_wcs)
+
+        # Not sure if this is wanted or not
+        self.reset_all_options()
+
+    def update_valid_images(self, selected_image, image_list):
+        if selected_image is None:
+            self.image_select_dropdown["text"] = NO_IMAGE_SELECTED
+
+        valid_images = []
+        for image in image_list:
+            if image.image_wcs is None:
+                continue
+
+            valid_images.append(image)
+
+        dropdown_menu = tk.Menu(self.image_select_dropdown, tearoff=0)
+
+        for option in valid_images:
+            dropdown_menu.add_command(
+                label=option.file_name,
+                command=partial(self.select_image, option, self.image_select_dropdown),
+            )
+
+        self.image_select_dropdown["menu"] = dropdown_menu
+
+    def close(self):
+        self.root.image_controller.update_image_list_eh.remove(self.update_valid_images)
+        super().close()
