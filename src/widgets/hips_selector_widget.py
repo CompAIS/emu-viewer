@@ -1,5 +1,6 @@
 import tkinter as tk
 from functools import partial
+from tkinter import messagebox
 
 import ttkbootstrap as tb
 
@@ -35,12 +36,14 @@ xray_survey_options = ["ov-gso/P/RASS"]
 image_type_options = ["fits", "png", "jpg"]
 
 NO_IMAGE_SELECTED = "No Image Selected"
-
 NO_PROJECTION_SELECTED = "No Projection Selected"
-
 NO_SURVEY_SELECTED = "No Survey Selected"
-
 NO_IMAGE_TYPE_SELECTED = "No Image Type Selected"
+
+INVALID_INPUT = "Invalid Input"
+INVALID_RA = "Invalid RA, please enter a float"
+INVALID_DEC = "Invalid Dec, please enter a float"
+INVALID_FOV = "Invalid FOV, please enter a float"
 
 
 class HipsSelectorWidget(BaseWidget):
@@ -117,6 +120,7 @@ class HipsSelectorWidget(BaseWidget):
         )
 
         self.custom_survey = self.entry_options(frame, "Custom Survey", 0, 4)
+        self.custom_survey.bind("<FocusOut>", self.custom_survey_focusout)
 
         self.image_type_dropdown = self.dropdown_options(
             frame,
@@ -203,6 +207,7 @@ class HipsSelectorWidget(BaseWidget):
         self.infrared_dropdown["text"] = NO_SURVEY_SELECTED
         self.radio_dropdown["text"] = NO_SURVEY_SELECTED
         self.xray_dropdown["text"] = NO_SURVEY_SELECTED
+        self.custom_survey.delete(0, tk.END)
 
     def select_infrared_survey(self, hips_survey, dropdown):
         self.selected_hips_survey = hips_survey
@@ -210,6 +215,7 @@ class HipsSelectorWidget(BaseWidget):
         self.optical_dropdown["text"] = NO_SURVEY_SELECTED
         self.radio_dropdown["text"] = NO_SURVEY_SELECTED
         self.xray_dropdown["text"] = NO_SURVEY_SELECTED
+        self.custom_survey.delete(0, tk.END)
 
     def select_radio_survey(self, hips_survey, dropdown):
         self.selected_hips_survey = hips_survey
@@ -217,6 +223,7 @@ class HipsSelectorWidget(BaseWidget):
         self.optical_dropdown["text"] = NO_SURVEY_SELECTED
         self.infrared_dropdown["text"] = NO_SURVEY_SELECTED
         self.xray_dropdown["text"] = NO_SURVEY_SELECTED
+        self.custom_survey.delete(0, tk.END)
 
     def select_xray_survey(self, hips_survey, dropdown):
         self.selected_hips_survey = hips_survey
@@ -224,6 +231,7 @@ class HipsSelectorWidget(BaseWidget):
         self.optical_dropdown["text"] = NO_SURVEY_SELECTED
         self.infrared_dropdown["text"] = NO_SURVEY_SELECTED
         self.radio_dropdown["text"] = NO_SURVEY_SELECTED
+        self.custom_survey.delete(0, tk.END)
 
     def select_image_type(self, image_type, dropdown):
         self.selected_image_type = image_type
@@ -251,6 +259,19 @@ class HipsSelectorWidget(BaseWidget):
         entry.grid(column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
 
         return entry
+
+    def custom_survey_focusout(self, event):
+        self.custom_survey_enter()
+
+    def custom_survey_enter(self):
+        if self.custom_survey.get() == "":
+            return
+
+        self.selected_hips_survey = self.custom_survey.get()
+        self.optical_dropdown["text"] = NO_SURVEY_SELECTED
+        self.infrared_dropdown["text"] = NO_SURVEY_SELECTED
+        self.radio_dropdown["text"] = NO_SURVEY_SELECTED
+        self.xray_dropdown["text"] = NO_SURVEY_SELECTED
 
     def custom_button(self, parent, text, style, func, gridX, gridY):
         button = tb.Button(
@@ -281,39 +302,47 @@ class HipsSelectorWidget(BaseWidget):
         self.projection_dropdown["text"] = NO_PROJECTION_SELECTED
 
     def select_survey(self):
+        self.custom_survey_enter()
+
+        if (
+            self.selected_projection is None
+            or self.selected_hips_survey is None
+            or self.selected_image_type is None
+        ):
+            return
+
+        self.hips_survey.projection = self.selected_projection
+        self.hips_survey.survey = self.selected_hips_survey
+        self.hips_survey.image_type = self.selected_image_type
+
         if self.selected_wcs is None:
-            if (
-                self.ra_entry.get() == ""
-                or self.dec_entry.get() == ""
-                or self.FOV_entry.get() == ""
-                or self.selected_projection == ""
-                or self.selected_hips_survey == ""
-                or self.selected_image_type == ""
-            ):
-                return
+            self.hips_survey.ra = self.float_validation(self.ra_entry, INVALID_RA)
+            self.hips_survey.dec = self.float_validation(self.dec_entry, INVALID_DEC)
+            self.hips_survey.FOV = self.float_validation(self.FOV_entry, INVALID_FOV)
 
-            self.hips_survey.ra = float(self.ra_entry.get())
-            self.hips_survey.dec = float(self.dec_entry.get())
-            self.hips_survey.FOV = float(self.FOV_entry.get())
-            self.hips_survey.projection = self.selected_projection
-            self.hips_survey.survey = self.selected_hips_survey
-            self.hips_survey.image_type = self.selected_image_type
-        else:
-            if (
-                self.selected_projection == ""
-                or self.selected_hips_survey == ""
-                or self.selected_image_type == ""
-            ):
-                return
-
-            self.hips_survey.projection = self.selected_projection
-            self.hips_survey.survey = self.selected_hips_survey
-            self.hips_survey.image_type = self.selected_image_type
+        if (
+            self.hips_survey.ra == "F"
+            or self.hips_survey.dec == "F"
+            or self.hips_survey.FOV == "F"
+        ):
+            return
 
         self.root.image_controller.open_hips(self.hips_survey, self.selected_wcs)
 
         # Not sure if this is wanted or not
         self.reset_all_options()
+
+    def float_validation(self, entry, error):
+        try:
+            valid_float = float(entry.get())
+        except ValueError:
+            messagebox.showerror(
+                title=INVALID_INPUT,
+                message=error,
+            )
+            return "F"
+
+        return valid_float
 
     def update_valid_images(self, selected_image, image_list):
         if selected_image is None:
