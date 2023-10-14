@@ -16,17 +16,20 @@ class HipsSurvey:
 
 
 def open_hips(hips_survey):
-    result = hips2fits.query(
-        hips=hips_survey.survey,
-        width=1000,
-        height=1000,
-        ra=Longitude(hips_survey.ra * u.deg),
-        dec=Latitude(hips_survey.dec * u.deg),
-        fov=Angle(hips_survey.FOV * u.deg),
-        projection=hips_survey.projection,
-        get_query_payload=False,
-        format=hips_survey.image_type,
-    )
+    try:
+        result = hips2fits.query(
+            hips=hips_survey.survey,
+            width=1000,
+            height=1000,
+            ra=Longitude(hips_survey.ra * u.deg),
+            dec=Latitude(hips_survey.dec * u.deg),
+            fov=Angle(hips_survey.FOV * u.deg),
+            projection=hips_survey.projection,
+            get_query_payload=False,
+            format=hips_survey.image_type,
+        )
+    except AttributeError:
+        raise AttributeError
 
     if hips_survey.image_type == "fits":
         hdu = result[0]
@@ -38,12 +41,15 @@ def open_hips(hips_survey):
 
 
 def open_hips_with_wcs(hips_survey, wcs):
-    result = hips2fits.query_with_wcs(
-        hips=hips_survey.survey,
-        wcs=wcs,
-        get_query_payload=False,
-        format=hips_survey.image_type,
-    )
+    try:
+        result = hips2fits.query_with_wcs(
+            hips=hips_survey.survey,
+            wcs=wcs,
+            get_query_payload=False,
+            format=hips_survey.image_type,
+        )
+    except AttributeError:
+        raise AttributeError
 
     if hips_survey.image_type == "fits":
         hdu = result[0]

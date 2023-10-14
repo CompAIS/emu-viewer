@@ -64,10 +64,15 @@ class ImageController(tb.Frame):
         self.open_image(image_data, None, file_name, "png")
 
     def open_hips(self, hips_survey, wcs):
-        if wcs is None:
-            image_data, image_header = Hips_handler.open_hips(hips_survey)
-        else:
-            image_data, image_header = Hips_handler.open_hips_with_wcs(hips_survey, wcs)
+        try:
+            if wcs is None:
+                image_data, image_header = Hips_handler.open_hips(hips_survey)
+            else:
+                image_data, image_header = Hips_handler.open_hips_with_wcs(
+                    hips_survey, wcs
+                )
+        except AttributeError:
+            raise AttributeError
 
         self.open_image(
             image_data, image_header, hips_survey.survey, hips_survey.image_type

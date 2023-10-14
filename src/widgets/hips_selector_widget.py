@@ -44,6 +44,8 @@ INVALID_INPUT = "Invalid Input"
 INVALID_RA = "Invalid RA, please enter a float"
 INVALID_DEC = "Invalid Dec, please enter a float"
 INVALID_FOV = "Invalid FOV, please enter a float"
+INVALID_FOV_LOW = "Invalid FOV, FOV must be greater then 0"
+ERROR_GENERATING = "Error generating image, either incorrect survey has been entered or selected image is to large"
 
 
 class HipsSelectorWidget(BaseWidget):
@@ -320,6 +322,13 @@ class HipsSelectorWidget(BaseWidget):
             self.hips_survey.dec = self.float_validation(self.dec_entry, INVALID_DEC)
             self.hips_survey.FOV = self.float_validation(self.FOV_entry, INVALID_FOV)
 
+            if self.hips_survey.FOV <= 0:
+                self.hips_survey.FOV = "F"
+                messagebox.showerror(
+                    title=INVALID_INPUT,
+                    message=INVALID_FOV_LOW,
+                )
+
         if (
             self.hips_survey.ra == "F"
             or self.hips_survey.dec == "F"
@@ -327,7 +336,14 @@ class HipsSelectorWidget(BaseWidget):
         ):
             return
 
-        self.root.image_controller.open_hips(self.hips_survey, self.selected_wcs)
+        try:
+            self.root.image_controller.open_hips(self.hips_survey, self.selected_wcs)
+        except AttributeError:
+            messagebox.showerror(
+                title="Error",
+                message=ERROR_GENERATING,
+            )
+            return
 
         # Not sure if this is wanted or not
         self.reset_all_options()
