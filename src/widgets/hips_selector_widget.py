@@ -47,6 +47,8 @@ INVALID_FOV = "Invalid FOV, please enter a float"
 INVALID_FOV_LOW = "Invalid FOV, FOV must be greater then 0"
 ERROR_GENERATING = "Error generating image, either incorrect survey has been entered or selected image is to large"
 
+COL_WIDTHS = [37, 23]
+
 
 class HipsSelectorWidget(BaseWidget):
     label = "Hips Survey Selector"
@@ -75,15 +77,13 @@ class HipsSelectorWidget(BaseWidget):
         frame.columnconfigure((0, 1, 2, 3), weight=1)
         frame.rowconfigure((0, 1, 2, 3, 4, 5), weight=1)
 
-        col_widths = [23, 37]
-
         self.optical_dropdown = self.dropdown_options(
             frame,
             "Optical Hips Surveys",
             NO_SURVEY_SELECTED,
             optical_survey_options,
-            self.select_optical_survey,
-            col_widths[1],
+            self.select_survey_option,
+            COL_WIDTHS[0],
             0,
             0,
         )
@@ -93,8 +93,8 @@ class HipsSelectorWidget(BaseWidget):
             "Infrared Hips Surveys",
             NO_SURVEY_SELECTED,
             infrared_survey_options,
-            self.select_infrared_survey,
-            col_widths[1],
+            self.select_survey_option,
+            COL_WIDTHS[0],
             0,
             1,
         )
@@ -104,8 +104,8 @@ class HipsSelectorWidget(BaseWidget):
             "Radio Hips Surveys",
             NO_SURVEY_SELECTED,
             radio_survey_options,
-            self.select_radio_survey,
-            col_widths[1],
+            self.select_survey_option,
+            COL_WIDTHS[0],
             0,
             2,
         )
@@ -115,8 +115,8 @@ class HipsSelectorWidget(BaseWidget):
             "X-Ray Hips Surveys",
             NO_SURVEY_SELECTED,
             xray_survey_options,
-            self.select_xray_survey,
-            col_widths[1],
+            self.select_survey_option,
+            COL_WIDTHS[0],
             0,
             3,
         )
@@ -130,7 +130,7 @@ class HipsSelectorWidget(BaseWidget):
             NO_IMAGE_TYPE_SELECTED,
             image_type_options,
             self.select_image_type,
-            col_widths[1],
+            COL_WIDTHS[0],
             0,
             5,
         )
@@ -141,7 +141,7 @@ class HipsSelectorWidget(BaseWidget):
         image_select_label.grid(column=2, row=0, sticky=tk.NSEW, padx=10, pady=10)
 
         self.image_select_dropdown = tb.Menubutton(
-            frame, text=NO_IMAGE_SELECTED, width=col_widths[0], bootstyle="dark"
+            frame, text=NO_IMAGE_SELECTED, width=COL_WIDTHS[1], bootstyle="dark"
         )
         self.image_select_dropdown.grid(column=3, row=0, sticky=tk.EW, padx=10, pady=10)
 
@@ -159,7 +159,7 @@ class HipsSelectorWidget(BaseWidget):
             NO_PROJECTION_SELECTED,
             projection_options,
             self.select_projection,
-            col_widths[0],
+            COL_WIDTHS[1],
             2,
             4,
         )
@@ -203,36 +203,16 @@ class HipsSelectorWidget(BaseWidget):
         self.selected_projection = projection
         dropdown["text"] = projection
 
-    def select_optical_survey(self, hips_survey, dropdown):
+    def select_survey_option(self, hips_survey, dropdown):
+        self.clear_survey_options()
         self.selected_hips_survey = hips_survey
         dropdown["text"] = hips_survey
-        self.infrared_dropdown["text"] = NO_SURVEY_SELECTED
-        self.radio_dropdown["text"] = NO_SURVEY_SELECTED
-        self.xray_dropdown["text"] = NO_SURVEY_SELECTED
-        self.custom_survey.delete(0, tk.END)
 
-    def select_infrared_survey(self, hips_survey, dropdown):
-        self.selected_hips_survey = hips_survey
-        dropdown["text"] = hips_survey
-        self.optical_dropdown["text"] = NO_SURVEY_SELECTED
-        self.radio_dropdown["text"] = NO_SURVEY_SELECTED
-        self.xray_dropdown["text"] = NO_SURVEY_SELECTED
-        self.custom_survey.delete(0, tk.END)
-
-    def select_radio_survey(self, hips_survey, dropdown):
-        self.selected_hips_survey = hips_survey
-        dropdown["text"] = hips_survey
-        self.optical_dropdown["text"] = NO_SURVEY_SELECTED
-        self.infrared_dropdown["text"] = NO_SURVEY_SELECTED
-        self.xray_dropdown["text"] = NO_SURVEY_SELECTED
-        self.custom_survey.delete(0, tk.END)
-
-    def select_xray_survey(self, hips_survey, dropdown):
-        self.selected_hips_survey = hips_survey
-        dropdown["text"] = hips_survey
+    def clear_survey_options(self):
         self.optical_dropdown["text"] = NO_SURVEY_SELECTED
         self.infrared_dropdown["text"] = NO_SURVEY_SELECTED
         self.radio_dropdown["text"] = NO_SURVEY_SELECTED
+        self.xray_dropdown["text"] = NO_SURVEY_SELECTED
         self.custom_survey.delete(0, tk.END)
 
     def select_image_type(self, image_type, dropdown):
@@ -242,7 +222,7 @@ class HipsSelectorWidget(BaseWidget):
     def select_image(self, image, dropdown):
         if image is None:
             self.selected_wcs = None
-            dropdown["text"] = "No image selected"
+            dropdown["text"] = NO_IMAGE_SELECTED
             self.ra_entry.configure(state="enabled")
             self.dec_entry.configure(state="enabled")
             self.FOV_entry.configure(state="enabled")
@@ -290,11 +270,7 @@ class HipsSelectorWidget(BaseWidget):
         self.selected_image_type = None
         self.selected_wcs = None
 
-        self.optical_dropdown["text"] = NO_SURVEY_SELECTED
-        self.infrared_dropdown["text"] = NO_SURVEY_SELECTED
-        self.radio_dropdown["text"] = NO_SURVEY_SELECTED
-        self.xray_dropdown["text"] = NO_SURVEY_SELECTED
-        self.custom_survey.delete(0, tk.END)
+        self.clear_survey_options()
         self.image_type_dropdown["text"] = NO_IMAGE_TYPE_SELECTED
 
         self.image_select_dropdown["text"] = NO_IMAGE_SELECTED
@@ -364,12 +340,7 @@ class HipsSelectorWidget(BaseWidget):
         if selected_image is None:
             self.image_select_dropdown["text"] = NO_IMAGE_SELECTED
 
-        valid_images = []
-        for image in image_list:
-            if image.image_wcs is None:
-                continue
-
-            valid_images.append(image)
+        valid_images = [image for image in image_list if image.image_wcs is not None]
 
         dropdown_menu = tk.Menu(self.image_select_dropdown, tearoff=0)
 
