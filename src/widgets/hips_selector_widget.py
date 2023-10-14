@@ -346,7 +346,7 @@ class HipsSelectorWidget(BaseWidget):
             return
 
         # Not sure if this is wanted or not
-        self.reset_all_options()
+        # self.reset_all_options()
 
     def float_validation(self, entry, error):
         try:
@@ -373,6 +373,11 @@ class HipsSelectorWidget(BaseWidget):
 
         dropdown_menu = tk.Menu(self.image_select_dropdown, tearoff=0)
 
+        dropdown_menu.add_command(
+            label=NO_IMAGE_SELECTED,
+            command=partial(self.select_image, None, self.image_select_dropdown),
+        )
+
         for option in valid_images:
             dropdown_menu.add_command(
                 label=option.file_name,
@@ -380,6 +385,12 @@ class HipsSelectorWidget(BaseWidget):
             )
 
         self.image_select_dropdown["menu"] = dropdown_menu
+
+    def set_ra_dec_entries(self, ra, dec):
+        self.ra_entry.delete(0, tk.END)
+        self.ra_entry.insert(0, ra)
+        self.dec_entry.delete(0, tk.END)
+        self.dec_entry.insert(0, dec)
 
     def close(self):
         self.root.image_controller.update_image_list_eh.remove(self.update_valid_images)
