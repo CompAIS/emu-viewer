@@ -169,29 +169,20 @@ class ImageFrame(tb.Frame):
         self.canvas.draw()
 
     def on_lims_change(self, event):
-        if event.get_navigate_mode() == "ZOOM":
-            cid_list = list(event.callbacks.callbacks["ylim_changed"].keys())
-            for cid in cid_list:
-                event.callbacks.disconnect(cid)
+        cid_list = list(event.callbacks.callbacks["ylim_changed"].keys())
+        for cid in cid_list:
+            event.callbacks.disconnect(cid)
 
-            self.limits = Render.get_limits(self.fig, self.image_wcs)
+        self.limits = Render.get_limits(self.fig, self.image_wcs)
 
-            if self.check_if_matched():
-                self.update_matched_images()
+        self.update_matched_images()
 
-            event.callbacks.connect("ylim_changed", self.on_lims_change)
-
-            self.root.update()
-
-    def check_if_matched(self):
-        matched_image = self.root.image_controller.coords_matched["head"]
-        if matched_image == self:
-            return True
-
-        return False
+        event.callbacks.connect("ylim_changed", self.on_lims_change)
 
     def update_matched_images(self):
-        matched_images = self.root.image_controller.coords_matched["other"]
-        for image in matched_images:
+        for image in self.root.image_controller.coords_matched:
+            if image == self:
+                continue
+
             image.set_limits(self.limits)
             image.update_limits()

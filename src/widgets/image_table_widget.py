@@ -58,11 +58,10 @@ class ImageTableWidget(BaseWidget):
     def coord_matching(self):
         limits = self.selected_image.limits
 
-        self.root.image_controller.coords_matched["head"] = self.selected_image
         for image in self.open_images:
             image.set_limits(limits)
             image.update_limits()
-            self.root.image_controller.coords_matched["other"].append(image)
+            self.root.image_controller.coords_matched.append(image)
 
         self.root.update()
 
@@ -71,14 +70,13 @@ class ImageTableWidget(BaseWidget):
         stretch = self.selected_image.stretch
         percentile = self.selected_image.selected_percentile
 
-        self.root.image_controller.render_matched["head"] = self.selected_image
         for image in self.open_images:
             image.set_colour_map(colour_map)
             image.update_colour_map()
             image.set_scaling(stretch)
             image.set_selected_percentile(percentile)
             image.update_norm()
-            self.root.image_controller.render_matched["other"].append(image)
+            self.root.image_controller.render_matched.append(image)
 
         self.root.update()
 

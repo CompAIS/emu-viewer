@@ -188,8 +188,7 @@ class RendererWidget(BaseWidget):
         self.set_vmin_vmax(selected_image)
         self.root.image_controller.get_selected_image().update_norm()
 
-        if self.check_if_matched():
-            self.update_matched_images()
+        self.update_matched_images()
 
     # These functions listen to events and behave accordingly
     def on_select_scaling(self, option):
@@ -199,8 +198,7 @@ class RendererWidget(BaseWidget):
         self.set_scaling(option)
         self.root.image_controller.get_selected_image().update_norm()
 
-        if self.check_if_matched():
-            self.update_matched_images()
+        self.update_matched_images()
 
         self.root.update()
 
@@ -211,8 +209,7 @@ class RendererWidget(BaseWidget):
         self.set_colour_map(option)
         self.root.image_controller.get_selected_image().update_colour_map()
 
-        if self.check_if_matched():
-            self.update_matched_images()
+        self.update_matched_images()
 
         self.root.update()
 
@@ -226,8 +223,7 @@ class RendererWidget(BaseWidget):
         self.update_percentile_buttons()
         self.root.image_controller.get_selected_image().update_norm()
 
-        if self.check_if_matched():
-            self.update_matched_images()
+        self.update_matched_images()
 
         self.root.update()
 
@@ -251,17 +247,11 @@ class RendererWidget(BaseWidget):
         image = self.root.image_controller.get_selected_image()
         return image is not None and image.file_type != "png"
 
-    def check_if_matched(self):
-        matched_image = self.root.image_controller.render_matched["head"]
-        selected_image = self.root.image_controller.get_selected_image()
-        if matched_image == selected_image:
-            return True
-
-        return False
-
     def update_matched_images(self):
-        matched_images = self.root.image_controller.render_matched["other"]
-        for image in matched_images:
+        for image in self.root.image_controller.render_matched:
+            if image == self.root.image_controller.get_selected_image():
+                continue
+
             image.set_colour_map(
                 self.root.image_controller.get_selected_image().colour_map
             )
