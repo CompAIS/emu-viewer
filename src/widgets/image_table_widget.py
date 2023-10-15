@@ -56,7 +56,15 @@ class ImageTableWidget(BaseWidget):
         self.tree.insert("", "end", values=(image_num, image_name, "", ""))
 
     def coord_matching(self):
-        return
+        limits = self.selected_image.limits
+
+        self.root.image_controller.coords_matched["head"] = self.selected_image
+        for image in self.open_images:
+            image.set_limits(limits)
+            image.update_limits()
+            self.root.image_controller.coords_matched["other"].append(image)
+
+        self.root.update()
 
     def render_matching(self):
         colour_map = self.selected_image.colour_map

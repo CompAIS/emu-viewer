@@ -1,4 +1,5 @@
 import astropy.visualization as vis
+import astropy.wcs.utils as sc
 import numpy as np
 from matplotlib import ticker
 from matplotlib.figure import Figure
@@ -56,7 +57,14 @@ def create_figure(image_data, wcs, colour_map, vmin, vmax, s, contour_levels):
     cbar.ax.tick_params(labelsize=5)
     cbar.update_ticks()
 
-    return fig, image
+    xlim_low, xlim_high = ax.get_xlim()
+    ylim_low, ylim_high = ax.get_ylim()
+
+    point1 = wcs.pixel_to_world(xlim_low, ylim_low)
+    point2 = wcs.pixel_to_world(xlim_high, ylim_high)
+    limits = [point1, point2]
+
+    return fig, image, limits
 
 
 def create_figure_png(image_data):
@@ -188,3 +196,28 @@ def get_percentiles(image_data):
         ret[str(percentile)] = (values[i * 2], values[i * 2 + 1])
 
     return ret
+
+
+def set_limits(fig, wcs, limits):
+    ax = fig.axes[0]
+
+    xlim_low, ylim_low = sc.skycoord_to_pixel(limits[0], wcs, mode="all")
+    xlim_high, ylim_high = sc.skycoord_to_pixel(limits[1], wcs, mode="all")
+
+    ax.set_xlim(xlim_low, xlim_high)
+    ax.set_ylim(ylim_low, ylim_high)
+
+    return fig
+
+
+def get_limits(fig, wcs):
+    ax = fig.axes[0]
+
+    xlim_low, xlim_high = ax.get_xlim()
+    ylim_low, ylim_high = ax.get_ylim()
+
+    point1 = wcs.pixel_to_world(xlim_low, ylim_low)
+    point2 = wcs.pixel_to_world(xlim_high, ylim_high)
+    limits = [point1, point2]
+
+    return limits

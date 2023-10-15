@@ -47,7 +47,7 @@ class ImageFrame(tb.Frame):
         self.catalogue_set = None
         self.contour_levels = self.contour_set = None
         if file_type == "fits":
-            self.fig, self.image = Render.create_figure(
+            self.fig, self.image, self.limits = Render.create_figure(
                 self.image_data,
                 self.image_wcs,
                 self.colour_map,
@@ -56,6 +56,10 @@ class ImageFrame(tb.Frame):
                 self.stretch,
                 self.contour_levels,
             )
+
+            self.original_limits = self.limits
+
+            self.fig.axes[0].callbacks.connect("ylim_changed", self.on_lims_change)
         else:
             self.fig, self.image = Render.create_figure_png(self.image_data)
 
@@ -153,3 +157,41 @@ class ImageFrame(tb.Frame):
     def clear_contours(self):
         self.contour_set = Render.clear_contours(self.contour_set)
         self.canvas.draw()
+
+    def set_limits(self, limits):
+        self.limits = limits
+
+    def reset_limits(self):
+        self.limits = self.original_limits
+
+    def update_limits(self):
+        self.fig = Render.set_limits(self.fig, self.image_wcs, self.limits)
+        self.canvas.draw()
+
+    def on_lims_change(self, event):
+        if event.get_navigate_mode() == "ZOOM":
+            cid_list = list(event.callbacks.callbacks["ylim_changed"].keys())
+            for cid in cid_list:
+                event.callbacks.disconnect(cid)
+
+            self.limits = Render.get_limits(self.fig, self.image_wcs)
+
+            if self.check_if_matched():
+                self.update_matched_images()
+
+            event.callbacks.connect("ylim_changed", self.on_lims_change)
+
+            self.root.update()
+
+    def check_if_matched(self):
+        matched_image = self.root.image_controller.coords_matched["head"]
+        if matched_image == self:
+            return True
+
+        return False
+
+    def update_matched_images(self):
+        matched_images = self.root.image_controller.coords_matched["other"]
+        for image in matched_images:
+            image.set_limits(self.limits)
+            image.update_limits()
