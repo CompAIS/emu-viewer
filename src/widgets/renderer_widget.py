@@ -188,6 +188,9 @@ class RendererWidget(BaseWidget):
         self.set_vmin_vmax(selected_image)
         self.root.image_controller.get_selected_image().update_norm()
 
+        if self.check_if_matched():
+            self.update_matched_images()
+
     # These functions listen to events and behave accordingly
     def on_select_scaling(self, option):
         if not self.check_if_image_selected():
@@ -195,6 +198,10 @@ class RendererWidget(BaseWidget):
 
         self.set_scaling(option)
         self.root.image_controller.get_selected_image().update_norm()
+
+        if self.check_if_matched():
+            self.update_matched_images()
+
         self.root.update()
 
     def on_select_colour_map(self, option):
@@ -203,6 +210,10 @@ class RendererWidget(BaseWidget):
 
         self.set_colour_map(option)
         self.root.image_controller.get_selected_image().update_colour_map()
+
+        if self.check_if_matched():
+            self.update_matched_images()
+
         self.root.update()
 
     def on_entry_focusout(self, event):
@@ -214,6 +225,10 @@ class RendererWidget(BaseWidget):
         self.root.image_controller.get_selected_image().set_vmin_vmax_custom(vmin, vmax)
         self.update_percentile_buttons()
         self.root.image_controller.get_selected_image().update_norm()
+
+        if self.check_if_matched():
+            self.update_matched_images()
+
         self.root.update()
 
     def on_image_change(self, image):
@@ -235,6 +250,27 @@ class RendererWidget(BaseWidget):
     def check_if_image_selected(self):
         image = self.root.image_controller.get_selected_image()
         return image is not None and image.file_type != "png"
+
+    def check_if_matched(self):
+        matched_image = self.root.image_controller.render_matched["head"]
+        selected_image = self.root.image_controller.get_selected_image()
+        if matched_image == selected_image:
+            return True
+
+        return False
+
+    def update_matched_images(self):
+        matched_images = self.root.image_controller.render_matched["other"]
+        for image in matched_images:
+            image.set_colour_map(
+                self.root.image_controller.get_selected_image().colour_map
+            )
+            image.update_colour_map()
+            image.set_scaling(self.root.image_controller.get_selected_image().stretch)
+            image.set_selected_percentile(
+                self.root.image_controller.get_selected_image().selected_percentile
+            )
+            image.update_norm()
 
     def close(self):
         self.root.image_controller.selected_image_eh.remove(self.on_image_change)
