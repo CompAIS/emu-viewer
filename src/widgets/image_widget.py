@@ -167,6 +167,9 @@ class ImageFrame(tb.Frame):
         self.limits = self.original_limits
 
     def update_limits(self):
+        if not self.file_type == "fits":
+            return
+
         self.fig = Render.set_limits(self.fig, self.image_wcs, self.limits)
         self.canvas.draw()
 
@@ -190,6 +193,9 @@ class ImageFrame(tb.Frame):
             image.update_limits()
 
     def get_ra_dec(self, event):
+        if not self.fig.canvas.toolbar.mode == "":
+            return
+
         if self.root.widget_controller.open_windows.get(Widget.HIPS_SELECT) is None:
             return
 
