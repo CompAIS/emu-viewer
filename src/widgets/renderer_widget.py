@@ -1,6 +1,9 @@
 import tkinter as tk
 from functools import partial
 
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 import ttkbootstrap as tb
 
 import src.lib.render as Render
@@ -38,6 +41,9 @@ class RendererWidget(BaseWidget):
     def __init__(self, root):
         super().__init__(root)
 
+        self.histogram_canvas = None
+        self.root.image_controller.selected_image_eh.add(self.on_image_change)
+
         self.histogram()
         self.render_options()
 
@@ -49,6 +55,15 @@ class RendererWidget(BaseWidget):
 
         self.histogram_graph(frame)
         self.histogram_buttons(frame)
+
+        self.add_toolbar(frame)
+
+    def add_toolbar(self, parent):
+        canvas_frame = tb.Frame(parent, bootstyle="light")
+        canvas_frame.grid(column=6, row=2, sticky=tk.NSEW, padx=10, pady=10)
+
+        self.toolbar = NavigationToolbar2Tk(self.histogram_canvas, canvas_frame)
+        self.toolbar.update()
 
     def histogram_buttons(self, parent):
         self.percentile_buttons = {}
@@ -80,6 +95,40 @@ class RendererWidget(BaseWidget):
         histogram = tb.Frame(parent, bootstyle="dark")
         c = len(Render.PERCENTILES) + 1
         histogram.grid(column=0, columnspan=c, row=1, sticky=tk.NSEW, padx=10, pady=10)
+
+        if self.histogram_canvas is not None:
+            self.histogram_canvas.get_tk_widget().pack_forget()
+            self.histogram_canvas.get_tk_widget().destroy()
+            self.histogram_canvas = None
+
+        self.histogram_canvas = FigureCanvasTkAgg(plt.figure(), master=histogram)
+        self.histogram_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+    def plot_histogram(self):
+        if not self.check_if_image_selected():
+            return
+
+        # Get fits data
+        image_data = self.root.image_controller.get_selected_image().image_data
+
+        # Get the existing figure for the histogram
+        fig = self.histogram_canvas.figure
+        fig.clear()
+
+        # Create a new subplot for the histogram
+        ax = fig.add_subplot(111)
+
+        # Plot the histogram
+        ax.hist(image_data.flatten(), bins=1000, color="blue", alpha=1)
+        ax.set_xlabel("Value")
+        ax.set_ylabel("Frequency")
+        ax.set_title("Histogram")
+        ax.set_yscale("log")
+
+        # Update the canvas
+        self.histogram_canvas.draw()
+
+        self.histogram_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
     def render_options(self):
         render = tb.Frame(self, width=100, bootstyle="light")
@@ -229,6 +278,9 @@ class RendererWidget(BaseWidget):
         self.set_vmin_vmax(image)
         self.set_scaling(image.stretch)
         self.set_colour_map(image.colour_map)
+
+        # Update histogram
+        self.plot_histogram()
 
         self.root.update()
 
