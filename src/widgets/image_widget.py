@@ -6,6 +6,7 @@ from astropy import wcs
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import src.lib.render as Render
+from src.controllers.widget_controller import Widget
 from src.lib.tool import NavigationToolbar
 
 warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
@@ -56,6 +57,8 @@ class ImageFrame(tb.Frame):
                 self.stretch,
                 self.contour_levels,
             )
+
+            self.fig.canvas.callbacks.connect("button_press_event", self.get_ra_dec)
         else:
             self.fig, self.image = Render.create_figure_png(self.image_data)
 
@@ -153,3 +156,18 @@ class ImageFrame(tb.Frame):
     def clear_contours(self):
         self.contour_set = Render.clear_contours(self.contour_set)
         self.canvas.draw()
+
+    def get_ra_dec(self, event):
+        if self.root.widget_controller.open_windows.get(Widget.HIPS_SELECT) is None:
+            return
+
+        if event.inaxes and event.inaxes.get_navigate():
+            try:
+                c = self.image_wcs.pixel_to_world(event.xdata, event.ydata)
+                decimal = c.to_string(style="decimal", precision=5)
+                coords = decimal.split()
+                self.root.widget_controller.open_windows.get(
+                    Widget.HIPS_SELECT
+                ).set_ra_dec_entries(coords[0], coords[1])
+            except (ValueError, OverflowError) as e:
+                print(e)
