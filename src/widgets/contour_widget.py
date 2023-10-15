@@ -350,3 +350,7 @@ class ContourWidget(BaseWidget):
         value = float(value)
         self.line_opacity = value
         self.lo_label["text"] = f"Line Opacity ({value:1.2f})"
+
+    def close(self):
+        self.root.image_controller.update_image_list_eh.remove(self.update_dropdown)
+        super().close()
