@@ -138,6 +138,12 @@ class RendererWidget(BaseWidget):
             4,
         )
 
+        # grid_lines_lbl = tb.Label(render, bootstyle="inverse-light", text="Grid Lines")
+        # grid_lines_lbl.grid(column=0, row=5, sticky=tk.NSEW, padx=10, pady=10)
+
+        # self.grid_lines_cbtn = tb.Checkbutton(render, bootstyle="light", text=None)
+        # self.grid_lines_cbtn.grid(row=5, column=1, sticky=tk.W, padx=10, pady=10)
+
     def custom_options(self, parent, text, gridX, gridY):
         label = tb.Label(parent, text=text, bootstyle="inverse-light")
         label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
