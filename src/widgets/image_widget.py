@@ -60,7 +60,6 @@ class ImageFrame(tb.Frame):
 
             self.original_limits = self.limits
 
-            self.fig.axes[0].callbacks.connect("ylim_changed", self.on_lims_change)
             self.fig.canvas.callbacks.connect("button_press_event", self.get_ra_dec)
         else:
             self.fig, self.image = Render.create_figure_png(self.image_data)
@@ -173,16 +172,24 @@ class ImageFrame(tb.Frame):
         self.fig = Render.set_limits(self.fig, self.image_wcs, self.limits)
         self.canvas.draw()
 
-    def on_lims_change(self, event):
-        cid_list = list(event.callbacks.callbacks["ylim_changed"].keys())
+    def add_coords_event(self):
+        self.fig.canvas.callbacks.connect("button_release_event", self.on_lims_change)
+
+    def remove_coords_event(self):
+        cid_list = list(
+            self.fig.canvas.callbacks.callbacks["button_release_event"].keys()
+        )
         for cid in cid_list:
-            event.callbacks.disconnect(cid)
+            self.fig.canvas.callbacks.disconnect(cid)
 
-        self.limits = Render.get_limits(self.fig, self.image_wcs)
+    def on_lims_change(self, event):
+        if (
+            self.fig.canvas.toolbar.mode == "pan/zoom"
+            or self.fig.canvas.toolbar.mode == "zoom rect"
+        ):
+            self.limits = Render.get_limits(self.fig, self.image_wcs)
 
-        self.update_matched_images()
-
-        event.callbacks.connect("ylim_changed", self.on_lims_change)
+            self.update_matched_images()
 
     def update_matched_images(self):
         for image in self.root.image_controller.coords_matched:

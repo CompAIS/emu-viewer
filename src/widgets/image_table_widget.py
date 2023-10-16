@@ -61,6 +61,7 @@ class ImageTableWidget(BaseWidget):
         for image in self.open_images:
             image.set_limits(limits)
             image.update_limits()
+            image.add_coords_event()
             self.root.image_controller.coords_matched.append(image)
 
         self.root.update()
