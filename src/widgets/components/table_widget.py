@@ -24,9 +24,10 @@ class TableWidget(tb.Frame):
             label = tb.Label(f, text=header, anchor=tk.CENTER)
             label.grid(row=0, column=0, sticky=tk.NSEW)
 
-    def add_row(self, *row):
+    def add_row(self, *row, row_click_el):
         for col, cell in enumerate(row):
             cell.grid(row=len(self.rows) + 1, column=col, sticky=tk.NSEW)
+            cell.bind("<Button-1>", row_click_el)
 
         self.rows.append(row)
 

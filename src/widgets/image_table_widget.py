@@ -58,7 +58,7 @@ class ImageTableWidget(BaseWidget):
             and self._cached_sel_image == sel_image
         ):
             # nothing has changed
-            print("ImageTable: not updating, nothing has changed!")
+            pass
 
         self._cached_image_list = open_images
         self._cached_sel_image = sel_image
@@ -71,37 +71,39 @@ class ImageTableWidget(BaseWidget):
         self.root.update()
 
     def add_image(self, image_num, image):
-        button_frame = tb.Frame(self.table, height=0)
-        button_frame.grid_rowconfigure(0, weight=1, uniform="a")
-        button_frame.grid_columnconfigure((0, 1, 2), weight=1, uniform="a")
-
-        for column, match_type in enumerate(MatchType):
-            button = tb.Button(
-                button_frame, text=match_type.value, bootstyle="primary-outline"
-            )
-            button.grid(row=0, column=column, padx=1, pady=1)
-            button.configure(command=partial(self.on_match, button, match_type, image))
-
         font = ["Helvetica", 9]
 
         if image.is_selected():
             font.append("bold")
 
         font = tuple(font)
+        num_label = tb.Label(self.table, text=f"{image_num}", font=font)
+        name_label = tb.Label(self.table, text=image.file_name, font=font)
+
+        button_frame = tb.Frame(self.table, height=0)
+        button_frame.grid_rowconfigure(0, weight=1, uniform="a")
+        button_frame.grid_columnconfigure((0, 1, 2), weight=1, uniform="a")
+
+        for column, match_type in enumerate(MatchType):
+            button = tb.Button(
+                button_frame,
+                text=match_type.value,
+                bootstyle=self.get_style(image, match_type),
+            )
+            button.grid(row=0, column=column, padx=1, pady=1)
+            button.configure(command=partial(self.on_match, button, match_type, image))
 
         self.table.add_row(
-            tb.Label(self.table, text=f"{image_num}", font=font),
-            tb.Label(self.table, text=image.file_name, font=font),
+            num_label,
+            name_label,
             button_frame,
+            row_click_el=partial(self.on_row_clicked, image),
         )
 
     # event handler for all match button presses
     def on_match(self, button, match_type, image):
         # update button style
-        if image.is_matched(match_type):
-            button.configure(bootstyle="primary-outline")
-        else:
-            button.configure(bootstyle="primary")
+        button.configure(bootstyle=self.get_style(image, match_type, toggled=True))
 
         # update image and everything downstream
         image.toggle_match(match_type)
@@ -112,6 +114,24 @@ class ImageTableWidget(BaseWidget):
 
     def on_image_select(self, selected_image):
         self.update_images()
+
+    def on_row_clicked(self, image, event):
+        self.root.image_controller.set_selected_image(image)
+
+    def get_style(self, image, match_type, toggled=False):
+        """
+        Helper function to get the appropriate button style,
+        depending on whether or not the image is matched on the type.
+
+        :param image: the image to check
+        :param toggled: whether or not to get the state after it's been toggled
+        """
+        is_matched = image.is_matched(match_type)
+
+        if toggled:
+            is_matched = not is_matched
+
+        return "primary" if is_matched else "primary-outline"
 
     def close(self):
         self.root.image_controller.update_image_list_eh.remove(
