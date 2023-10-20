@@ -58,7 +58,7 @@ class ImageTableWidget(BaseWidget):
             and self._cached_sel_image == sel_image
         ):
             # nothing has changed
-            pass
+            return
 
         self._cached_image_list = open_images
         self._cached_sel_image = sel_image
