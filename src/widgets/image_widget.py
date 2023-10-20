@@ -80,8 +80,19 @@ class ImageFrame(tb.Frame):
 
         self.toolbar.update()
 
-    def is_matched(self, match_type):
+    def is_matched(self, match_type: MatchType) -> bool:
+        """
+        Is the image currently being matched on this dimension?
+        """
+
         return self.matched[match_type.value]
+
+    def is_selected(self) -> bool:
+        """
+        Is the image that is currently selected this one?
+        """
+
+        return self.root.image_controller.get_selected_image() == self
 
     def toggle_match(self, match_type):
         self.matched[match_type.value] = not self.matched[match_type.value]

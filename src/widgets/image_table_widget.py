@@ -18,15 +18,16 @@ class ImageTableWidget(BaseWidget):
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
-        # self.grid_propagate(False)
+
+        self._cached_sel_image = None
+        self._cached_image_list = None
 
         self.open_windows = []
-        self.selected_image = self.root.image_controller.get_selected_image()
-        self.open_images = self.root.image_controller.get_images()
 
         self.image_table()  # Create the image table widget
 
-        self.root.image_controller.update_image_list_eh.add(self.update_images)
+        self.root.image_controller.update_image_list_eh.add(self.on_image_list_change)
+        self.root.image_controller.selected_image_eh.add(self.on_image_select)
 
     def image_table(self):
         table_container = tb.Frame(self, bootstyle="light")
@@ -40,58 +41,82 @@ class ImageTableWidget(BaseWidget):
         self.table = TableWidget(table_container, ["Num", "Image", "Matching"])
         self.table.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
 
-        for i, image in enumerate(self.open_images):
+        self.update_images()
+
+    def update_images(self):
+        """
+        Update the image table with the current set of open images
+        and the currently selected image.
+
+        Will avoid updating when nothing has changed by storing a primitive cache.
+        """
+
+        open_images = self.root.image_controller.get_images()
+        sel_image = self.root.image_controller.get_selected_image()
+        if (
+            self._cached_image_list == open_images
+            and self._cached_sel_image == sel_image
+        ):
+            # nothing has changed
+            print("ImageTable: not updating, nothing has changed!")
+
+        self._cached_image_list = open_images
+        self._cached_sel_image = sel_image
+
+        self.table.clear_rows()
+
+        for i, image in enumerate(open_images):
             self.add_image(i + 1, image)
+
+        self.root.update()
 
     def add_image(self, image_num, image):
         button_frame = tb.Frame(self.table, height=0)
         button_frame.grid_rowconfigure(0, weight=1, uniform="a")
         button_frame.grid_columnconfigure((0, 1, 2), weight=1, uniform="a")
 
-        buttonXY = tb.Button(button_frame, text="XY", bootstyle="primary-outline")
-        buttonXY.grid(row=0, column=0, padx=1, pady=1)
-        buttonXY.configure(
-            command=partial(self.on_match, buttonXY, MatchType.COORD, image)
-        )
+        for column, match_type in enumerate(MatchType):
+            button = tb.Button(
+                button_frame, text=match_type.value, bootstyle="primary-outline"
+            )
+            button.grid(row=0, column=column, padx=1, pady=1)
+            button.configure(command=partial(self.on_match, button, match_type, image))
 
-        buttonR = tb.Button(button_frame, text="R", bootstyle="primary-outline")
-        buttonR.grid(row=0, column=1, padx=1, pady=1)
-        buttonR.configure(
-            command=partial(self.on_match, buttonR, MatchType.RENDER, image)
-        )
+        font = ["Helvetica", 9]
 
-        buttonA = tb.Button(button_frame, text="A", bootstyle="primary-outline")
-        buttonA.grid(row=0, column=2, padx=1, pady=1)
-        buttonA.configure(
-            command=partial(self.on_match, buttonA, MatchType.ANNOTATION, image)
-        )
+        if image.is_selected():
+            font.append("bold")
+
+        font = tuple(font)
 
         self.table.add_row(
-            tb.Label(self.table, text=f"{image_num}", justify="center"),
-            tb.Label(self.table, text=image.file_name, justify="center"),
+            tb.Label(self.table, text=f"{image_num}", font=font),
+            tb.Label(self.table, text=image.file_name, font=font),
             button_frame,
         )
 
-    def update_images(self, selected_image, image_list):
-        self.selected_image = selected_image
-        self.open_images = image_list
-
-        self.table.clear_rows()
-
-        for i, image in enumerate(self.open_images):
-            self.add_image(i + 1, image)
-
-        self.root.update()
-
-    def on_match(self, button, match_type, image, *args, **kwargs):
+    # event handler for all match button presses
+    def on_match(self, button, match_type, image):
+        # update button style
         if image.is_matched(match_type):
             button.configure(bootstyle="primary-outline")
         else:
             button.configure(bootstyle="primary")
 
+        # update image and everything downstream
         image.toggle_match(match_type)
 
+    # wrapper funcs
+    def on_image_list_change(self, selected_image, image_list):
+        self.update_images()
+
+    def on_image_select(self, selected_image):
+        self.update_images()
+
     def close(self):
-        self.root.image_controller.update_image_list_eh.remove(self.update_images)
+        self.root.image_controller.update_image_list_eh.remove(
+            self.on_image_list_change
+        )
+        self.root.image_controller.selected_image_eh.remove(self.on_image_select)
 
         super().close()
