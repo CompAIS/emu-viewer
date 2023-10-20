@@ -37,9 +37,6 @@ class ImageController(tb.Frame):
         self.main_image = None
         self.open_windows = []
 
-        self.coords_matched = []
-        self.render_matched = []
-
         self.selected_image_eh = EventHandler()
         self.update_image_list_eh = EventHandler()
 
