@@ -22,16 +22,23 @@ class TableWidget(tb.Frame):
             label = tb.Label(f, text=header, anchor=tk.CENTER)
             label.grid(row=0, column=0, sticky=tk.NSEW)
 
-    def add_row(self, row_data):
-        for i, row in enumerate(row_data):
-            self.grid_rowconfigure(i + 1, weight=1, uniform="r")
-            for col, cell in enumerate(row):
-                cell.grid(row=len(self.rows) + i + 1, column=col, sticky=tk.NSEW)
+    def add_row(self, *row):
+        i = len(self.rows)
+        self.grid_rowconfigure(i + 1, weight=1, uniform="r")
+        for col, cell in enumerate(row):
+            cell.grid(row=len(self.rows) + i + 1, column=col, sticky=tk.NSEW)
 
-                # frame = tb.Frame(self)
-                # frame.grid(row=len(self.rows) + i, column=col, sticky=tk.NSEW)
+            # frame = tb.Frame(self)
+            # frame.grid(row=len(self.rows) + i, column=col, sticky=tk.NSEW)
 
-        self.rows.append(row_data)
+        self.rows.append(row)
+
+    def clear_rows(self):
+        for row in self.rows:
+            for cell in row:
+                cell.destroy()
+
+        self.rows = []
 
 
 if __name__ == "__main__":
@@ -47,7 +54,7 @@ if __name__ == "__main__":
     button2 = tb.Button(test, text="boo2")
     button3 = tb.Button(test, text="boo3")
 
-    test.add_row([(button1, button2, button3)])
+    test.add_row((button1, button2, button3))
 
     def add_to_table_test():
         button_frame = tb.Frame(test, height=0)
@@ -60,13 +67,9 @@ if __name__ == "__main__":
         buttonR.grid(row=0, column=1)
 
         test.add_row(
-            [
-                (
-                    tb.Label(test, text=f"Image"),
-                    tb.Label(test, text=f"Image"),
-                    button_frame,
-                )
-            ]
+            tb.Label(test, text=f"Image"),
+            tb.Label(test, text=f"Image"),
+            button_frame,
         )
 
     add = tb.Button(window, text="Add row", command=add_to_table_test)
