@@ -2,10 +2,12 @@ import tkinter as tk
 
 import ttkbootstrap as tb
 
+# from ttkbootstrap.scrolled import ScrolledFrame
+
 
 class TableWidget(tb.Frame):
     def __init__(self, parent, headers, *args, **kwargs):
-        super().__init__(parent, borderwidth=2, relief="solid", *args, **kwargs)
+        super().__init__(parent, *args, **kwargs)
 
         self.grid_rowconfigure(0, weight=1, uniform="r")
         self.grid_columnconfigure(
@@ -23,13 +25,8 @@ class TableWidget(tb.Frame):
             label.grid(row=0, column=0, sticky=tk.NSEW)
 
     def add_row(self, *row):
-        i = len(self.rows)
-        self.grid_rowconfigure(i + 1, weight=1, uniform="r")
         for col, cell in enumerate(row):
-            cell.grid(row=len(self.rows) + i + 1, column=col, sticky=tk.NSEW)
-
-            # frame = tb.Frame(self)
-            # frame.grid(row=len(self.rows) + i, column=col, sticky=tk.NSEW)
+            cell.grid(row=len(self.rows) + 1, column=col, sticky=tk.NSEW)
 
         self.rows.append(row)
 
@@ -46,7 +43,7 @@ if __name__ == "__main__":
     window.title("test")
 
     test = TableWidget(
-        window, ("Image Num", "Image Name", "Matching"), bootstyle="dark"
+        window, ["Image Num", "Image Name", "Matching"], bootstyle="dark"
     )
     test.grid(row=0, column=0, sticky=tk.NSEW, padx=50, pady=50)
 
@@ -54,7 +51,7 @@ if __name__ == "__main__":
     button2 = tb.Button(test, text="boo2")
     button3 = tb.Button(test, text="boo3")
 
-    test.add_row((button1, button2, button3))
+    test.add_row(button1, button2, button3)
 
     def add_to_table_test():
         button_frame = tb.Frame(test, height=0)

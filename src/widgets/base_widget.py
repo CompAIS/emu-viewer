@@ -1,17 +1,18 @@
-import tkinter as tk
 from functools import partial
+
+import ttkbootstrap as tb
 
 from src.lib.event_handler import EventHandler
 
 
-class BaseWidget(tk.Toplevel):
+class BaseWidget(tb.Toplevel):
     # These need to be overriden on any class that extends this
     # Yes I know it's jank. Leave me alone!!!!!
     label = None
     dropdown = None
 
-    def __init__(self, root):
-        super().__init__(root)
+    def __init__(self, root, *args, **kwargs):
+        super().__init__(root, *args, **kwargs)
         self.root = root
 
         if self.__class__.label is None or self.__class__.dropdown is None:
