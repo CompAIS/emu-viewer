@@ -8,6 +8,8 @@ import src.lib.fits_handler as Fits_handler
 import src.lib.hips_handler as Hips_handler
 import src.lib.png_handler as png_handler
 from src.lib.event_handler import EventHandler
+from src.lib.match_type import MatchType
+from src.lib.util import index_default
 from src.widgets import image_widget as iw
 from src.widgets.image_standalone_toplevel import StandaloneImage
 
@@ -105,7 +107,18 @@ class ImageController(tb.Frame):
 
         return self.selected_image
 
+    def set_selected_image(self, image):
+        if self.selected_image == image:
+            return
+
+        self.selected_image = image
+
+        self.selected_image_eh.invoke(self.get_selected_image())
+
     def get_images(self):
+        """
+        Get a list of all the currently open ImageWidgets.
+        """
         if self.main_image is None:
             return []
 
@@ -115,13 +128,24 @@ class ImageController(tb.Frame):
 
         return images
 
-    def set_selected_image(self, image):
-        if self.selected_image == image:
-            return
+    def get_images_matched_to(self, match_type):
+        """
+        Wrapper func to get_images which filters open images on whether or not they are matched
+        to match_type.
+        """
+        return [i for i in self.get_images() if i.is_matched(match_type)]
 
-        self.selected_image = image
+    def get_coord_matched_limits(self, default):
+        """
+        Get the current limits of the images that are being coordinate-matched.
 
-        self.selected_image_eh.invoke(self.get_selected_image())
+        If there are no images currently coordinate matched, use the provided default
+        (this will be the limits of the image that is being co-ordinate matched)
+        """
+
+        # since all the images which are co-ordinate matched will have the same limits,
+        # we can just grab the first one
+        return index_default(self.get_images_matched_to(MatchType.COORD), 0, default)
 
     def handle_focus(self, event):
         if self.selected_image is None:

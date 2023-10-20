@@ -4,6 +4,7 @@ from functools import partial
 import ttkbootstrap as tb
 
 import src.lib.render as Render
+from src.lib.match_type import MatchType
 from src.widgets.base_widget import BaseWidget
 
 scaling_options = [
@@ -248,19 +249,11 @@ class RendererWidget(BaseWidget):
         return image is not None and image.file_type != "png"
 
     def update_matched_images(self):
-        for image in self.root.image_controller.render_matched:
+        for image in self.root.image_controller.get_images_matched_to(MatchType.RENDER):
             if image == self.root.image_controller.get_selected_image():
                 continue
 
-            image.set_colour_map(
-                self.root.image_controller.get_selected_image().colour_map
-            )
-            image.update_colour_map()
-            image.set_scaling(self.root.image_controller.get_selected_image().stretch)
-            image.set_selected_percentile(
-                self.root.image_controller.get_selected_image().selected_percentile
-            )
-            image.update_norm()
+            image.match_render(self.root.image_controller.get_selected_image())
 
     def close(self):
         self.root.image_controller.selected_image_eh.remove(self.on_image_change)

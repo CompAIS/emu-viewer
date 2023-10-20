@@ -7,7 +7,9 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import src.lib.render as Render
 from src.controllers.widget_controller import Widget
+from src.lib.match_type import MatchType
 from src.lib.tool import NavigationToolbar
+from src.lib.util import index_default
 
 warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
 
@@ -39,6 +41,8 @@ class ImageFrame(tb.Frame):
         self.cached_percentiles = Render.get_percentiles(image_data)
         self.selected_percentile = "99.5"
         self.set_selected_percentile(self.selected_percentile)
+
+        self.matched = {match_type.value: False for match_type in MatchType}
 
         if self.image_data_header is not None:
             self.image_wcs = wcs.WCS(self.image_data_header).celestial
@@ -79,6 +83,45 @@ class ImageFrame(tb.Frame):
 
         self.toolbar.update()
 
+    def is_matched(self, match_type: MatchType) -> bool:
+        """
+        Is the image currently being matched on this dimension?
+        """
+
+        return self.matched[match_type.value]
+
+    def is_selected(self) -> bool:
+        """
+        Is the image that is currently selected this one?
+        """
+
+        return self.root.image_controller.get_selected_image() == self
+
+    def toggle_match(self, match_type):
+        # are we matching or unmatching
+        is_matching = not self.matched[match_type.value]
+
+        if match_type == MatchType.COORD:
+            if is_matching:
+                # update our current limits + watch for when our limits change
+                limits = self.root.image_controller.get_coord_matched_limits(
+                    self
+                ).limits
+                self.set_limits(limits)
+                self.add_coords_event()
+            else:
+                self.remove_coords_event()
+        elif match_type == MatchType.RENDER:
+            if is_matching:
+                self.match_render()
+        elif match_type == MatchType.ANNOTATION:
+            # TODO implement #
+            pass
+
+        # then update our matching status
+        self.matched[match_type.value] = is_matching
+        self.root.update()
+
     def set_vmin_vmax_custom(self, vmin, vmax):
         if (vmin, vmax) == (self.vmin, self.vmax):
             return
@@ -113,6 +156,22 @@ class ImageFrame(tb.Frame):
     def update_colour_map(self):
         self.image = Render.update_image_cmap(self.image, self.colour_map)
         self.canvas.draw()
+
+    def match_render(self, source_image=None):
+        if source_image is None:
+            source_image = index_default(
+                self.root.image_controller.get_images_matched_to(MatchType.RENDER),
+                0,
+                self,
+            )
+            if source_image == self:
+                return
+
+        self.set_colour_map(source_image.colour_map)
+        self.update_colour_map()
+        self.set_scaling(source_image.stretch)
+        self.set_vmin_vmax_custom(source_image.vmin, source_image.vmax)
+        self.update_norm()
 
     def draw_catalogue(self, ra_coords, dec_coords, size, colour_outline, colour_fill):
         self.fig, self.catalogue_set = Render.draw_catalogue(
@@ -160,14 +219,10 @@ class ImageFrame(tb.Frame):
         self.canvas.draw()
 
     def set_limits(self, limits):
-        self.limits = limits
-
-    def reset_limits(self):
-        self.limits = self.original_limits
-
-    def update_limits(self):
         if not self.file_type == "fits":
             return
+
+        self.limits = limits
 
         self.fig = Render.set_limits(self.fig, self.image_wcs, self.limits)
         self.canvas.draw()
@@ -192,12 +247,11 @@ class ImageFrame(tb.Frame):
             self.update_matched_images()
 
     def update_matched_images(self):
-        for image in self.root.image_controller.coords_matched:
+        for image in self.root.image_controller.get_images_matched_to(MatchType.COORD):
             if image == self:
                 continue
 
             image.set_limits(self.limits)
-            image.update_limits()
 
     def get_ra_dec(self, event):
         if not self.fig.canvas.toolbar.mode == "":
