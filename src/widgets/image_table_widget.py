@@ -86,9 +86,11 @@ class ImageTableWidget(BaseWidget):
 
         button_frame = tb.Frame(self.table, height=0)
         button_frame.grid_rowconfigure(0, weight=1, uniform="a")
-        button_frame.grid_columnconfigure((0, 1, 2), weight=1, uniform="a")
 
-        for column, match_type in enumerate(MatchType):
+        types = MatchType if image.file_type == "fits" else [MatchType.ANNOTATION]
+
+        for column, match_type in enumerate(types):
+            button_frame.grid_columnconfigure(column, weight=1, uniform="a")
             button = tb.Button(
                 button_frame,
                 text=match_type.value,
