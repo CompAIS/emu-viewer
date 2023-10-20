@@ -1,7 +1,3 @@
-import os
-import tkinter
-
-import matplotlib as mpl
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 
 # Very janky fix to get custom images to display, not sure how to edit matplotlib cbook images
@@ -58,62 +54,3 @@ class NavigationToolbar(NavigationToolbar2Tk):
             print("Lock")
             self.mode = "line_tool"
             self.canvas.widgetlock(self)
-
-    def save_figure(self, *args):
-        """
-        Mostly stolen from base class. Modified to fit our needs.
-        """
-
-        filetypes = self.canvas.get_supported_filetypes().copy()
-        default_filetype = self.canvas.get_default_filetype()
-
-        default_filetype_name = filetypes.pop(default_filetype)
-        sorted_filetypes = [(default_filetype, default_filetype_name)] + sorted(
-            filetypes.items()
-        )
-        tk_filetypes = [(name, "*.%s" % ext) for ext, name in sorted_filetypes]
-
-        defaultextension = ""
-        initialdir = os.path.expanduser(mpl.rcParams["savefig.directory"])
-        initialfile = self.canvas.get_default_filename()
-        fname = tkinter.filedialog.asksaveasfilename(
-            master=self.canvas.get_tk_widget().master,
-            title="Save the figure",
-            filetypes=tk_filetypes,
-            defaultextension=defaultextension,
-            initialdir=initialdir,
-            initialfile=initialfile,
-        )
-
-        if fname in ["", ()]:
-            return
-        if initialdir != "":
-            mpl.rcParams["savefig.directory"] = os.path.dirname(str(fname))
-        try:
-            # Where our implementation changes things https://stackoverflow.com/questions/4325733/save-a-subplot-in-matplotlib
-            fig = self.canvas.figure
-            extent = (
-                fig.axes[0]
-                .get_tightbbox(self.canvas.get_renderer())
-                .transformed(fig.dpi_scale_trans.inverted())
-            )
-
-            fig.savefig(fname, bbox_inches=extent)
-        except Exception as e:
-            tkinter.messagebox.showerror("Error saving file", str(e))
-
-    # @staticmethod
-    # def _mouse_event_to_message(event):
-    #     """
-    #     Stolen from base class. The base class was attaching some extra text to our tooltip.
-    #     We don't want that, so I've forcibly removed it here.
-    #     """
-
-    #     if event.inaxes and event.inaxes.get_navigate():
-    #         try:
-    #             s = event.inaxes.format_coord(event.xdata, event.ydata)
-    #         except (ValueError, OverflowError) as e:
-    #             print(e)
-    #         else:
-    #             return s.rstrip()
-    #     return ""
