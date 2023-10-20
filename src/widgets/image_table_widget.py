@@ -77,8 +77,12 @@ class ImageTableWidget(BaseWidget):
             font.append("bold")
 
         font = tuple(font)
-        num_label = tb.Label(self.table, text=f"{image_num}", font=font)
-        name_label = tb.Label(self.table, text=image.file_name, font=font)
+        num_label = tb.Label(
+            self.table, text=f"{image_num}", font=font, anchor="center"
+        )
+        name_label = tb.Label(
+            self.table, text=image.file_name, font=font, anchor="center"
+        )
 
         button_frame = tb.Frame(self.table, height=0)
         button_frame.grid_rowconfigure(0, weight=1, uniform="a")
