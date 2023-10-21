@@ -17,7 +17,7 @@ def create_figure(image_data, wcs, colour_map, vmin, vmax, s, contour_levels):
     # ax.coords[0].set_format_unit(u.deg)
     ax.tick_params(axis="both", which="major", labelsize=5)
     ax.set_xlabel("RA")
-    ax.set_ylabel("Dec")
+    ax.set_ylabel("DEC")
 
     def format_coord(x, y):
         c = wcs.pixel_to_world(x, y)
