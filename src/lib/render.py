@@ -29,7 +29,7 @@ def create_figure(image_data, wcs, colour_map, vmin, vmax, s, contour_levels):
         # Yes, round, not floor.
         pix = f"{round(x)}, {round(y)}"
 
-        return f"WCS: ({decimal}); ({sexigesimal}); Image: ({pix})"
+        return f"WCS: ({decimal})\nWCS: ({sexigesimal})\nImage: ({pix})"
 
     # https://matplotlib.org/stable/gallery/images_contours_and_fields/image_zcoord.html
     ax.format_coord = format_coord

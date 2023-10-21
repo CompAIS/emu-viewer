@@ -5,13 +5,12 @@ import tkinter.simpledialog
 from tkinter import simpledialog, ttk
 
 import matplotlib as mpl
+from matplotlib import cbook
 import ttkbootstrap as tb
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 
-# Very janky fix to get custom images to display, not sure how to edit matplotlib cbook images
-ASSETS_FOLDER = "../../../../../../resources/assets/"
 script_dir = os.path.dirname(__file__)
-image_path = "resources/assets/"
+IMAGE_PATH = "resources/assets/"
 
 
 def set_tooltip(widget, text):
@@ -38,28 +37,6 @@ class NavigationToolbar(NavigationToolbar2Tk):
         #   image_file, # name of the image for the button (without the extension)
         #   name_of_function, # name of the method in NavigationToolbar to call
         # )
-
-        # Used for menus that only accept strings
-        self.line_colour_menu = tk.StringVar(value="red")
-        self.line_size_menu = tk.StringVar(value="2")
-        self.font_colour_menu = tk.StringVar(value="red")
-        self.font_size_menu = tk.StringVar(value="12")
-        self.tolerance_menu = tk.StringVar(value="1000")
-        # Initial drawing variables
-        self.line_colour = "red"
-        self.line_size = 2
-        self.font_colour = "red"
-        self.font_size = 12
-        # List tracker, used for deletion
-        self.lines = []
-        self.dots = []
-        self.tolerance = 3000
-
-        self.dragging = False
-        self.selection_rect = None
-        self.box_start = None
-        self.box_end = None
-
         self.toolitems = (
             ("Home", "Reset original view", "home", "home"),
             ("Back", "Back to previous view", "back", "back"),
@@ -83,15 +60,39 @@ class NavigationToolbar(NavigationToolbar2Tk):
             (None, None, None, None),
             ("Save", "Save the figure", "filesave", "save_figure"),
             (None, None, None, None),
+            ("Line", "Draw line on figure", os.path.abspath(f"{IMAGE_PATH}linetool"), "draw_line"),
+            (None, None, None, None),
         )
         super().__init__(canvas, parent, pack_toolbar=pack)
+
+        # Used for menus that only accept strings
+        self.line_colour_menu = tk.StringVar(value="red")
+        self.line_size_menu = tk.StringVar(value="2")
+        self.font_colour_menu = tk.StringVar(value="red")
+        self.font_size_menu = tk.StringVar(value="12")
+        self.tolerance_menu = tk.StringVar(value="1000")
+        # Initial drawing variables
+        self.line_colour = "red"
+        self.line_size = 2
+        self.font_colour = "red"
+        self.font_size = 12
+        # List tracker, used for deletion
+        self.lines = []
+        self.dots = []
+        self.tolerance = 3000
+
+        self.dragging = False
+        self.selection_rect = None
+        self.box_start = None
+        self.box_end = None
+
         # Initialize button_press_callback and motion_notify_callback
         self.button_press_callback = None
         self.motion_notify_callback = None
 
         image_path = "resources/assets/"
         custom_button_frame = tk.Frame(self)
-        custom_button_frame.pack(fill="x")
+        custom_button_frame.pack(fill="both")
 
         # Line button
         line_image = tk.PhotoImage(file=f"{image_path}linetool.png")
@@ -550,12 +551,25 @@ class NavigationToolbar(NavigationToolbar2Tk):
         Stolen from base class. The base class was attaching some extra text to our tooltip.
         We don't want that, so I've forcibly removed it here.
         """
-
         if event.inaxes and event.inaxes.get_navigate():
             try:
                 s = event.inaxes.format_coord(event.xdata, event.ydata)
-            except (ValueError, OverflowError) as e:
-                print(e)
+                if not "\n" in s:
+                    # colour bar, arbitrarily add new lines
+                    s = f"\n\n{s}\n\n"
+            except (ValueError, OverflowError):
+                pass
             else:
-                return s.rstrip()
-        return ""
+                s = s.rstrip() + "\n"
+                artists = [a for a in event.inaxes._mouseover_set
+                           if a.contains(event)[0] and a.get_visible()]
+                if artists:
+                    a = cbook._topmost_artist(artists)
+                    if a is not event.inaxes.patch:
+                        data = a.get_cursor_data(event)
+                        if data is not None:
+                            data_str = a.format_cursor_data(data).rstrip()
+                            if data_str:
+                                s += data_str
+                return s
+        return "\n\n\n"
