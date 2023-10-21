@@ -61,6 +61,15 @@ class ImageFrame(tb.Frame):
                 self.contour_levels,
             )
 
+            self.vmin_line = None
+            self.vmax_line = None
+
+            min_value, max_value = self.cached_percentiles["100"]
+
+            self.histogram = Render.create_histogram(
+                self.image_data, min_value, max_value
+            )
+
             self.fig.canvas.callbacks.connect("button_press_event", self.get_ra_dec)
         else:
             self.fig, self.image = Render.create_figure_png(self.image_data)
@@ -186,6 +195,11 @@ class ImageFrame(tb.Frame):
     def clear_contours(self):
         self.contour_set = Render.clear_contours(self.contour_set)
         self.canvas.draw()
+
+    def update_histogram_lines(self):
+        self.histogram, self.vmin_line, self.vmax_line = Render.update_histogram_lines(
+            self.histogram, self.vmin, self.vmax, self.vmin_line, self.vmax_line
+        )
 
     def get_ra_dec(self, event):
         if self.root.widget_controller.open_windows.get(Widget.HIPS_SELECT) is None:

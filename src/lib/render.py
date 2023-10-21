@@ -1,4 +1,5 @@
 import astropy.visualization as vis
+import matplotlib
 import numpy as np
 from matplotlib import ticker
 from matplotlib.figure import Figure
@@ -188,3 +189,57 @@ def get_percentiles(image_data):
         ret[str(percentile)] = (values[i * 2], values[i * 2 + 1])
 
     return ret
+
+
+def create_histogram(image_data, min_value, max_value):
+    fig = Figure(figsize=(3.24, 1.1733333), dpi=150)
+    fig.patch.set_facecolor("#afbac5")
+    ax = fig.add_subplot(projection="HistogramAxes")
+    ax.set_facecolor("#afbac5")
+    fig.subplots_adjust(top=1, bottom=0.25, right=1, left=0, hspace=0, wspace=0)
+    ax.tick_params(
+        which="major",
+        labelsize=5,
+        labelleft=False,
+        left=False,
+    )
+    ax.set_xlabel("")
+    ax.set_ylabel("")
+
+    ax.set_yscale("log")
+    ax.format_coord = lambda x, y: str(x)
+
+    counts, bins = np.histogram(image_data, bins=10000, range=(min_value, max_value))
+
+    ax.stairs(counts, bins)
+
+    return fig
+
+
+def update_histogram_lines(fig, vmin, vmax, min_line, max_line):
+    if min_line is not None:
+        min_line.remove()
+
+    if max_line is not None:
+        max_line.remove()
+
+    ax = fig.axes[0]
+    min_line = ax.axvline(
+        vmin, color="red", label="Min", linestyle="solid", linewidth=0.5
+    )
+    max_line = ax.axvline(
+        vmax, color="red", label="Max", linestyle="solid", linewidth=0.5
+    )
+
+    return fig, min_line, max_line
+
+
+# https://stackoverflow.com/questions/16705452/matplotlib-forcing-pan-zoom-to-constrain-to-x-axes
+class HistogramAxes(matplotlib.axes.Axes):
+    name = "HistogramAxes"
+
+    def drag_pan(self, button, key, x, y):
+        matplotlib.axes.Axes.drag_pan(self, button, "x", x, y)  # pretend key=='x'
+
+
+matplotlib.projections.register_projection(HistogramAxes)

@@ -2,6 +2,7 @@ import tkinter as tk
 from functools import partial
 
 import ttkbootstrap as tb
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 import src.lib.render as Render
 from src.widgets.base_widget import BaseWidget
@@ -37,6 +38,11 @@ class RendererWidget(BaseWidget):
 
     def __init__(self, root):
         super().__init__(root)
+        self.geometry("787x316")
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure((0, 1), weight=1)
+
+        self.canvas = None
 
         self.histogram()
         self.render_options()
@@ -44,11 +50,13 @@ class RendererWidget(BaseWidget):
         self.root.image_controller.selected_image_eh.add(self.on_image_change)
 
     def histogram(self):
-        frame = tb.Frame(self, bootstyle="light")
-        frame.grid(column=0, row=0, sticky=tk.NSEW, padx=10, pady=10)
+        self.histogram_main_frame = tb.Frame(self, bootstyle="light")
+        self.histogram_main_frame.grid(
+            column=0, row=0, sticky=tk.NSEW, padx=10, pady=10
+        )
 
-        self.histogram_graph(frame)
-        self.histogram_buttons(frame)
+        self.histogram_graph(self.histogram_main_frame)
+        self.histogram_buttons(self.histogram_main_frame)
 
     def histogram_buttons(self, parent):
         self.percentile_buttons = {}
@@ -77,9 +85,31 @@ class RendererWidget(BaseWidget):
                 button.configure(bootstyle="medium")
 
     def histogram_graph(self, parent):
-        histogram = tb.Frame(parent, bootstyle="dark")
+        histogram = tb.Frame(parent, bootstyle="light")
         c = len(Render.PERCENTILES) + 1
-        histogram.grid(column=0, columnspan=c, row=1, sticky=tk.NSEW, padx=10, pady=10)
+        histogram.grid(
+            column=0, columnspan=c, row=1, sticky=tk.NSEW, padx=10, pady=(10, 0)
+        )
+
+        if self.check_if_image_selected():
+            image_selected = self.root.image_controller.get_selected_image()
+
+            image_selected.update_histogram_lines()
+            fig = image_selected.histogram
+
+            if self.canvas is not None:
+                self.canvas.get_tk_widget().destroy()
+
+            self.canvas = FigureCanvasTkAgg(fig, master=histogram)
+            self.canvas.get_tk_widget().grid(column=0, row=0, sticky=tk.NSEW)
+            self.canvas.draw()
+
+            self.toolbar = NavigationToolbar2Tk(
+                self.canvas, histogram, pack_toolbar=False
+            )
+            self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
+
+            self.toolbar.update()
 
     def render_options(self):
         render = tb.Frame(self, width=100, bootstyle="light")
@@ -186,6 +216,7 @@ class RendererWidget(BaseWidget):
         selected_image.set_selected_percentile(percentile)
         self.update_percentile_buttons()
         self.set_vmin_vmax(selected_image)
+        self.histogram_graph(self.histogram_main_frame)
         self.root.image_controller.get_selected_image().update_norm()
 
     # These functions listen to events and behave accordingly
@@ -214,6 +245,7 @@ class RendererWidget(BaseWidget):
         self.root.image_controller.get_selected_image().set_vmin_vmax_custom(vmin, vmax)
         self.update_percentile_buttons()
         self.root.image_controller.get_selected_image().update_norm()
+        self.histogram_graph(self.histogram_main_frame)
         self.root.update()
 
     def on_image_change(self, image):
@@ -229,6 +261,7 @@ class RendererWidget(BaseWidget):
         self.set_vmin_vmax(image)
         self.set_scaling(image.stretch)
         self.set_colour_map(image.colour_map)
+        self.histogram_graph(self.histogram_main_frame)
 
         self.root.update()
 
