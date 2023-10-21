@@ -138,6 +138,19 @@ class RendererWidget(BaseWidget):
             4,
         )
 
+        grid_lines_lbl = tb.Label(render, bootstyle="inverse-light", text="Grid Lines")
+        grid_lines_lbl.grid(column=0, row=5, sticky=tk.NSEW, padx=10, pady=10)
+
+        self.grid_lines_state = tk.BooleanVar()
+        self.grid_lines_cbtn = tb.Checkbutton(
+            render,
+            bootstyle="primary-round-toggle",
+            text=None,
+            command=self.on_grid_lines,
+            variable=self.grid_lines_state,
+        )
+        self.grid_lines_cbtn.grid(row=5, column=1, sticky=tk.W, padx=10, pady=10)
+
     def custom_options(self, parent, text, gridX, gridY):
         label = tb.Label(parent, text=text, bootstyle="inverse-light")
         label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
@@ -219,6 +232,17 @@ class RendererWidget(BaseWidget):
         self.histogram_graph(self.histogram_main_frame)
         self.root.image_controller.get_selected_image().update_norm()
 
+    def set_grid_lines_box_state(self, state):
+        """
+        Set the state of the checkbox to the given state.
+        """
+
+        self.grid_lines_state.set(state)
+
+    def on_grid_lines(self):
+        state = self.root.image_controller.get_selected_image().toggle_grid_lines()
+        self.set_grid_lines_box_state(state)
+
     # These functions listen to events and behave accordingly
     def on_select_scaling(self, option):
         if not self.check_if_image_selected():
@@ -255,6 +279,7 @@ class RendererWidget(BaseWidget):
             self.set_percentile(None)
             self.set_vmin_vmax(None)
             self.update_percentile_buttons()
+            self.set_grid_lines_box_state(False)
             return
 
         self.update_percentile_buttons()
@@ -262,6 +287,7 @@ class RendererWidget(BaseWidget):
         self.set_scaling(image.stretch)
         self.set_colour_map(image.colour_map)
         self.histogram_graph(self.histogram_main_frame)
+        self.set_grid_lines_box_state(image.grid_lines)
 
         self.root.update()
 

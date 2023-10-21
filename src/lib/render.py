@@ -175,6 +175,13 @@ def update_contours(
     )
 
 
+def set_grid_lines(fig, visible):
+    if visible:
+        fig.axes[0].grid(linestyle="-", linewidth=0.2)
+    else:
+        fig.axes[0].grid(False)
+
+
 def get_percentiles(image_data):
     edges = []
     for percentile in PERCENTILES:
