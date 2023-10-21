@@ -150,6 +150,7 @@ class RendererWidget(BaseWidget):
             variable=self.grid_lines_state,
         )
         self.grid_lines_cbtn.grid(row=5, column=1, sticky=tk.W, padx=10, pady=10)
+        self.set_grid_lines_box_state(None)
 
     def custom_options(self, parent, text, gridX, gridY):
         label = tb.Label(parent, text=text, bootstyle="inverse-light")
@@ -237,10 +238,20 @@ class RendererWidget(BaseWidget):
         Set the state of the checkbox to the given state.
         """
 
-        self.grid_lines_state.set(state)
+        if state is None:
+            self.grid_lines_state.set(False)
+            self.grid_lines_cbtn.configure(state="disabled")
+        else:
+            self.grid_lines_cbtn.configure(state="enabled")
+            self.grid_lines_state.set(state)
 
     def on_grid_lines(self):
-        state = self.root.image_controller.get_selected_image().toggle_grid_lines()
+        image = self.root.image_controller.get_selected_image()
+        if image is None:
+            self.set_grid_lines_box_state(None)
+            return
+
+        state = image.toggle_grid_lines()
         self.set_grid_lines_box_state(state)
 
     # These functions listen to events and behave accordingly
@@ -279,7 +290,7 @@ class RendererWidget(BaseWidget):
             self.set_percentile(None)
             self.set_vmin_vmax(None)
             self.update_percentile_buttons()
-            self.set_grid_lines_box_state(False)
+            self.set_grid_lines_box_state(None)
             return
 
         self.update_percentile_buttons()
