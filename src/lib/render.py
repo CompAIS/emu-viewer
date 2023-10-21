@@ -201,7 +201,6 @@ def get_percentiles(image_data):
 def set_limits(fig, wcs, limits):
     ax = fig.axes[0]
 
-    print(limits)
     xlim_low, ylim_low = sc.skycoord_to_pixel(limits[0], wcs, mode="all")
     xlim_high, ylim_high = sc.skycoord_to_pixel(limits[1], wcs, mode="all")
 

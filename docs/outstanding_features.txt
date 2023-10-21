@@ -1,7 +1,3 @@
 TODO - Outstanding Features
-Create hips from open image wcs
-    - Can't be done for big images
-    - Should be able to set ra and dec from location selected on image, not sure how to do, will have figure this out
-    - Keep hips selector open to open multiple images, will have to change hips are opened
 Coordinate matching, choose image to match other selected images to
 Comment code for documentation purposes
