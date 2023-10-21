@@ -2,7 +2,7 @@ import tkinter as tk
 from functools import partial
 
 import ttkbootstrap as tb
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 import src.lib.render as Render
 from src.widgets.base_widget import BaseWidget
@@ -38,6 +38,9 @@ class RendererWidget(BaseWidget):
 
     def __init__(self, root):
         super().__init__(root)
+        self.geometry("787x316")
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure((0, 1), weight=1)
 
         self.canvas = None
 
@@ -100,6 +103,13 @@ class RendererWidget(BaseWidget):
             self.canvas = FigureCanvasTkAgg(fig, master=histogram)
             self.canvas.get_tk_widget().grid(column=0, row=0, sticky=tk.NSEW)
             self.canvas.draw()
+
+            self.toolbar = NavigationToolbar2Tk(
+                self.canvas, histogram, pack_toolbar=False
+            )
+            self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
+
+            self.toolbar.update()
 
     def render_options(self):
         render = tb.Frame(self, width=100, bootstyle="light")
