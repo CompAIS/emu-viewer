@@ -2,6 +2,7 @@ import tkinter as tk
 from functools import partial
 
 import ttkbootstrap as tb
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 import src.lib.render as Render
 from src.lib.match_type import MatchType
@@ -38,6 +39,11 @@ class RendererWidget(BaseWidget):
 
     def __init__(self, root):
         super().__init__(root)
+        self.geometry("787x316")
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure((0, 1), weight=1)
+
+        self.canvas = None
 
         self.histogram()
         self.render_options()
@@ -45,11 +51,13 @@ class RendererWidget(BaseWidget):
         self.root.image_controller.selected_image_eh.add(self.on_image_change)
 
     def histogram(self):
-        frame = tb.Frame(self, bootstyle="light")
-        frame.grid(column=0, row=0, sticky=tk.NSEW, padx=10, pady=10)
+        self.histogram_main_frame = tb.Frame(self, bootstyle="light")
+        self.histogram_main_frame.grid(
+            column=0, row=0, sticky=tk.NSEW, padx=10, pady=10
+        )
 
-        self.histogram_graph(frame)
-        self.histogram_buttons(frame)
+        self.histogram_graph(self.histogram_main_frame)
+        self.histogram_buttons(self.histogram_main_frame)
 
     def histogram_buttons(self, parent):
         self.percentile_buttons = {}
@@ -78,9 +86,31 @@ class RendererWidget(BaseWidget):
                 button.configure(bootstyle="medium")
 
     def histogram_graph(self, parent):
-        histogram = tb.Frame(parent, bootstyle="dark")
+        histogram = tb.Frame(parent, bootstyle="light")
         c = len(Render.PERCENTILES) + 1
-        histogram.grid(column=0, columnspan=c, row=1, sticky=tk.NSEW, padx=10, pady=10)
+        histogram.grid(
+            column=0, columnspan=c, row=1, sticky=tk.NSEW, padx=10, pady=(10, 0)
+        )
+
+        if self.check_if_image_selected():
+            image_selected = self.root.image_controller.get_selected_image()
+
+            image_selected.update_histogram_lines()
+            fig = image_selected.histogram
+
+            if self.canvas is not None:
+                self.canvas.get_tk_widget().destroy()
+
+            self.canvas = FigureCanvasTkAgg(fig, master=histogram)
+            self.canvas.get_tk_widget().grid(column=0, row=0, sticky=tk.NSEW)
+            self.canvas.draw()
+
+            self.toolbar = NavigationToolbar2Tk(
+                self.canvas, histogram, pack_toolbar=False
+            )
+            self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
+
+            self.toolbar.update()
 
     def render_options(self):
         render = tb.Frame(self, width=100, bootstyle="light")
@@ -108,6 +138,19 @@ class RendererWidget(BaseWidget):
             0,
             4,
         )
+
+        grid_lines_lbl = tb.Label(render, bootstyle="inverse-light", text="Grid Lines")
+        grid_lines_lbl.grid(column=0, row=5, sticky=tk.NSEW, padx=10, pady=10)
+
+        self.grid_lines_state = tk.BooleanVar()
+        self.grid_lines_cbtn = tb.Checkbutton(
+            render,
+            bootstyle="primary-round-toggle",
+            text=None,
+            command=self.on_grid_lines,
+            variable=self.grid_lines_state,
+        )
+        self.grid_lines_cbtn.grid(row=5, column=1, sticky=tk.W, padx=10, pady=10)
 
     def custom_options(self, parent, text, gridX, gridY):
         label = tb.Label(parent, text=text, bootstyle="inverse-light")
@@ -187,9 +230,21 @@ class RendererWidget(BaseWidget):
         selected_image.set_selected_percentile(percentile)
         self.update_percentile_buttons()
         self.set_vmin_vmax(selected_image)
+        self.histogram_graph(self.histogram_main_frame)
         self.root.image_controller.get_selected_image().update_norm()
 
         self.update_matched_images()
+
+    def set_grid_lines_box_state(self, state):
+        """
+        Set the state of the checkbox to the given state.
+        """
+
+        self.grid_lines_state.set(state)
+
+    def on_grid_lines(self):
+        state = self.root.image_controller.get_selected_image().toggle_grid_lines()
+        self.set_grid_lines_box_state(state)
 
     # These functions listen to events and behave accordingly
     def on_select_scaling(self, option):
@@ -226,6 +281,7 @@ class RendererWidget(BaseWidget):
 
         self.update_matched_images()
 
+        self.histogram_graph(self.histogram_main_frame)
         self.root.update()
 
     def on_image_change(self, image):
@@ -235,12 +291,15 @@ class RendererWidget(BaseWidget):
             self.set_percentile(None)
             self.set_vmin_vmax(None)
             self.update_percentile_buttons()
+            self.set_grid_lines_box_state(False)
             return
 
         self.update_percentile_buttons()
         self.set_vmin_vmax(image)
         self.set_scaling(image.stretch)
         self.set_colour_map(image.colour_map)
+        self.histogram_graph(self.histogram_main_frame)
+        self.set_grid_lines_box_state(image.grid_lines)
 
         self.root.update()
 
