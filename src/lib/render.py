@@ -16,7 +16,7 @@ def create_figure(image_data, wcs, colour_map, vmin, vmax, s, contour_levels):
     # Unsure whether to leave this or not
     # ax.coords[0].set_format_unit(u.deg)
     ax.tick_params(axis="both", which="major", labelsize=5)
-    ax.set_xlabel("Ra")
+    ax.set_xlabel("RA")
     ax.set_ylabel("Dec")
 
     def format_coord(x, y):
