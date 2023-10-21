@@ -3,3 +3,5 @@ Catalogue widget, columns table doesn't like it when you click the headings and 
 Bug when closing down catalogue widget without selecting a file
 Going home on image resets render config???
 Unable to detect when there is no valid transform
+EMU_small doesnt match with optical_r and not sure why
+When updating limits it doesnt affect the back and forward button, very annoying
