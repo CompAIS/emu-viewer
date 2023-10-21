@@ -175,12 +175,11 @@ def update_contours(
     )
 
 
-def add_grid_lines(fig):
-    return fig.axes[0].grid(linestyle="-", linewidth=0.2)
-
-
-def clear_grid_lines(fig):
-    return fig.axes[0].grid(visisble=False)
+def set_grid_lines(fig, visible):
+    if visible:
+        fig.axes[0].grid(linestyle="-", linewidth=0.2)
+    else:
+        fig.axes[0].grid(False)
 
 
 def get_percentiles(image_data):

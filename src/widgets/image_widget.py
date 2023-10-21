@@ -40,6 +40,7 @@ class ImageFrame(tb.Frame):
         self.cached_percentiles = Render.get_percentiles(image_data)
         self.selected_percentile = "99.5"
         self.set_selected_percentile(self.selected_percentile)
+        self.grid_lines = False
 
         self.matched = {match_type.value: False for match_type in MatchType}
 
@@ -200,6 +201,14 @@ class ImageFrame(tb.Frame):
         self.histogram, self.vmin_line, self.vmax_line = Render.update_histogram_lines(
             self.histogram, self.vmin, self.vmax, self.vmin_line, self.vmax_line
         )
+
+    def toggle_grid_lines(self):
+        self.grid_lines = not self.grid_lines
+
+        Render.set_grid_lines(self.fig, self.grid_lines)
+        self.canvas.draw()
+
+        return self.grid_lines
 
     def get_ra_dec(self, event):
         if self.root.widget_controller.open_windows.get(Widget.HIPS_SELECT) is None:
