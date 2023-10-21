@@ -224,7 +224,9 @@ class ContourWidget(BaseWidget):
         # TODO Potentially remember these between data sources so that you don't lose information?
         # TODO I guess I'm more curious what behaviour we expect here. CARTA maintains it when switching
         self.mean_entry.insert(0, str(np.nanmean(self.data_source.image_data)))
-        self.sigma_entry.insert(0, str(np.nanstd(self.data_source.image_data)))
+        self.sigma_entry.insert(
+            0, str(contour_handler.get_sigma(self.data_source.image_data))
+        )
         # TODO better default? this is the default from carta
         self.sigmas_entry.insert(0, "-5,5,9,13,17")
         self.generate_levels()
@@ -350,3 +352,7 @@ class ContourWidget(BaseWidget):
         value = float(value)
         self.line_opacity = value
         self.lo_label["text"] = f"Line Opacity ({value:1.2f})"
+
+    def close(self):
+        self.root.image_controller.update_image_list_eh.remove(self.update_dropdown)
+        super().close()

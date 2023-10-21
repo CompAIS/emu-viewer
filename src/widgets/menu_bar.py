@@ -31,7 +31,10 @@ class MenuBar(tb.Frame):
         file_menu = tb.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label="File", menu=file_menu)
         file_menu.add_command(label="Open Image", command=self.open_file)
-        file_menu.add_command(label="Open Hips Survey", command=self.open_hips)
+        file_menu.add_command(
+            label="Open Hips Survey",
+            command=partial(self.open_widget, Widget.HIPS_SELECT),
+        )
         file_menu.add_command(label="Close All Images", command=self.close_images)
         file_menu.add_command(label="Exit", command=self.root.quit)
 

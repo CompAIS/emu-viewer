@@ -6,6 +6,8 @@ from astropy import wcs
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import src.lib.render as Render
+from src.controllers.widget_controller import Widget
+from src.lib.match_type import MatchType
 from src.lib.tool import NavigationToolbar
 
 warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
@@ -39,6 +41,8 @@ class ImageFrame(tb.Frame):
         self.selected_percentile = "99.5"
         self.set_selected_percentile(self.selected_percentile)
 
+        self.matched = {match_type.value: False for match_type in MatchType}
+
         if self.image_data_header is not None:
             self.image_wcs = wcs.WCS(self.image_data_header).celestial
             # if self.image_wcs.world_n_dim > 2:
@@ -60,9 +64,13 @@ class ImageFrame(tb.Frame):
             self.vmin_line = None
             self.vmax_line = None
 
+            min_value, max_value = self.cached_percentiles["100"]
+
             self.histogram = Render.create_histogram(
-                self.image_data, *self.cached_percentiles["100"]
+                self.image_data, min_value, max_value
             )
+
+            self.fig.canvas.callbacks.connect("button_press_event", self.get_ra_dec)
         else:
             self.fig, self.image = Render.create_figure_png(self.image_data)
 
@@ -80,6 +88,33 @@ class ImageFrame(tb.Frame):
         self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
 
         self.toolbar.update()
+
+    def is_matched(self, match_type: MatchType) -> bool:
+        """
+        Is the image currently being matched on this dimension?
+        """
+
+        return self.matched[match_type.value]
+
+    def is_selected(self) -> bool:
+        """
+        Is the image that is currently selected this one?
+        """
+
+        return self.root.image_controller.get_selected_image() == self
+
+    def toggle_match(self, match_type):
+        self.matched[match_type.value] = not self.matched[match_type.value]
+
+        if match_type == MatchType.COORD:
+            # TODO implement #
+            pass
+        elif match_type == MatchType.RENDER:
+            # TODO implement #
+            pass
+        elif match_type == MatchType.ANNOTATION:
+            # TODO implement #
+            pass
 
     def set_vmin_vmax_custom(self, vmin, vmax):
         if (vmin, vmax) == (self.vmin, self.vmax):
@@ -165,3 +200,18 @@ class ImageFrame(tb.Frame):
         self.histogram, self.vmin_line, self.vmax_line = Render.update_histogram_lines(
             self.histogram, self.vmin, self.vmax, self.vmin_line, self.vmax_line
         )
+
+    def get_ra_dec(self, event):
+        if self.root.widget_controller.open_windows.get(Widget.HIPS_SELECT) is None:
+            return
+
+        if event.inaxes and event.inaxes.get_navigate():
+            try:
+                c = self.image_wcs.pixel_to_world(event.xdata, event.ydata)
+                decimal = c.to_string(style="decimal", precision=5)
+                coords = decimal.split()
+                self.root.widget_controller.open_windows.get(
+                    Widget.HIPS_SELECT
+                ).set_ra_dec_entries(coords[0], coords[1])
+            except (ValueError, OverflowError) as e:
+                print(e)

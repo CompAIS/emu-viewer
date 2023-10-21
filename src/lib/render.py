@@ -17,8 +17,23 @@ def create_figure(image_data, wcs, colour_map, vmin, vmax, s, contour_levels):
     # Unsure whether to leave this or not
     # ax.coords[0].set_format_unit(u.deg)
     ax.tick_params(axis="both", which="major", labelsize=5)
-    ax.set_xlabel("Ra")
-    ax.set_ylabel("Dec")
+    ax.set_xlabel("RA")
+    ax.set_ylabel("DEC")
+
+    def format_coord(x, y):
+        c = wcs.pixel_to_world(x, y)
+
+        decimal = c.to_string(style="decimal", precision=2).replace(" ", ", ")
+        sexigesimal = c.to_string(
+            style="hmsdms", sep=":", pad=True, precision=2
+        ).replace(" ", ", ")
+        # Yes, round, not floor.
+        pix = f"{round(x)}, {round(y)}"
+
+        return f"WCS: ({decimal}); ({sexigesimal}); Image: ({pix})"
+
+    # https://matplotlib.org/stable/gallery/images_contours_and_fields/image_zcoord.html
+    ax.format_coord = format_coord
 
     stretch = None
 
@@ -176,7 +191,7 @@ def get_percentiles(image_data):
     return ret
 
 
-def create_histogram(image_data, min, max):
+def create_histogram(image_data, min_value, max_value):
     fig = Figure(figsize=(3.24, 1.1733333), dpi=150)
     fig.patch.set_facecolor("#afbac5")
     ax = fig.add_subplot(projection="HistogramAxes")
@@ -194,7 +209,7 @@ def create_histogram(image_data, min, max):
     ax.set_yscale("log")
     ax.format_coord = lambda x, y: str(x)
 
-    counts, bins = np.histogram(image_data, bins=10000, range=(min, max))
+    counts, bins = np.histogram(image_data, bins=10000, range=(min_value, max_value))
 
     ax.stairs(counts, bins)
 
