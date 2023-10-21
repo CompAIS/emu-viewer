@@ -7,6 +7,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import src.lib.render as Render
 from src.controllers.widget_controller import Widget
+from src.lib.match_type import MatchType
 from src.lib.tool import NavigationToolbar
 
 warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
@@ -39,6 +40,8 @@ class ImageFrame(tb.Frame):
         self.cached_percentiles = Render.get_percentiles(image_data)
         self.selected_percentile = "99.5"
         self.set_selected_percentile(self.selected_percentile)
+
+        self.matched = {match_type.value: False for match_type in MatchType}
 
         if self.image_data_header is not None:
             self.image_wcs = wcs.WCS(self.image_data_header).celestial
@@ -76,6 +79,33 @@ class ImageFrame(tb.Frame):
         self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
 
         self.toolbar.update()
+
+    def is_matched(self, match_type: MatchType) -> bool:
+        """
+        Is the image currently being matched on this dimension?
+        """
+
+        return self.matched[match_type.value]
+
+    def is_selected(self) -> bool:
+        """
+        Is the image that is currently selected this one?
+        """
+
+        return self.root.image_controller.get_selected_image() == self
+
+    def toggle_match(self, match_type):
+        self.matched[match_type.value] = not self.matched[match_type.value]
+
+        if match_type == MatchType.COORD:
+            # TODO implement #
+            pass
+        elif match_type == MatchType.RENDER:
+            # TODO implement #
+            pass
+        elif match_type == MatchType.ANNOTATION:
+            # TODO implement #
+            pass
 
     def set_vmin_vmax_custom(self, vmin, vmax):
         if (vmin, vmax) == (self.vmin, self.vmax):
