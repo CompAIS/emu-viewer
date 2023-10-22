@@ -196,22 +196,21 @@ class ImageFrame(tb.Frame):
 
         self.scene_canvas.update()
 
-    def draw_catalogue(self, ra_coords, dec_coords, size, colour_outline, colour_fill):
-        raise NotImplementedError
-        # self.fig, self.catalogue_set = Render.draw_catalogue(
-        #     self.fig,
-        #     self.catalogue_set,
-        #     ra_coords,
-        #     dec_coords,
-        #     size,
-        #     colour_outline,
-        #     colour_fill,
-        # )
-        # self.canvas.draw()
+    def draw_catalogue(self, ra_coords, dec_coords, size, colour_outline):
+        self.catalogue_set = Render.draw_catalogue(
+            self.view,
+            self.catalogue_set,
+            self.image_wcs,
+            ra_coords,
+            dec_coords,
+            size,
+            colour_outline,
+        )
+        self.scene_canvas.update()
 
     def reset_catalogue(self):
         self.catalogue_set = Render.reset_catalogue(self.catalogue_set)
-        self.canvas.draw()
+        self.scene_canvas.update()
 
     def update_contours(
         self,

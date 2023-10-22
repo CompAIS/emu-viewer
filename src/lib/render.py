@@ -1,9 +1,13 @@
+import astropy.coordinates as coordinates
 import astropy.visualization as vis
+import astropy.wcs.utils as utils
 import matplotlib
 import numpy as np
 from matplotlib.figure import Figure
 from scipy.ndimage.filters import gaussian_filter
 from vispy import scene
+from vispy.color import color_array
+from vispy.visuals import transforms
 
 PERCENTILES = [90, 95, 99, 99.5, 99.9, 100]
 
@@ -119,33 +123,45 @@ def update_image_cmap(image, colour_map):
 
 
 def draw_catalogue(
-    fig, catalogue_set, ra_coords, dec_coords, size, colour_outline, colour_fill
+    view,
+    catalogue_visual,
+    wcs,
+    ra_coords,
+    dec_coords,
+    size,
+    colour_outline,
 ):
-    if catalogue_set is not None:
-        catalogue_set.remove()
+    if catalogue_visual is not None:
+        catalogue_visual.parent = None
 
-    ax = fig.axes[0]
-    xlim = ax.get_xlim()
-    ylim = ax.get_ylim()
+    coords = coordinates.SkyCoord(ra_coords, dec_coords, unit="deg")
 
-    catalogue_set = ax.scatter(
-        ra_coords,
-        dec_coords,
-        s=size,
-        edgecolor=colour_outline,
-        facecolor=colour_fill,
-        transform=ax.get_transform("world"),
+    pixel_coords = utils.skycoord_to_pixel(coords, wcs, origin=0, mode="all")
+
+    points = []
+    for i in range(len(ra_coords)):
+        points.append([pixel_coords[0][i], pixel_coords[1][i]])
+
+    array = np.array(points)
+
+    edge_colour = color_array.ColorArray(colour_outline)
+    face_color = color_array.ColorArray(color=None, alpha=0.0)
+
+    catalogue_visual = scene.visuals.Markers(
+        pos=array,
+        size=size,
+        edge_color=edge_colour,
+        face_color=face_color,
+        parent=view.scene,
     )
+    catalogue_visual.transform = transforms.STTransform(translate=(0, 0, -2))
 
-    ax.set_xlim(xlim)
-    ax.set_ylim(ylim)
-
-    return fig, catalogue_set
+    return catalogue_visual
 
 
 def reset_catalogue(catalogue_set):
     if catalogue_set is not None:
-        catalogue_set.remove()
+        catalogue_set.parent = None
 
     return None
 
