@@ -12,21 +12,10 @@ def create_figure(
     image_data, grid, view, wcs, colour_map, vmin, vmax, s, contour_levels
 ):
     view.camera.rect = (0, 0, image_data.shape[0], image_data.shape[1])
-
-    # Add axes
-    yax = scene.AxisWidget(orientation="left")
-    yax.stretch = (0.05, 1)
-    grid.add_widget(yax, 0, 0)
-    yax.link_view(view)
-
-    xax = scene.AxisWidget(orientation="bottom")
-    xax.stretch = (1, 0.05)
-    grid.add_widget(xax, 1, 1)
-    xax.link_view(view)
-
     image = scene.Image(
         data=image_data, cmap=colour_map, clim=(vmin, vmax), parent=view.scene
     )
+    image.order = -1
 
     return image
 
