@@ -25,7 +25,7 @@ def create_figure(image_data, view, wcs, colour_map, vmin, vmax, s, contour_leve
 
     data = stretch(image_data)
 
-    image = Image(data=data, cmap=colour_map, parent=view.scene)
+    image = Image(data=data, cmap=colour_map, parent=view.scene, texture_format=float)
 
     return image
 
