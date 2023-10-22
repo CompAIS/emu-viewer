@@ -4,6 +4,7 @@ import warnings
 import ttkbootstrap as tb
 from astropy import wcs
 from vispy import scene
+from vispy.scene.cameras import panzoom
 
 import src.lib.render as Render
 from src.controllers.widget_controller import Widget
@@ -55,6 +56,7 @@ class ImageFrame(tb.Frame):
         if file_type == "fits":
             self.image = Render.create_figure(
                 self.image_data,
+                self.grid,
                 self.view,
                 self.image_wcs,
                 self.colour_map,
@@ -86,8 +88,10 @@ class ImageFrame(tb.Frame):
         self.scene_canvas = scene.SceneCanvas(
             keys="interactive", bgcolor="#2B3E50", parent=self
         )
-        grid = self.scene_canvas.central_widget.add_grid()
-        self.view = grid.add_view(0, 0)  # TODO tickers / axes
+        self.grid = self.scene_canvas.central_widget.add_grid()
+        self.view = self.grid.add_view(0, 1)
+        self.view.camera = panzoom.PanZoomCamera(rect=(0, 0, 1, 1))
+
         self.scene_canvas.native.grid(row=0, column=0, sticky=tk.NSEW)
 
         # self.canvas = FigureCanvasTkAgg(self.fig, master=self)
