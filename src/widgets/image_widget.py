@@ -3,12 +3,11 @@ import warnings
 
 import ttkbootstrap as tb
 from astropy import wcs
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from vispy import scene
 
 import src.lib.render as Render
 from src.controllers.widget_controller import Widget
 from src.lib.match_type import MatchType
-from src.lib.tool import NavigationToolbar
 
 warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
 
@@ -51,9 +50,12 @@ class ImageFrame(tb.Frame):
 
         self.catalogue_set = None
         self.contour_levels = self.contour_set = None
+        self.create_canvas()
+
         if file_type == "fits":
-            self.fig, self.image = Render.create_figure(
+            self.image = Render.create_figure(
                 self.image_data,
+                self.view,
                 self.image_wcs,
                 self.colour_map,
                 self.vmin,
@@ -71,24 +73,33 @@ class ImageFrame(tb.Frame):
                 self.image_data, min_value, max_value
             )
 
-            self.fig.canvas.callbacks.connect("button_press_event", self.get_ra_dec)
+            # TODO
+            # self.fig.canvas.callbacks.connect("button_press_event", self.get_ra_dec)
         else:
-            self.fig, self.image = Render.create_figure_png(self.image_data)
+            # TODO
+            raise NotImplementedError
+            # self.fig, self.image = Render.create_figure_png(self.image_data)
 
-        self.create_image()
-        self.canvas.draw()
+        # self.canvas.draw()
 
-    def create_image(self):
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self)
-        self.canvas.get_tk_widget().grid(
-            column=0, row=0, sticky=tk.NSEW, padx=10, pady=10
+    def create_canvas(self):
+        self.scene_canvas = scene.SceneCanvas(
+            keys="interactive", bgcolor="#2B3E50", parent=self
         )
-        self.canvas.draw()
+        grid = self.scene_canvas.central_widget.add_grid()
+        self.view = grid.add_view(0, 0)  # TODO tickers / axes
+        self.scene_canvas.native.grid(row=0, column=0, sticky=tk.NSEW)
 
-        self.toolbar = NavigationToolbar(self.canvas, self, False)
-        self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
+        # self.canvas = FigureCanvasTkAgg(self.fig, master=self)
+        # self.canvas.get_tk_widget().grid(
+        #     column=0, row=0, sticky=tk.NSEW, padx=10, pady=10
+        # )
+        # self.canvas.draw()
 
-        self.toolbar.update()
+        # self.toolbar = NavigationToolbar(self.canvas, self, False)
+        # self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
+
+        # self.toolbar.update()
 
     def is_matched(self, match_type: MatchType) -> bool:
         """
@@ -153,16 +164,17 @@ class ImageFrame(tb.Frame):
         self.canvas.draw()
 
     def draw_catalogue(self, ra_coords, dec_coords, size, colour_outline, colour_fill):
-        self.fig, self.catalogue_set = Render.draw_catalogue(
-            self.fig,
-            self.catalogue_set,
-            ra_coords,
-            dec_coords,
-            size,
-            colour_outline,
-            colour_fill,
-        )
-        self.canvas.draw()
+        raise NotImplementedError
+        # self.fig, self.catalogue_set = Render.draw_catalogue(
+        #     self.fig,
+        #     self.catalogue_set,
+        #     ra_coords,
+        #     dec_coords,
+        #     size,
+        #     colour_outline,
+        #     colour_fill,
+        # )
+        # self.canvas.draw()
 
     def reset_catalogue(self):
         self.catalogue_set = Render.reset_catalogue(self.catalogue_set)
@@ -178,20 +190,21 @@ class ImageFrame(tb.Frame):
         line_opacity,
         line_width,
     ):
-        self.contour_levels = new_contours
+        raise NotImplementedError
+        # self.contour_levels = new_contours
 
-        self.contour_set = Render.update_contours(
-            self.fig,
-            data_source,
-            data_source_wcs,
-            self.contour_levels,
-            self.contour_set,
-            gaussian_factor,
-            line_colour,
-            line_opacity,
-            line_width,
-        )
-        self.canvas.draw()
+        # self.contour_set = Render.update_contours(
+        #     self.fig,
+        #     data_source,
+        #     data_source_wcs,
+        #     self.contour_levels,
+        #     self.contour_set,
+        #     gaussian_factor,
+        #     line_colour,
+        #     line_opacity,
+        #     line_width,
+        # )
+        # self.canvas.draw()
 
     def clear_contours(self):
         self.contour_set = Render.clear_contours(self.contour_set)
@@ -203,12 +216,13 @@ class ImageFrame(tb.Frame):
         )
 
     def toggle_grid_lines(self):
-        self.grid_lines = not self.grid_lines
+        raise NotImplementedError
+        # self.grid_lines = not self.grid_lines
 
-        Render.set_grid_lines(self.fig, self.grid_lines)
-        self.canvas.draw()
+        # Render.set_grid_lines(self.fig, self.grid_lines)
+        # self.canvas.draw()
 
-        return self.grid_lines
+        # return self.grid_lines
 
     def get_ra_dec(self, event):
         if self.root.widget_controller.open_windows.get(Widget.HIPS_SELECT) is None:

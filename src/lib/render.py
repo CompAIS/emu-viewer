@@ -1,63 +1,76 @@
 import astropy.visualization as vis
 import matplotlib
 import numpy as np
-from matplotlib import ticker
 from matplotlib.figure import Figure
 from scipy.ndimage.filters import gaussian_filter
+from vispy.scene import Image
+from vispy.scene.cameras.panzoom import PanZoomCamera
 
 PERCENTILES = [90, 95, 99, 99.5, 99.9, 100]
 
 
-def create_figure(image_data, wcs, colour_map, vmin, vmax, s, contour_levels):
-    fig = Figure(figsize=(5, 5), dpi=150)
-    fig.patch.set_facecolor("#afbac5")
+def create_figure(image_data, view, wcs, colour_map, vmin, vmax, s, contour_levels):
+    view.camera = PanZoomCamera(rect=(0, 0, image_data.shape[0], image_data.shape[1]))
 
-    ax = fig.add_subplot(projection=wcs)
-    fig.subplots_adjust(top=0.95, bottom=0.2, right=0.95, left=0.2, hspace=0, wspace=0)
-    # Unsure whether to leave this or not
-    # ax.coords[0].set_format_unit(u.deg)
-    ax.tick_params(axis="both", which="major", labelsize=5)
-    ax.set_xlabel("RA")
-    ax.set_ylabel("DEC")
+    # TODO axes
 
-    def format_coord(x, y):
-        c = wcs.pixel_to_world(x, y)
-
-        decimal = c.to_string(style="decimal", precision=2).replace(" ", ", ")
-        sexigesimal = c.to_string(
-            style="hmsdms", sep=":", pad=True, precision=2
-        ).replace(" ", ", ")
-        # Yes, round, not floor.
-        pix = f"{round(x)}, {round(y)}"
-
-        return f"WCS: ({decimal}); ({sexigesimal}); Image: ({pix})"
-
-    # https://matplotlib.org/stable/gallery/images_contours_and_fields/image_zcoord.html
-    ax.format_coord = format_coord
-
-    stretch = None
-
-    if s == "Linear":
-        stretch = vis.LinearStretch()
-    elif s == "Log":
-        stretch = vis.LogStretch()
-    elif s == "Sqrt":
-        stretch = vis.SqrtStretch()
-
-    norm = vis.ImageNormalize(stretch=stretch, vmin=vmin, vmax=vmax)
-
-    # Render the scaled image data onto the figure
-    image = ax.imshow(
-        image_data, cmap=colour_map, origin="lower", norm=norm, interpolation="nearest"
+    image = Image(
+        data=image_data, cmap=colour_map, clim=(vmin, vmax), parent=view.scene
     )
 
-    cbar = fig.colorbar(image, shrink=0.5)
-    tick_locator = ticker.MaxNLocator(nbins=10)
-    cbar.locator = tick_locator
-    cbar.ax.tick_params(labelsize=5)
-    cbar.update_ticks()
+    return image
 
-    return fig, image
+
+# def create_figure(image_data, wcs, colour_map, vmin, vmax, s, contour_levels):
+# fig = Figure(figsize=(5, 5), dpi=150)
+# fig.patch.set_facecolor("#afbac5")
+
+# ax = fig.add_subplot(projection=wcs)
+# fig.subplots_adjust(top=0.95, bottom=0.2, right=0.95, left=0.2, hspace=0, wspace=0)
+# # Unsure whether to leave this or not
+# # ax.coords[0].set_format_unit(u.deg)
+# ax.tick_params(axis="both", which="major", labelsize=5)
+# ax.set_xlabel("RA")
+# ax.set_ylabel("DEC")
+
+# def format_coord(x, y):
+#     c = wcs.pixel_to_world(x, y)
+
+#     decimal = c.to_string(style="decimal", precision=2).replace(" ", ", ")
+#     sexigesimal = c.to_string(
+#         style="hmsdms", sep=":", pad=True, precision=2
+#     ).replace(" ", ", ")
+#     # Yes, round, not floor.
+#     pix = f"{round(x)}, {round(y)}"
+
+#     return f"WCS: ({decimal}); ({sexigesimal}); Image: ({pix})"
+
+# # https://matplotlib.org/stable/gallery/images_contours_and_fields/image_zcoord.html
+# ax.format_coord = format_coord
+
+# stretch = None
+
+# if s == "Linear":
+#     stretch = vis.LinearStretch()
+# elif s == "Log":
+#     stretch = vis.LogStretch()
+# elif s == "Sqrt":
+#     stretch = vis.SqrtStretch()
+
+# norm = vis.ImageNormalize(stretch=stretch, vmin=vmin, vmax=vmax)
+
+# # Render the scaled image data onto the figure
+# image = ax.imshow(
+#     image_data, cmap=colour_map, origin="lower", norm=norm, interpolation="nearest"
+# )
+
+# cbar = fig.colorbar(image, shrink=0.5)
+# tick_locator = ticker.MaxNLocator(nbins=10)
+# cbar.locator = tick_locator
+# cbar.ax.tick_params(labelsize=5)
+# cbar.update_ticks()
+
+# return fig, image
 
 
 def create_figure_png(image_data):
