@@ -51,7 +51,7 @@ class ImageFrame(tb.Frame):
             #     self.image_wcs = self.image_wcs.celestial
 
         self.catalogue_set = None
-        self.contour_levels = self.contour_set = None
+        self.contour_levels = self.contour_visual = None
         self.create_canvas()
 
         if file_type == "fits":
@@ -64,7 +64,6 @@ class ImageFrame(tb.Frame):
                 self.vmin,
                 self.vmax,
                 self.stretch,
-                self.contour_levels,
             )
 
             self.vmin_line = None
@@ -223,25 +222,25 @@ class ImageFrame(tb.Frame):
         line_opacity,
         line_width,
     ):
-        raise NotImplementedError
-        # self.contour_levels = new_contours
+        self.contour_levels = new_contours
 
-        # self.contour_set = Render.update_contours(
-        #     self.fig,
-        #     data_source,
-        #     data_source_wcs,
-        #     self.contour_levels,
-        #     self.contour_set,
-        #     gaussian_factor,
-        #     line_colour,
-        #     line_opacity,
-        #     line_width,
-        # )
-        # self.canvas.draw()
+        self.contour_visual = Render.update_contours(
+            self.view,
+            self.image,
+            self.contour_visual,
+            data_source,
+            data_source_wcs,
+            self.contour_levels,
+            gaussian_factor,
+            line_colour,
+            line_opacity,
+            line_width,
+        )
+
+        self.scene_canvas.update()
 
     def clear_contours(self):
-        self.contour_set = Render.clear_contours(self.contour_set)
-        self.canvas.draw()
+        self.contour_visual = Render.clear_contours(self.image, self.contour_visual)
 
     def update_histogram_lines(self):
         self.histogram, self.vmin_line, self.vmax_line = Render.update_histogram_lines(

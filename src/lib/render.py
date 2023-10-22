@@ -3,14 +3,13 @@ import matplotlib
 import numpy as np
 from matplotlib.figure import Figure
 from scipy.ndimage.filters import gaussian_filter
-from vispy import scene
+from vispy import scene, app
+from vispy.visuals import transforms
 
 PERCENTILES = [90, 95, 99, 99.5, 99.9, 100]
 
 
-def create_figure(
-    image_data, grid, view, wcs, colour_map, vmin, vmax, s, contour_levels
-):
+def create_figure(image_data, grid, view, wcs, colour_map, vmin, vmax, s):
     view.camera.rect = (0, 0, image_data.shape[0], image_data.shape[1])
 
     stretch = None
@@ -150,25 +149,26 @@ def reset_catalogue(catalogue_set):
     return None
 
 
-def clear_contours(contour_set):
-    if contour_set is not None:
-        for contour in contour_set.collections:
-            contour.remove()
-    return None
+def clear_contours(image, contour_filters):
+    raise NotImplementedError
+    # if contour_filters is not None:
+    #     for contour_filter in contour_filters:
+    #         image.detach(contour_filter)
 
 
 def update_contours(
-    fig,
+    view,
+    image,
+    contour_visual,
     image_data,
     wcs,
     contour_levels,
-    contour_set,
     gaussian_factor,
     line_colour,
     line_opacity,
     line_width,
 ):
-    clear_contours(contour_set)
+    # clear_contours(image, contour_visual)
 
     if contour_levels is None:
         return None
@@ -177,14 +177,21 @@ def update_contours(
 
     # https://stackoverflow.com/questions/12274529/how-to-smooth-matplotlib-contour-plot
     image_data_smooth = gaussian_filter(image_data, gaussian_factor)
-    return fig.axes[0].contour(
-        image_data_smooth,
+
+    contour_visual = scene.visuals.Isocurve(
+        data=image_data_smooth,
         levels=contour_levels,
-        colors=line_colour,
-        alpha=line_opacity,
-        linewidths=line_width,
-        transform=fig.axes[0].get_transform(wcs),
+        color_lev=line_colour,
+        parent=view.scene,
     )
+    contour_visual.transform = transforms.chain.ChainTransform(
+        [transforms.STTransform(translate=(0, 0, -2))]
+    )
+    contour_visual.set_gl_state("translucent", depth_test=True)
+    contour_visual.order = 100
+    print("Done contouring!")
+
+    return contour_visual
 
 
 def set_grid_lines(fig, visible):
