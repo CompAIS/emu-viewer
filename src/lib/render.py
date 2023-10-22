@@ -14,9 +14,18 @@ def create_figure(image_data, view, wcs, colour_map, vmin, vmax, s, contour_leve
 
     # TODO axes
 
-    image = Image(
-        data=image_data, cmap=colour_map, clim=(vmin, vmax), parent=view.scene
-    )
+    stretch = None
+
+    if s == "Linear":
+        stretch = vis.LinearStretch() + vis.ManualInterval(vmin, vmax)
+    elif s == "Log":
+        stretch = vis.LogStretch() + vis.ManualInterval(vmin, vmax)
+    elif s == "Sqrt":
+        stretch = vis.SqrtStretch() + vis.ManualInterval(vmin, vmax)
+
+    data = stretch(image_data)
+
+    image = Image(data=data, cmap=colour_map, parent=view.scene)
 
     return image
 
@@ -47,17 +56,6 @@ def create_figure(image_data, view, wcs, colour_map, vmin, vmax, s, contour_leve
 
 # # https://matplotlib.org/stable/gallery/images_contours_and_fields/image_zcoord.html
 # ax.format_coord = format_coord
-
-# stretch = None
-
-# if s == "Linear":
-#     stretch = vis.LinearStretch()
-# elif s == "Log":
-#     stretch = vis.LogStretch()
-# elif s == "Sqrt":
-#     stretch = vis.SqrtStretch()
-
-# norm = vis.ImageNormalize(stretch=stretch, vmin=vmin, vmax=vmax)
 
 # # Render the scaled image data onto the figure
 # image = ax.imshow(
@@ -96,25 +94,25 @@ def create_figure_png(image_data):
     return fig, image
 
 
-def update_image_norm(image, vmin, vmax, s):
+def update_image_norm(image, image_data, vmin, vmax, s):
     stretch = None
 
     if s == "Linear":
-        stretch = vis.LinearStretch()
+        stretch = vis.LinearStretch() + vis.ManualInterval(vmin, vmax)
     elif s == "Log":
-        stretch = vis.LogStretch()
+        stretch = vis.LogStretch() + vis.ManualInterval(vmin, vmax)
     elif s == "Sqrt":
-        stretch = vis.SqrtStretch()
+        stretch = vis.SqrtStretch() + vis.ManualInterval(vmin, vmax)
 
-    norm = vis.ImageNormalize(stretch=stretch, vmin=vmin, vmax=vmax)
+    data = stretch(image_data)
 
-    image.set_norm(norm)
+    image.set_data(data)
 
     return image
 
 
 def update_image_cmap(image, colour_map):
-    image.set_cmap(colour_map)
+    image.cmap = colour_map
 
     return image
 
