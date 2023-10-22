@@ -3,12 +3,13 @@ import warnings
 
 import ttkbootstrap as tb
 from astropy import wcs
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from vispy import scene
+from vispy.scene.cameras import panzoom
 
 import src.lib.render as Render
 from src.controllers.widget_controller import Widget
+from src.lib.axes import WCSAxisWidget
 from src.lib.match_type import MatchType
-from src.lib.tool import NavigationToolbar
 
 warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
 
@@ -51,9 +52,13 @@ class ImageFrame(tb.Frame):
 
         self.catalogue_set = None
         self.contour_levels = self.contour_set = None
+        self.create_canvas()
+
         if file_type == "fits":
-            self.fig, self.image = Render.create_figure(
+            self.image = Render.create_figure(
                 self.image_data,
+                self.scene_canvas_grid,
+                self.view,
                 self.image_wcs,
                 self.colour_map,
                 self.vmin,
@@ -71,24 +76,60 @@ class ImageFrame(tb.Frame):
                 self.image_data, min_value, max_value
             )
 
-            self.fig.canvas.callbacks.connect("button_press_event", self.get_ra_dec)
+            # TODO
+            # self.fig.canvas.callbacks.connect("button_press_event", self.get_ra_dec)
         else:
-            self.fig, self.image = Render.create_figure_png(self.image_data)
+            # TODO
+            raise NotImplementedError
+            # self.fig, self.image = Render.create_figure_png(self.image_data)
 
-        self.create_image()
-        self.canvas.draw()
+        # self.canvas.draw()
+        self.create_axes()
 
-    def create_image(self):
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self)
-        self.canvas.get_tk_widget().grid(
-            column=0, row=0, sticky=tk.NSEW, padx=10, pady=10
+    def create_axes(self):
+        width = self.scene_canvas.native.winfo_width()
+        height = self.scene_canvas.native.winfo_height()
+        # Add axes
+        # yax = AxisWidget(orientation="left", axis_label="RA")
+        # xax = AxisWidget(orientation="bottom", axis_label="DEC")
+        yax = WCSAxisWidget(
+            self.image_wcs,
+            "decimal",
+            "y",
+            orientation="left",
+            major_tick_length=15,
+            minor_tick_length=10,
+            axis_label="DEC",
         )
-        self.canvas.draw()
+        yax.width_min = 70
+        yax.stretch = (0.00001, 1)
+        self.scene_canvas_grid.add_widget(yax, 0, 0)
 
-        self.toolbar = NavigationToolbar(self.canvas, self, False)
-        self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
+        xax = WCSAxisWidget(
+            self.image_wcs,
+            "decimal",
+            "x",
+            orientation="bottom",
+            major_tick_length=15,
+            minor_tick_length=10,
+            axis_label="RA",
+        )
+        xax.height_min = 70
+        xax.stretch = (1, 0.000001)
+        self.scene_canvas_grid.add_widget(xax, 1, 1)
+        xax.link_view(self.view)
+        yax.link_view(self.view)
 
-        self.toolbar.update()
+    def create_canvas(self):
+        self.scene_canvas = scene.SceneCanvas(
+            keys="interactive", bgcolor="#20374C", parent=self
+        )
+        self.scene_canvas.native.grid(row=0, column=0, sticky=tk.NSEW)
+        self.scene_canvas_grid = self.scene_canvas.central_widget.add_grid()
+
+        self.view = self.scene_canvas_grid.add_view(0, 1)
+        self.view.camera = panzoom.PanZoomCamera(aspect=1, rect=(0, 0, 1, 1))
+        self.root.update()
 
     def is_matched(self, match_type: MatchType) -> bool:
         """
@@ -142,31 +183,34 @@ class ImageFrame(tb.Frame):
     def update_norm(self):
         self.image = Render.update_image_norm(
             self.image,
+            self.image_data,
             self.vmin,
             self.vmax,
             self.stretch,
         )
-        self.canvas.draw()
+
+        self.scene_canvas.update()
 
     def update_colour_map(self):
         self.image = Render.update_image_cmap(self.image, self.colour_map)
-        self.canvas.draw()
 
-    def draw_catalogue(self, ra_coords, dec_coords, size, colour_outline, colour_fill):
-        self.fig, self.catalogue_set = Render.draw_catalogue(
-            self.fig,
+        self.scene_canvas.update()
+
+    def draw_catalogue(self, ra_coords, dec_coords, size, colour_outline):
+        self.catalogue_set = Render.draw_catalogue(
+            self.view,
             self.catalogue_set,
+            self.image_wcs,
             ra_coords,
             dec_coords,
             size,
             colour_outline,
-            colour_fill,
         )
-        self.canvas.draw()
+        self.scene_canvas.update()
 
     def reset_catalogue(self):
         self.catalogue_set = Render.reset_catalogue(self.catalogue_set)
-        self.canvas.draw()
+        self.scene_canvas.update()
 
     def update_contours(
         self,
@@ -178,20 +222,21 @@ class ImageFrame(tb.Frame):
         line_opacity,
         line_width,
     ):
-        self.contour_levels = new_contours
+        raise NotImplementedError
+        # self.contour_levels = new_contours
 
-        self.contour_set = Render.update_contours(
-            self.fig,
-            data_source,
-            data_source_wcs,
-            self.contour_levels,
-            self.contour_set,
-            gaussian_factor,
-            line_colour,
-            line_opacity,
-            line_width,
-        )
-        self.canvas.draw()
+        # self.contour_set = Render.update_contours(
+        #     self.fig,
+        #     data_source,
+        #     data_source_wcs,
+        #     self.contour_levels,
+        #     self.contour_set,
+        #     gaussian_factor,
+        #     line_colour,
+        #     line_opacity,
+        #     line_width,
+        # )
+        # self.canvas.draw()
 
     def clear_contours(self):
         self.contour_set = Render.clear_contours(self.contour_set)
@@ -203,12 +248,13 @@ class ImageFrame(tb.Frame):
         )
 
     def toggle_grid_lines(self):
-        self.grid_lines = not self.grid_lines
+        raise NotImplementedError
+        # self.grid_lines = not self.grid_lines
 
-        Render.set_grid_lines(self.fig, self.grid_lines)
-        self.canvas.draw()
+        # Render.set_grid_lines(self.fig, self.grid_lines)
+        # self.canvas.draw()
 
-        return self.grid_lines
+        # return self.grid_lines
 
     def get_ra_dec(self, event):
         if self.root.widget_controller.open_windows.get(Widget.HIPS_SELECT) is None:

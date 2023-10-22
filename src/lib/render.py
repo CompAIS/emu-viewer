@@ -1,63 +1,79 @@
+import astropy.coordinates as coordinates
 import astropy.visualization as vis
+import astropy.wcs.utils as utils
 import matplotlib
 import numpy as np
-from matplotlib import ticker
 from matplotlib.figure import Figure
 from scipy.ndimage.filters import gaussian_filter
+from vispy import scene
+from vispy.color import color_array
+from vispy.visuals import transforms
 
 PERCENTILES = [90, 95, 99, 99.5, 99.9, 100]
 
 
-def create_figure(image_data, wcs, colour_map, vmin, vmax, s, contour_levels):
-    fig = Figure(figsize=(5, 5), dpi=150)
-    fig.patch.set_facecolor("#afbac5")
-
-    ax = fig.add_subplot(projection=wcs)
-    fig.subplots_adjust(top=0.95, bottom=0.2, right=0.95, left=0.2, hspace=0, wspace=0)
-    # Unsure whether to leave this or not
-    # ax.coords[0].set_format_unit(u.deg)
-    ax.tick_params(axis="both", which="major", labelsize=5)
-    ax.set_xlabel("RA")
-    ax.set_ylabel("DEC")
-
-    def format_coord(x, y):
-        c = wcs.pixel_to_world(x, y)
-
-        decimal = c.to_string(style="decimal", precision=2).replace(" ", ", ")
-        sexigesimal = c.to_string(
-            style="hmsdms", sep=":", pad=True, precision=2
-        ).replace(" ", ", ")
-        # Yes, round, not floor.
-        pix = f"{round(x)}, {round(y)}"
-
-        return f"WCS: ({decimal}); ({sexigesimal}); Image: ({pix})"
-
-    # https://matplotlib.org/stable/gallery/images_contours_and_fields/image_zcoord.html
-    ax.format_coord = format_coord
+def create_figure(
+    image_data, grid, view, wcs, colour_map, vmin, vmax, s, contour_levels
+):
+    view.camera.rect = (0, 0, image_data.shape[0], image_data.shape[1])
 
     stretch = None
 
     if s == "Linear":
-        stretch = vis.LinearStretch()
+        stretch = vis.LinearStretch() + vis.ManualInterval(vmin, vmax)
     elif s == "Log":
-        stretch = vis.LogStretch()
+        stretch = vis.LogStretch() + vis.ManualInterval(vmin, vmax)
     elif s == "Sqrt":
-        stretch = vis.SqrtStretch()
+        stretch = vis.SqrtStretch() + vis.ManualInterval(vmin, vmax)
 
-    norm = vis.ImageNormalize(stretch=stretch, vmin=vmin, vmax=vmax)
+    data = stretch(image_data)
 
-    # Render the scaled image data onto the figure
-    image = ax.imshow(
-        image_data, cmap=colour_map, origin="lower", norm=norm, interpolation="nearest"
+    image = scene.Image(
+        data=data, cmap=colour_map, parent=view.scene, texture_format=float
     )
 
-    cbar = fig.colorbar(image, shrink=0.5)
-    tick_locator = ticker.MaxNLocator(nbins=10)
-    cbar.locator = tick_locator
-    cbar.ax.tick_params(labelsize=5)
-    cbar.update_ticks()
+    return image
 
-    return fig, image
+
+# def create_figure(image_data, wcs, colour_map, vmin, vmax, s, contour_levels):
+# fig = Figure(figsize=(5, 5), dpi=150)
+# fig.patch.set_facecolor("#afbac5")
+
+# ax = fig.add_subplot(projection=wcs)
+# fig.subplots_adjust(top=0.95, bottom=0.2, right=0.95, left=0.2, hspace=0, wspace=0)
+# # Unsure whether to leave this or not
+# # ax.coords[0].set_format_unit(u.deg)
+# ax.tick_params(axis="both", which="major", labelsize=5)
+# ax.set_xlabel("RA")
+# ax.set_ylabel("DEC")
+
+# def format_coord(x, y):
+#     c = wcs.pixel_to_world(x, y)
+
+#     decimal = c.to_string(style="decimal", precision=2).replace(" ", ", ")
+#     sexigesimal = c.to_string(
+#         style="hmsdms", sep=":", pad=True, precision=2
+#     ).replace(" ", ", ")
+#     # Yes, round, not floor.
+#     pix = f"{round(x)}, {round(y)}"
+
+#     return f"WCS: ({decimal}); ({sexigesimal}); Image: ({pix})"
+
+# # https://matplotlib.org/stable/gallery/images_contours_and_fields/image_zcoord.html
+# ax.format_coord = format_coord
+
+# # Render the scaled image data onto the figure
+# image = ax.imshow(
+#     image_data, cmap=colour_map, origin="lower", norm=norm, interpolation="nearest"
+# )
+
+# cbar = fig.colorbar(image, shrink=0.5)
+# tick_locator = ticker.MaxNLocator(nbins=10)
+# cbar.locator = tick_locator
+# cbar.ax.tick_params(labelsize=5)
+# cbar.update_ticks()
+
+# return fig, image
 
 
 def create_figure_png(image_data):
@@ -83,57 +99,69 @@ def create_figure_png(image_data):
     return fig, image
 
 
-def update_image_norm(image, vmin, vmax, s):
+def update_image_norm(image, image_data, vmin, vmax, s):
     stretch = None
 
     if s == "Linear":
-        stretch = vis.LinearStretch()
+        stretch = vis.LinearStretch() + vis.ManualInterval(vmin, vmax)
     elif s == "Log":
-        stretch = vis.LogStretch()
+        stretch = vis.LogStretch() + vis.ManualInterval(vmin, vmax)
     elif s == "Sqrt":
-        stretch = vis.SqrtStretch()
+        stretch = vis.SqrtStretch() + vis.ManualInterval(vmin, vmax)
 
-    norm = vis.ImageNormalize(stretch=stretch, vmin=vmin, vmax=vmax)
+    data = stretch(image_data)
 
-    image.set_norm(norm)
+    image.set_data(data)
 
     return image
 
 
 def update_image_cmap(image, colour_map):
-    image.set_cmap(colour_map)
+    image.cmap = colour_map
 
     return image
 
 
 def draw_catalogue(
-    fig, catalogue_set, ra_coords, dec_coords, size, colour_outline, colour_fill
+    view,
+    catalogue_visual,
+    wcs,
+    ra_coords,
+    dec_coords,
+    size,
+    colour_outline,
 ):
-    if catalogue_set is not None:
-        catalogue_set.remove()
+    if catalogue_visual is not None:
+        catalogue_visual.parent = None
 
-    ax = fig.axes[0]
-    xlim = ax.get_xlim()
-    ylim = ax.get_ylim()
+    coords = coordinates.SkyCoord(ra_coords, dec_coords, unit="deg")
 
-    catalogue_set = ax.scatter(
-        ra_coords,
-        dec_coords,
-        s=size,
-        edgecolor=colour_outline,
-        facecolor=colour_fill,
-        transform=ax.get_transform("world"),
+    pixel_coords = utils.skycoord_to_pixel(coords, wcs, origin=0, mode="all")
+
+    points = []
+    for i in range(len(ra_coords)):
+        points.append([pixel_coords[0][i], pixel_coords[1][i]])
+
+    array = np.array(points)
+
+    edge_colour = color_array.ColorArray(colour_outline)
+    face_color = color_array.ColorArray(color=None, alpha=0.0)
+
+    catalogue_visual = scene.visuals.Markers(
+        pos=array,
+        size=size,
+        edge_color=edge_colour,
+        face_color=face_color,
+        parent=view.scene,
     )
+    catalogue_visual.transform = transforms.STTransform(translate=(0, 0, -2))
 
-    ax.set_xlim(xlim)
-    ax.set_ylim(ylim)
-
-    return fig, catalogue_set
+    return catalogue_visual
 
 
 def reset_catalogue(catalogue_set):
     if catalogue_set is not None:
-        catalogue_set.remove()
+        catalogue_set.parent = None
 
     return None
 

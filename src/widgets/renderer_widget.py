@@ -3,6 +3,7 @@ from functools import partial
 
 import ttkbootstrap as tb
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from vispy.color import colormap
 
 import src.lib.render as Render
 from src.widgets.base_widget import BaseWidget
@@ -28,6 +29,9 @@ colour_map_options = [
     "binary",
     "hot",
 ]
+
+for cmap in colour_map_options:
+    colormap.MatplotlibColormap(cmap)
 
 NO_IMAGE_OPEN = "No image open"
 

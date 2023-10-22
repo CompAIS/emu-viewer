@@ -1,9 +1,12 @@
 import ttkbootstrap as tb
+import vispy
 
 from src.controllers import image_controller as ic
 from src.controllers import widget_controller as wc
 from src.widgets import menu_bar as menu_bar
 from src.widgets import tool_bar as tool_bar
+
+vispy.use(app="tkinter", gl="gl+")
 
 
 # Create Main Tkinter Window
