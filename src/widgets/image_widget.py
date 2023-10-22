@@ -183,15 +183,18 @@ class ImageFrame(tb.Frame):
     def update_norm(self):
         self.image = Render.update_image_norm(
             self.image,
+            self.image_data,
             self.vmin,
             self.vmax,
             self.stretch,
         )
-        self.canvas.draw()
+
+        self.scene_canvas.update()
 
     def update_colour_map(self):
         self.image = Render.update_image_cmap(self.image, self.colour_map)
-        self.canvas.draw()
+
+        self.scene_canvas.update()
 
     def draw_catalogue(self, ra_coords, dec_coords, size, colour_outline, colour_fill):
         raise NotImplementedError

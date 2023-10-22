@@ -12,10 +12,21 @@ def create_figure(
     image_data, grid, view, wcs, colour_map, vmin, vmax, s, contour_levels
 ):
     view.camera.rect = (0, 0, image_data.shape[0], image_data.shape[1])
+
+    stretch = None
+
+    if s == "Linear":
+        stretch = vis.LinearStretch() + vis.ManualInterval(vmin, vmax)
+    elif s == "Log":
+        stretch = vis.LogStretch() + vis.ManualInterval(vmin, vmax)
+    elif s == "Sqrt":
+        stretch = vis.SqrtStretch() + vis.ManualInterval(vmin, vmax)
+
+    data = stretch(image_data)
+
     image = scene.Image(
-        data=image_data, cmap=colour_map, clim=(vmin, vmax), parent=view.scene
+        data=data, cmap=colour_map, parent=view.scene, texture_format=float
     )
-    image.order = -1
 
     return image
 
@@ -46,17 +57,6 @@ def create_figure(
 
 # # https://matplotlib.org/stable/gallery/images_contours_and_fields/image_zcoord.html
 # ax.format_coord = format_coord
-
-# stretch = None
-
-# if s == "Linear":
-#     stretch = vis.LinearStretch()
-# elif s == "Log":
-#     stretch = vis.LogStretch()
-# elif s == "Sqrt":
-#     stretch = vis.SqrtStretch()
-
-# norm = vis.ImageNormalize(stretch=stretch, vmin=vmin, vmax=vmax)
 
 # # Render the scaled image data onto the figure
 # image = ax.imshow(
@@ -95,25 +95,25 @@ def create_figure_png(image_data):
     return fig, image
 
 
-def update_image_norm(image, vmin, vmax, s):
+def update_image_norm(image, image_data, vmin, vmax, s):
     stretch = None
 
     if s == "Linear":
-        stretch = vis.LinearStretch()
+        stretch = vis.LinearStretch() + vis.ManualInterval(vmin, vmax)
     elif s == "Log":
-        stretch = vis.LogStretch()
+        stretch = vis.LogStretch() + vis.ManualInterval(vmin, vmax)
     elif s == "Sqrt":
-        stretch = vis.SqrtStretch()
+        stretch = vis.SqrtStretch() + vis.ManualInterval(vmin, vmax)
 
-    norm = vis.ImageNormalize(stretch=stretch, vmin=vmin, vmax=vmax)
+    data = stretch(image_data)
 
-    image.set_norm(norm)
+    image.set_data(data)
 
     return image
 
 
 def update_image_cmap(image, colour_map):
-    image.set_cmap(colour_map)
+    image.cmap = colour_map
 
     return image
 
