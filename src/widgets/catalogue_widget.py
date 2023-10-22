@@ -385,5 +385,5 @@ class CatalogueWidget(BaseWidget):
             return
 
         self.root.image_controller.get_selected_image().draw_catalogue(
-            ra_coords, dec_coords, self.size, self.colour_outline, self.colour_fill
+            ra_coords, dec_coords, self.size, self.colour_outline
         )
