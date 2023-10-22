@@ -4,9 +4,11 @@ import warnings
 import ttkbootstrap as tb
 from astropy import wcs
 from vispy import scene
+from vispy.scene.cameras import panzoom
 
 import src.lib.render as Render
 from src.controllers.widget_controller import Widget
+from src.lib.axes import WCSAxisWidget
 from src.lib.match_type import MatchType
 
 warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
@@ -55,6 +57,7 @@ class ImageFrame(tb.Frame):
         if file_type == "fits":
             self.image = Render.create_figure(
                 self.image_data,
+                self.scene_canvas_grid,
                 self.view,
                 self.image_wcs,
                 self.colour_map,
@@ -81,25 +84,52 @@ class ImageFrame(tb.Frame):
             # self.fig, self.image = Render.create_figure_png(self.image_data)
 
         # self.canvas.draw()
+        self.create_axes()
+
+    def create_axes(self):
+        width = self.scene_canvas.native.winfo_width()
+        height = self.scene_canvas.native.winfo_height()
+        # Add axes
+        # yax = AxisWidget(orientation="left", axis_label="RA")
+        # xax = AxisWidget(orientation="bottom", axis_label="DEC")
+        yax = WCSAxisWidget(
+            self.image_wcs,
+            "decimal",
+            "y",
+            orientation="left",
+            major_tick_length=15,
+            minor_tick_length=10,
+            axis_label="DEC",
+        )
+        yax.width_min = 70
+        yax.stretch = (0.00001, 1)
+        self.scene_canvas_grid.add_widget(yax, 0, 0)
+
+        xax = WCSAxisWidget(
+            self.image_wcs,
+            "decimal",
+            "x",
+            orientation="bottom",
+            major_tick_length=15,
+            minor_tick_length=10,
+            axis_label="RA",
+        )
+        xax.height_min = 70
+        xax.stretch = (1, 0.000001)
+        self.scene_canvas_grid.add_widget(xax, 1, 1)
+        xax.link_view(self.view)
+        yax.link_view(self.view)
 
     def create_canvas(self):
         self.scene_canvas = scene.SceneCanvas(
-            keys="interactive", bgcolor="#2B3E50", parent=self
+            keys="interactive", bgcolor="#20374C", parent=self
         )
-        grid = self.scene_canvas.central_widget.add_grid()
-        self.view = grid.add_view(0, 0)  # TODO tickers / axes
         self.scene_canvas.native.grid(row=0, column=0, sticky=tk.NSEW)
+        self.scene_canvas_grid = self.scene_canvas.central_widget.add_grid()
 
-        # self.canvas = FigureCanvasTkAgg(self.fig, master=self)
-        # self.canvas.get_tk_widget().grid(
-        #     column=0, row=0, sticky=tk.NSEW, padx=10, pady=10
-        # )
-        # self.canvas.draw()
-
-        # self.toolbar = NavigationToolbar(self.canvas, self, False)
-        # self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
-
-        # self.toolbar.update()
+        self.view = self.scene_canvas_grid.add_view(0, 1)
+        self.view.camera = panzoom.PanZoomCamera(aspect=1, rect=(0, 0, 1, 1))
+        self.root.update()
 
     def is_matched(self, match_type: MatchType) -> bool:
         """

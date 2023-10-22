@@ -3,16 +3,15 @@ import matplotlib
 import numpy as np
 from matplotlib.figure import Figure
 from scipy.ndimage.filters import gaussian_filter
-from vispy.scene import Image
-from vispy.scene.cameras.panzoom import PanZoomCamera
+from vispy import scene
 
 PERCENTILES = [90, 95, 99, 99.5, 99.9, 100]
 
 
-def create_figure(image_data, view, wcs, colour_map, vmin, vmax, s, contour_levels):
-    view.camera = PanZoomCamera(rect=(0, 0, image_data.shape[0], image_data.shape[1]))
-
-    # TODO axes
+def create_figure(
+    image_data, grid, view, wcs, colour_map, vmin, vmax, s, contour_levels
+):
+    view.camera.rect = (0, 0, image_data.shape[0], image_data.shape[1])
 
     stretch = None
 
@@ -25,7 +24,9 @@ def create_figure(image_data, view, wcs, colour_map, vmin, vmax, s, contour_leve
 
     data = stretch(image_data)
 
-    image = Image(data=data, cmap=colour_map, parent=view.scene, texture_format=float)
+    image = scene.Image(
+        data=data, cmap=colour_map, parent=view.scene, texture_format=float
+    )
 
     return image
 
