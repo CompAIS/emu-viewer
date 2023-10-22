@@ -85,6 +85,18 @@ class ImageFrame(tb.Frame):
 
         # self.canvas.draw()
         self.create_axes()
+        self.create_colourbar()
+
+    def create_canvas(self):
+        self.scene_canvas = scene.SceneCanvas(
+            keys="interactive", bgcolor="#20374C", parent=self
+        )
+        self.scene_canvas.native.grid(row=0, column=0, sticky=tk.NSEW)
+        self.scene_canvas_grid = self.scene_canvas.central_widget.add_grid()
+
+        self.view = self.scene_canvas_grid.add_view(0, 1)
+        self.view.camera = panzoom.PanZoomCamera(aspect=1, rect=(0, 0, 1, 1))
+        self.root.update()
 
     def create_axes(self):
         width = self.scene_canvas.native.winfo_width()
@@ -120,16 +132,12 @@ class ImageFrame(tb.Frame):
         xax.link_view(self.view)
         yax.link_view(self.view)
 
-    def create_canvas(self):
-        self.scene_canvas = scene.SceneCanvas(
-            keys="interactive", bgcolor="#20374C", parent=self
+    def create_colourbar(self):
+        colourbar = scene.widgets.colorbar.ColorBarWidget(
+            cmap=self.colour_map, orientation="left"
         )
-        self.scene_canvas.native.grid(row=0, column=0, sticky=tk.NSEW)
-        self.scene_canvas_grid = self.scene_canvas.central_widget.add_grid()
-
-        self.view = self.scene_canvas_grid.add_view(0, 1)
-        self.view.camera = panzoom.PanZoomCamera(aspect=1, rect=(0, 0, 1, 1))
-        self.root.update()
+        colourbar.width_max = 50
+        self.scene_canvas_grid.add_widget(colourbar, 0, 2)
 
     def is_matched(self, match_type: MatchType) -> bool:
         """
