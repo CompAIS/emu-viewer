@@ -72,27 +72,13 @@ def create_figure(
 # return fig, image
 
 
-def create_figure_png(image_data):
-    fig = Figure(figsize=(5, 5), dpi=150)
-    fig.patch.set_facecolor("#afbac5")
-    ax = fig.add_subplot()
-    fig.subplots_adjust(top=0.95, bottom=0.2, right=0.95, left=0.2, hspace=0, wspace=0)
-    ax.tick_params(
-        labelbottom=False,
-        labeltop=False,
-        labelleft=False,
-        labelright=False,
-        bottom=False,
-        top=False,
-        left=False,
-        right=False,
-    )
-    ax.set_xlabel("")
-    ax.set_ylabel("")
+def create_figure_png(image_data, view):
+    view.camera.rect = (0, 0, image_data.shape[0], image_data.shape[1])
+    view.camera.flip = (0, 1, 0)
 
-    image = ax.imshow(image_data)
+    image = scene.Image(data=image_data, parent=view.scene)
 
-    return fig, image
+    return image
 
 
 def update_image_norm(image, image_data, vmin, vmax, s):

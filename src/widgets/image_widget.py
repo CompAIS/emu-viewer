@@ -52,9 +52,10 @@ class ImageFrame(tb.Frame):
 
         self.catalogue_set = None
         self.contour_levels = self.contour_set = None
-        self.create_canvas()
 
         if file_type == "fits":
+            self.create_canvas(1)
+
             self.image = Render.create_figure(
                 self.image_data,
                 self.scene_canvas_grid,
@@ -76,15 +77,15 @@ class ImageFrame(tb.Frame):
                 self.image_data, min_value, max_value
             )
 
+            self.create_axes()
             # TODO
             # self.fig.canvas.callbacks.connect("button_press_event", self.get_ra_dec)
         else:
-            # TODO
-            raise NotImplementedError
-            # self.fig, self.image = Render.create_figure_png(self.image_data)
+            self.create_canvas(0)
+
+            self.image = Render.create_figure_png(self.image_data, self.view)
 
         # self.canvas.draw()
-        self.create_axes()
 
     def create_axes(self):
         width = self.scene_canvas.native.winfo_width()
@@ -120,14 +121,14 @@ class ImageFrame(tb.Frame):
         xax.link_view(self.view)
         yax.link_view(self.view)
 
-    def create_canvas(self):
+    def create_canvas(self, column):
         self.scene_canvas = scene.SceneCanvas(
             keys="interactive", bgcolor="#20374C", parent=self
         )
         self.scene_canvas.native.grid(row=0, column=0, sticky=tk.NSEW)
         self.scene_canvas_grid = self.scene_canvas.central_widget.add_grid()
 
-        self.view = self.scene_canvas_grid.add_view(0, 1)
+        self.view = self.scene_canvas_grid.add_view(0, column)
         self.view.camera = panzoom.PanZoomCamera(aspect=1, rect=(0, 0, 1, 1))
         self.root.update()
 
