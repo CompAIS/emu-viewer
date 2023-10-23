@@ -2,18 +2,28 @@ VENV_NAME ?= venv
 
 ifeq ($(OS),Windows_NT)
 	OS_TYPE := Windows
+	SEP := \\
 	BIN := $(VENV_NAME)\\Scripts
 	PYTHON := $(BIN)\\python.exe
 	PRECOMMIT := $(BIN)\\pre-commit.exe
 	ENTRY := src\\main.py
+
 	RM := rmdir /s /q
+	COPY := robocopy /e
+	MKDIR := md
+	TOUCH := copy NUL
 else
 	OS_TYPE := $(shell uname -s)
+	SEP := "/"
 	BIN := $(VENV_NAME)/bin
 	PYTHON := $(BIN)/python
 	PRECOMMIT := $(BIN)/pre-commit
 	ENTRY := ./src/main.py
+	
 	RM := rm -rf
+	COPY := cp
+	MKDIR := mkdir
+	TOUCH := touch
 endif
 
 .PHONY: setup-tk
@@ -53,8 +63,11 @@ start:
 	$(PYTHON) -m src.main
 
 .PHONY: build
-build:
+build: clean
 	$(PYTHON) -m PyInstaller $(ENTRY)
+	-$(COPY) resources dist$(SEP)main$(SEP)resources
+	-$(MKDIR) dist$(SEP)main$(SEP)astroquery
+	-$(TOUCH) dist$(SEP)main$(SEP)astroquery$(SEP)CITATION
 
 .PHONY: lint
 lint:
