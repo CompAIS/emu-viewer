@@ -252,7 +252,7 @@ class ImageFrame(tb.Frame):
         )
 
     def remove_coords_event(self):
-        self.fig.canvas.callbacks.disconnect(self.matching_cid)
+        self.fig.canvas.callbacks.disconnect(self.coord_matching_cid)
 
     def on_lims_change(self, event):
         if (
