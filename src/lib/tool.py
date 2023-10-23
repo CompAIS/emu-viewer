@@ -44,6 +44,12 @@ class NavigationToolbar(NavigationToolbar2Tk):
                 "lock_line",
             ),
             (
+                "Text",
+                "Add text to figure",
+                "type",
+                "lock_text",
+            ),
+            (
                 "Erase",
                 "Erase figure annotations",
                 "erase",
@@ -83,7 +89,8 @@ class NavigationToolbar(NavigationToolbar2Tk):
                     # Modified for custom images
                     str(f"{image_file}.png"),
                     # Modified to allow for custom toggled buttons
-                    toggle=callback in ["zoom", "pan", "lock_line", "lock_erase"],
+                    toggle=callback
+                    in ["zoom", "pan", "lock_line", "lock_text", "lock_erase"],
                     command=getattr(self, callback),
                 )
                 if tooltip_text is not None:
@@ -120,6 +127,7 @@ class NavigationToolbar(NavigationToolbar2Tk):
             ("Zoom", "zoom rect"),
             ("Pan", "pan/zoom"),
             ("Line", "line_tool"),
+            ("Text", "text_tool"),
             ("Erase", "erase_tool"),
         ]:
             if text in self._buttons:
@@ -144,6 +152,11 @@ class NavigationToolbar(NavigationToolbar2Tk):
                 self.press_line(event)
             elif event.name == "button_release_event":
                 self.release_line(event)
+        if self.mode == "text_tool":
+            if event.name == "button_press_event":
+                self.press_text(event)
+            elif event.name == "button_release_event":
+                self.release_text(event)
         if self.mode == "erase_tool":
             if event.name == "button_press_event":
                 self.press_erase(event)
@@ -202,6 +215,28 @@ class NavigationToolbar(NavigationToolbar2Tk):
         self._line_info = None
         self.prev_x = None
         self.prev_y = None
+
+    def lock_text(self):
+        if not self.canvas.widgetlock.available(self):
+            self.set_message("text tool unavailable")
+            return
+        if self.mode == "text_tool":
+            self.mode = ""
+            self.canvas.widgetlock.release(self)
+        else:
+            self.mode = "text_tool"
+            self.canvas.widgetlock(self)
+        self._update_buttons_checked()
+
+    def press_text(self, event):
+        if event.button != 1 or event.x is None or event.y is None:
+            return
+        axes = [a for a in self.canvas.figure.get_axes() if a.in_axes(event)]
+        if not axes:
+            return
+
+    def release_text(self, event):
+        self.canvas.draw_idle()
 
     def lock_erase(self):
         if not self.canvas.widgetlock.available(self):
