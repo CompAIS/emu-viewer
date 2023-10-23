@@ -2,6 +2,7 @@ import os.path
 import tkinter as tk
 import tkinter.font
 from collections import namedtuple
+from tkinter import simpledialog
 
 import numpy as np
 from matplotlib.backend_bases import NavigationToolbar2
@@ -235,6 +236,16 @@ class NavigationToolbar(NavigationToolbar2Tk):
         if not axes:
             return
 
+        text = simpledialog.askstring("Type on Figure", "Enter text:")
+
+        if text is None:
+            return
+
+        for ax in axes:
+            ax.text(event.xdata, event.ydata, text, fontsize=10, color="red")
+
+        self.canvas.draw_idle()
+
     def release_text(self, event):
         self.canvas.draw_idle()
 
@@ -268,6 +279,11 @@ class NavigationToolbar(NavigationToolbar2Tk):
                 contains, lines_data = line.contains(event)
                 if contains:
                     line.remove()
+
+            for text in ax.texts:
+                contains, texts_data = text.contains(event)
+                if contains:
+                    text.remove()
 
         self.canvas.draw_idle()
 
