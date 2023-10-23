@@ -2,13 +2,16 @@ import os.path
 import tkinter as tk
 import tkinter.font
 from collections import namedtuple
+from functools import partial
 from tkinter import simpledialog
 
 import numpy as np
+import ttkbootstrap as tb
 from matplotlib.backend_bases import NavigationToolbar2
 from matplotlib.backends._backend_tk import ToolTip
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 from PIL import Image, ImageTk
+from ttkbootstrap.dialogs.colorchooser import ColorChooserDialog
 
 ASSETS_FOLDER = "./resources/assets"
 
@@ -57,6 +60,12 @@ class NavigationToolbar(NavigationToolbar2Tk):
                 "lock_erase",
             ),
             (None, None, None, None),
+            (
+                "Settings",
+                "Configure annotation settings",
+                "settings",
+                "annotation_settings",
+            ),
             ("Save", "Save the figure", "filesave", "save_figure"),
         )
 
@@ -67,6 +76,12 @@ class NavigationToolbar(NavigationToolbar2Tk):
 
         self.prev_x = None
         self.prev_y = None
+
+        self.line_size = 5
+        self.line_colour = "red"
+        self.text_size = 5
+        self.text_colour = "red"
+        self.erase_size = 5
 
     def super_init(self, canvas, window):
         if window is None:
@@ -198,8 +213,8 @@ class NavigationToolbar(NavigationToolbar2Tk):
             ax.plot(
                 [self.prev_x, event.xdata],
                 [self.prev_y, event.ydata],
-                color="red",
-                linewidth=5,
+                color=self.line_colour,
+                linewidth=self.line_size,
             )
 
             self.prev_x = event.xdata
@@ -242,7 +257,13 @@ class NavigationToolbar(NavigationToolbar2Tk):
             return
 
         for ax in axes:
-            ax.text(event.xdata, event.ydata, text, fontsize=10, color="red")
+            ax.text(
+                event.xdata,
+                event.ydata,
+                text,
+                fontsize=self.text_size,
+                color=self.text_colour,
+            )
 
         self.canvas.draw_idle()
 
@@ -276,6 +297,7 @@ class NavigationToolbar(NavigationToolbar2Tk):
     def draw_erase(self, event):
         for ax in self._erase_info.axes:
             for line in ax.lines:
+                line.set_pickradius(self.erase_size)
                 contains, lines_data = line.contains(event)
                 if contains:
                     line.remove()
@@ -296,6 +318,158 @@ class NavigationToolbar(NavigationToolbar2Tk):
         self._erase_info = None
         self.prev_x = None
         self.prev_y = None
+
+    def annotation_settings(
+        self,
+    ):
+        config = tk.Toplevel(self)
+        config.title("Annotation Config")
+        config.resizable(False, False)
+
+        config.columnconfigure(0, weight=1)
+        config.rowconfigure(0, weight=1)
+
+        frame = tb.Frame(config, bootstyle="light")
+        frame.grid(column=0, row=0, sticky=tk.NSEW, padx=10, pady=10)
+
+        config.columnconfigure((0, 1), weight=1)
+        config.rowconfigure((0, 1, 2, 3, 4, 5, 6), weight=1)
+
+        title_label = tb.Label(frame, text="Config Options", bootstyle="inverse-light")
+        title_label.grid(
+            column=0, row=0, columnspan=2, sticky=tk.NSEW, padx=10, pady=10
+        )
+
+        # Size and colour config for line tool
+        line_size_label = tb.Label(
+            frame, text=f"Line Size ({self.line_size:1.2f})", bootstyle="inverse-light"
+        )
+        line_size_label.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
+
+        line_size_slider = tb.Scale(
+            frame,
+            from_=1,
+            to=25,
+            command=partial(self.set_line_size, line_size_label),
+            value=self.line_size,
+        )
+        line_size_slider.grid(column=1, row=1, padx=10, pady=10, sticky=tk.NSEW)
+
+        line_colour_label = tb.Label(
+            frame, text="Line Colour", bootstyle="inverse-light"
+        )
+        line_colour_label.grid(column=0, row=2, sticky=tk.NSEW, padx=10, pady=10)
+
+        box_size = 23
+        self.line_button = tk.Canvas(
+            frame, bg=self.line_colour, width=box_size + 1, height=box_size + 1
+        )
+        self.line_button.grid(column=1, row=2, sticky=tk.W, padx=10, pady=10)
+        self.line_rect = self.line_button.create_rectangle(
+            0, 0, box_size, box_size, outline="black", fill=self.line_colour
+        )
+        self.line_button.bind("<Button-1>", self.set_line_colour)
+
+        # Size and colour config for text tool
+        text_size_label = tb.Label(
+            frame, text=f"Text Size ({self.text_size:1.2f})", bootstyle="inverse-light"
+        )
+        text_size_label.grid(column=0, row=3, sticky=tk.NSEW, padx=10, pady=10)
+
+        text_size_slider = tb.Scale(
+            frame,
+            from_=1,
+            to=25,
+            command=partial(self.set_text_size, text_size_label),
+            value=self.text_size,
+        )
+        text_size_slider.grid(column=1, row=3, padx=10, pady=10, sticky=tk.NSEW)
+
+        text_colour_label = tb.Label(
+            frame, text="Text Colour", bootstyle="inverse-light"
+        )
+        text_colour_label.grid(column=0, row=4, sticky=tk.NSEW, padx=10, pady=10)
+
+        box_size = 23
+        self.text_button = tk.Canvas(
+            frame, bg=self.line_colour, width=box_size + 1, height=box_size + 1
+        )
+        self.text_button.grid(column=1, row=4, sticky=tk.W, padx=10, pady=10)
+        self.text_rect = self.text_button.create_rectangle(
+            0, 0, box_size, box_size, outline="black", fill=self.text_colour
+        )
+        self.text_button.bind("<Button-1>", self.set_text_colour)
+
+        # Size config for erase tool
+        erase_size_label = tb.Label(
+            frame,
+            text=f"Erase Size ({self.erase_size:1.2f})",
+            bootstyle="inverse-light",
+        )
+        erase_size_label.grid(column=0, row=5, sticky=tk.NSEW, padx=10, pady=10)
+
+        erase_size_slider = tb.Scale(
+            frame,
+            from_=1,
+            to=25,
+            command=partial(self.set_erase_size, erase_size_label),
+            value=self.erase_size,
+        )
+        erase_size_slider.grid(column=1, row=5, padx=10, pady=10, sticky=tk.NSEW)
+
+        apply_button = tb.Button(
+            frame,
+            bootstyle="success",
+            text="Apply",
+            command=partial(self.apply_config, config),
+        )
+        apply_button.grid(column=1, row=6, sticky=tk.SE, padx=10, pady=10)
+
+        config.grab_set()
+
+    def set_line_size(self, size_label, value):
+        value = float(value)
+        self.line_size = value
+        size_label["text"] = f"Line Size ({value:1.2f})"
+
+    def set_line_colour(self, _evt):
+        cd = ColorChooserDialog(
+            initialcolor=self.line_colour, title="Choose line colour"
+        )
+        cd.show()
+        self.after(1, lambda: self.focus_set())
+
+        if cd.result is None:
+            return
+
+        self.line_colour = cd.result.hex
+        self.line_button.itemconfig(self.line_rect, fill=self.line_colour)
+
+    def set_text_size(self, size_label, value):
+        value = float(value)
+        self.text_size = value
+        size_label["text"] = f"Text Size ({value:1.2f})"
+
+    def set_text_colour(self, _evt):
+        cd = ColorChooserDialog(
+            initialcolor=self.text_colour, title="Choose line colour"
+        )
+        cd.show()
+        self.after(1, lambda: self.focus_set())
+
+        if cd.result is None:
+            return
+
+        self.text_colour = cd.result.hex
+        self.text_button.itemconfig(self.text_rect, fill=self.text_colour)
+
+    def set_erase_size(self, size_label, value):
+        value = float(value)
+        self.erase_size = value
+        size_label["text"] = f"Erase Size ({value:1.2f})"
+
+    def apply_config(self, config):
+        config.destroy()
 
     def update_stack(self):
         self.push_current()
