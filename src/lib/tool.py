@@ -54,3 +54,6 @@ class NavigationToolbar(NavigationToolbar2Tk):
             print("Lock")
             self.mode = "line_tool"
             self.canvas.widgetlock(self)
+
+    def update_stack(self):
+        self.push_current()

@@ -76,7 +76,11 @@ class ImageFrame(tb.Frame):
                 self.image_data, min_value, max_value
             )
 
+            # self.fig.canvas.callbacks.connect(
+            #     "button_release_event", self.on_lims_change
+            # )
             self.fig.canvas.callbacks.connect("button_press_event", self.get_ra_dec)
+            self.coord_matching_cid = None
         else:
             self.fig, self.image = Render.create_figure_png(self.image_data)
 
@@ -115,6 +119,7 @@ class ImageFrame(tb.Frame):
 
         if match_type == MatchType.COORD:
             if is_matching:
+                self.limits = Render.get_limits(self.fig, self.image_wcs)
                 # update our current limits + watch for when our limits change
                 limits = self.root.image_controller.get_coord_matched_limits(
                     self
@@ -122,6 +127,7 @@ class ImageFrame(tb.Frame):
                 self.set_limits(limits)
                 self.add_coords_event()
             else:
+                self.set_limits(self.original_limits)
                 self.remove_coords_event()
         elif match_type == MatchType.RENDER:
             if is_matching:
@@ -235,19 +241,18 @@ class ImageFrame(tb.Frame):
             return
 
         self.limits = limits
+        self.toolbar.update_stack()
 
         self.fig = Render.set_limits(self.fig, self.image_wcs, self.limits)
         self.canvas.draw()
 
     def add_coords_event(self):
-        self.fig.canvas.callbacks.connect("button_release_event", self.on_lims_change)
+        self.coord_matching_cid = self.fig.canvas.callbacks.connect(
+            "button_release_event", self.on_lims_change
+        )
 
     def remove_coords_event(self):
-        cid_list = list(
-            self.fig.canvas.callbacks.callbacks["button_release_event"].keys()
-        )
-        for cid in cid_list:
-            self.fig.canvas.callbacks.disconnect(cid)
+        self.fig.canvas.callbacks.disconnect(self.matching_cid)
 
     def on_lims_change(self, event):
         if (
