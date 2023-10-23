@@ -4,3 +4,5 @@ numpy==1.25.2
 pyvips==2.2.1
 ttkbootstrap==1.10.1
 astroquery==0.4.6
+scipy
+Pillow==10.1.0

@@ -1,9 +1,14 @@
+from importlib.metadata import packages_distributions
+
 import ttkbootstrap as tb
 
+from src.constants import FAVICON_PATH
 from src.controllers import image_controller as ic
 from src.controllers import widget_controller as wc
 from src.widgets import menu_bar as menu_bar
 from src.widgets import tool_bar as tool_bar
+
+print(packages_distributions())
 
 
 # Create Main Tkinter Window
@@ -40,6 +45,7 @@ class MainWindow(tb.Window):
 if __name__ == "__main__":
     # Run the main app
     main_app = MainWindow()
+    main_app.iconbitmap(FAVICON_PATH)
 
     main_app.after(1000, main_app.run)
 
