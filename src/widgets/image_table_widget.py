@@ -23,7 +23,6 @@ class ImageTableWidget(BaseWidget):
         self._cached_image_list = None
 
         self.open_windows = []
-
         self.image_table()  # Create the image table widget
 
         self.root.image_controller.update_image_list_eh.add(self.on_image_list_change)

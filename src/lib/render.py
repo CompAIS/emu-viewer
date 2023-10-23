@@ -1,4 +1,5 @@
 import astropy.visualization as vis
+import astropy.wcs.utils as sc
 import matplotlib
 import numpy as np
 from matplotlib import ticker
@@ -57,7 +58,14 @@ def create_figure(image_data, wcs, colour_map, vmin, vmax, s, contour_levels):
     cbar.ax.tick_params(labelsize=5)
     cbar.update_ticks()
 
-    return fig, image
+    xlim_low, xlim_high = ax.get_xlim()
+    ylim_low, ylim_high = ax.get_ylim()
+
+    point1 = wcs.pixel_to_world(xlim_low, ylim_low)
+    point2 = wcs.pixel_to_world(xlim_high, ylim_high)
+    limits = [point1, point2]
+
+    return fig, image, limits
 
 
 def create_figure_png(image_data):
@@ -198,6 +206,18 @@ def get_percentiles(image_data):
     return ret
 
 
+def set_limits(fig, wcs, limits):
+    ax = fig.axes[0]
+
+    xlim_low, ylim_low = sc.skycoord_to_pixel(limits[0], wcs, mode="all")
+    xlim_high, ylim_high = sc.skycoord_to_pixel(limits[1], wcs, mode="all")
+
+    ax.set_xlim(xlim_low, xlim_high)
+    ax.set_ylim(ylim_low, ylim_high)
+
+    return fig
+
+
 def create_histogram(image_data, min_value, max_value):
     fig = Figure(figsize=(3.24, 1.1733333), dpi=150)
     fig.patch.set_facecolor("#afbac5")
@@ -221,6 +241,19 @@ def create_histogram(image_data, min_value, max_value):
     ax.stairs(counts, bins)
 
     return fig
+
+
+def get_limits(fig, wcs):
+    ax = fig.axes[0]
+
+    xlim_low, xlim_high = ax.get_xlim()
+    ylim_low, ylim_high = ax.get_ylim()
+
+    point1 = wcs.pixel_to_world(xlim_low, ylim_low)
+    point2 = wcs.pixel_to_world(xlim_high, ylim_high)
+    limits = [point1, point2]
+
+    return limits
 
 
 def update_histogram_lines(fig, vmin, vmax, min_line, max_line):

@@ -7,7 +7,7 @@ import ttkbootstrap as tb
 from src.lib.hips_handler import HipsSurvey
 from src.widgets.base_widget import BaseWidget
 
-projection_options = ["TAN", "ARC", "AIT"]
+projection_options = ["TAN", "ARC", "AIT", "SIN"]
 
 optical_survey_options = [
     "CDS/P/Skymapper-color-IRG",

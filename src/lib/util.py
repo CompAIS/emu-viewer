@@ -8,3 +8,11 @@ def with_defaults(*values):
             return value
 
     return None
+
+
+def index_default(list, index, default):
+    """
+    Get index, if oob then default
+    """
+
+    return list[index] if index >= 0 and index < len(list) else default

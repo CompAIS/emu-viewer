@@ -9,6 +9,7 @@ import src.lib.render as Render
 from src.controllers.widget_controller import Widget
 from src.lib.match_type import MatchType
 from src.lib.tool import NavigationToolbar
+from src.lib.util import index_default
 
 warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
 
@@ -44,6 +45,8 @@ class ImageFrame(tb.Frame):
 
         self.matched = {match_type.value: False for match_type in MatchType}
 
+        self.matched = {match_type.value: False for match_type in MatchType}
+
         if self.image_data_header is not None:
             self.image_wcs = wcs.WCS(self.image_data_header).celestial
             # if self.image_wcs.world_n_dim > 2:
@@ -52,7 +55,7 @@ class ImageFrame(tb.Frame):
         self.catalogue_set = None
         self.contour_levels = self.contour_set = None
         if file_type == "fits":
-            self.fig, self.image = Render.create_figure(
+            self.fig, self.image, self.limits = Render.create_figure(
                 self.image_data,
                 self.image_wcs,
                 self.colour_map,
@@ -61,6 +64,8 @@ class ImageFrame(tb.Frame):
                 self.stretch,
                 self.contour_levels,
             )
+
+            self.original_limits = self.limits
 
             self.vmin_line = None
             self.vmax_line = None
@@ -71,7 +76,11 @@ class ImageFrame(tb.Frame):
                 self.image_data, min_value, max_value
             )
 
+            # self.fig.canvas.callbacks.connect(
+            #     "button_release_event", self.on_lims_change
+            # )
             self.fig.canvas.callbacks.connect("button_press_event", self.get_ra_dec)
+            self.coord_matching_cid = None
         else:
             self.fig, self.image = Render.create_figure_png(self.image_data)
 
@@ -105,17 +114,31 @@ class ImageFrame(tb.Frame):
         return self.root.image_controller.get_selected_image() == self
 
     def toggle_match(self, match_type):
-        self.matched[match_type.value] = not self.matched[match_type.value]
+        # are we matching or unmatching
+        is_matching = not self.matched[match_type.value]
 
         if match_type == MatchType.COORD:
-            # TODO implement #
-            pass
+            if is_matching:
+                self.limits = Render.get_limits(self.fig, self.image_wcs)
+                # update our current limits + watch for when our limits change
+                limits = self.root.image_controller.get_coord_matched_limits(
+                    self
+                ).limits
+                self.set_limits(limits)
+                self.add_coords_event()
+            else:
+                self.set_limits(self.original_limits)
+                self.remove_coords_event()
         elif match_type == MatchType.RENDER:
-            # TODO implement #
-            pass
+            if is_matching:
+                self.match_render()
         elif match_type == MatchType.ANNOTATION:
             # TODO implement #
             pass
+
+        # then update our matching status
+        self.matched[match_type.value] = is_matching
+        self.root.update()
 
     def set_vmin_vmax_custom(self, vmin, vmax):
         if (vmin, vmax) == (self.vmin, self.vmax):
@@ -151,6 +174,22 @@ class ImageFrame(tb.Frame):
     def update_colour_map(self):
         self.image = Render.update_image_cmap(self.image, self.colour_map)
         self.canvas.draw()
+
+    def match_render(self, source_image=None):
+        if source_image is None:
+            source_image = index_default(
+                self.root.image_controller.get_images_matched_to(MatchType.RENDER),
+                0,
+                self,
+            )
+            if source_image == self:
+                return
+
+        self.set_colour_map(source_image.colour_map)
+        self.update_colour_map()
+        self.set_scaling(source_image.stretch)
+        self.set_vmin_vmax_custom(source_image.vmin, source_image.vmax)
+        self.update_norm()
 
     def draw_catalogue(self, ra_coords, dec_coords, size, colour_outline, colour_fill):
         self.fig, self.catalogue_set = Render.draw_catalogue(
@@ -197,6 +236,40 @@ class ImageFrame(tb.Frame):
         self.contour_set = Render.clear_contours(self.contour_set)
         self.canvas.draw()
 
+    def set_limits(self, limits):
+        if not self.file_type == "fits":
+            return
+
+        self.limits = limits
+        self.toolbar.update_stack()
+
+        self.fig = Render.set_limits(self.fig, self.image_wcs, self.limits)
+        self.canvas.draw()
+
+    def add_coords_event(self):
+        self.coord_matching_cid = self.fig.canvas.callbacks.connect(
+            "button_release_event", self.on_lims_change
+        )
+
+    def remove_coords_event(self):
+        self.fig.canvas.callbacks.disconnect(self.coord_matching_cid)
+
+    def on_lims_change(self, event):
+        if (
+            self.fig.canvas.toolbar.mode == "pan/zoom"
+            or self.fig.canvas.toolbar.mode == "zoom rect"
+        ):
+            self.limits = Render.get_limits(self.fig, self.image_wcs)
+
+            self.update_matched_images()
+
+    def update_matched_images(self):
+        for image in self.root.image_controller.get_images_matched_to(MatchType.COORD):
+            if image == self:
+                continue
+
+            image.set_limits(self.limits)
+
     def update_histogram_lines(self):
         self.histogram, self.vmin_line, self.vmax_line = Render.update_histogram_lines(
             self.histogram, self.vmin, self.vmax, self.vmin_line, self.vmax_line
@@ -211,6 +284,9 @@ class ImageFrame(tb.Frame):
         return self.grid_lines
 
     def get_ra_dec(self, event):
+        if not self.fig.canvas.toolbar.mode == "":
+            return
+
         if self.root.widget_controller.open_windows.get(Widget.HIPS_SELECT) is None:
             return
 

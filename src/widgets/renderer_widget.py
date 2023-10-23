@@ -5,6 +5,7 @@ import ttkbootstrap as tb
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 import src.lib.render as Render
+from src.lib.match_type import MatchType
 from src.widgets.base_widget import BaseWidget
 
 scaling_options = [
@@ -233,6 +234,8 @@ class RendererWidget(BaseWidget):
         self.histogram_graph(self.histogram_main_frame)
         self.root.image_controller.get_selected_image().update_norm()
 
+        self.update_matched_images()
+
     def set_grid_lines_box_state(self, state):
         """
         Set the state of the checkbox to the given state.
@@ -261,6 +264,9 @@ class RendererWidget(BaseWidget):
 
         self.set_scaling(option)
         self.root.image_controller.get_selected_image().update_norm()
+
+        self.update_matched_images()
+
         self.root.update()
 
     def on_select_colour_map(self, option):
@@ -269,6 +275,9 @@ class RendererWidget(BaseWidget):
 
         self.set_colour_map(option)
         self.root.image_controller.get_selected_image().update_colour_map()
+
+        self.update_matched_images()
+
         self.root.update()
 
     def on_entry_focusout(self, event):
@@ -280,6 +289,9 @@ class RendererWidget(BaseWidget):
         self.root.image_controller.get_selected_image().set_vmin_vmax_custom(vmin, vmax)
         self.update_percentile_buttons()
         self.root.image_controller.get_selected_image().update_norm()
+
+        self.update_matched_images()
+
         self.histogram_graph(self.histogram_main_frame)
         self.root.update()
 
@@ -305,6 +317,13 @@ class RendererWidget(BaseWidget):
     def check_if_image_selected(self):
         image = self.root.image_controller.get_selected_image()
         return image is not None and image.file_type != "png"
+
+    def update_matched_images(self):
+        for image in self.root.image_controller.get_images_matched_to(MatchType.RENDER):
+            if image == self.root.image_controller.get_selected_image():
+                continue
+
+            image.match_render(self.root.image_controller.get_selected_image())
 
     def close(self):
         self.root.image_controller.selected_image_eh.remove(self.on_image_change)
