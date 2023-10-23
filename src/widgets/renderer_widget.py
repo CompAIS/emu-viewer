@@ -49,6 +49,7 @@ class RendererWidget(BaseWidget):
         self.render_options()
 
         self.root.image_controller.selected_image_eh.add(self.on_image_change)
+        self.on_image_change(self.root.image_controller.get_selected_image())
 
     def histogram(self):
         self.histogram_main_frame = tb.Frame(self, bootstyle="light")
