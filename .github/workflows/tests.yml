@@ -7,18 +7,18 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v4
-    - name: Setup Dependencies
-      shell: bash
-      run: |
-        if [[ "${{ runner.os }}" == "Windows" ]]; then
-          choco install make
-        fi
-        make venv
-        make setup-dev
-    - run: make lint
-    - run: make build
-    - run: make test
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+      - name: Setup Dependencies
+        shell: bash
+        run: |
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            choco install make
+          fi
+          make venv
+          make setup-dev
+      - run: make lint
+      - run: make build
+      - run: make test

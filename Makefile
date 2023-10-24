@@ -2,17 +2,21 @@ VENV_NAME ?= venv
 
 ifeq ($(OS),Windows_NT)
 	OS_TYPE := Windows
+	SEP := \\
 	BIN := $(VENV_NAME)\\Scripts
 	PYTHON := $(BIN)\\python.exe
 	PRECOMMIT := $(BIN)\\pre-commit.exe
 	ENTRY := src\\main.py
+
 	RM := rmdir /s /q
 else
 	OS_TYPE := $(shell uname -s)
+	SEP := /
 	BIN := $(VENV_NAME)/bin
 	PYTHON := $(BIN)/python
 	PRECOMMIT := $(BIN)/pre-commit
 	ENTRY := ./src/main.py
+	
 	RM := rm -rf
 endif
 
@@ -54,7 +58,7 @@ start:
 
 .PHONY: build
 build:
-	$(PYTHON) -m PyInstaller $(ENTRY)
+	$(PYTHON) -m PyInstaller main.spec
 
 .PHONY: lint
 lint:

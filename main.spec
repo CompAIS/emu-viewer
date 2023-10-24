@@ -1,14 +1,22 @@
 # -*- mode: python ; coding: utf-8 -*-
+from PyInstaller.utils.hooks import copy_metadata
+
+# 	lots of nonsense here
+
+#   astroquery requires the CITATION file but for some reason it doesn't automatically get added in
+datas = [("resources/assets", "resources/assets"), ("resources/CITATION", "astroquery")]
+#   - we need to for some reason copy the Pillow metadata in, otherwise astropy hats us
+datas += copy_metadata("Pillow")
 
 
 block_cipher = None
 
 
 a = Analysis(
-    ['src/main.py'],
+    ["src/main.py"],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=datas,
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -26,17 +34,18 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='main',
+    name="EMU Viewer",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=True,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=["resources/assets/favicon-32x32.png"],
 )
 coll = COLLECT(
     exe,
@@ -46,5 +55,11 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='main',
+    name="EMU Viewer",
+)
+app = BUNDLE(
+    coll,
+    name="EMU Viewer.app",
+    icon="resources/assets/favicon-32x32.png",
+    bundle_identifier=None,
 )
