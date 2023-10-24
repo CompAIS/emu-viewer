@@ -58,17 +58,7 @@ start:
 
 .PHONY: build
 build:
-# 	lots of nonsense here
-#   - astroquery requires the CITATION file but for some reason it doesn't automatically get added in
-#   - we need to for some reason copy the Pillow metadata in, otherwise astropy hats us
-#   - need to copy in our resources of course, this isn't nonsense
-	$(PYTHON) -m PyInstaller $(ENTRY) \
-		--name "EMU Viewer" \
-        --icon resources$(SEP)assets$(SEP)favicon-32x32.png \
-		--add-data resources$(SEP)assets:resources$(SEP)assets \
-		--add-data resources$(SEP)CITATION:astroquery \
-		--copy-metadata Pillow \
-		--noconfirm --onedir --windowed
+	$(PYTHON) -m PyInstaller "EMU Viewer.spec"
 
 .PHONY: lint
 lint:
