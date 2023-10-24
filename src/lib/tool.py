@@ -15,8 +15,6 @@ from ttkbootstrap.dialogs.colorchooser import ColorChooserDialog
 
 from src.constants import ASSETS_FOLDER
 
-ASSETS_FOLDER = "./resources/assets"
-
 
 class NavigationToolbar(NavigationToolbar2Tk):
     def __init__(self, canvas, parent, pack):

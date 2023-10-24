@@ -34,7 +34,7 @@ jobs:
       uses: thedoctor0/zip-release@0.7.1
       with:
         filename: '${{ env.ArtifactName }}.zip'
-        path: './dist/'
+        path: './dist/*'
     - name: Upload .zip as artifact
       uses: actions/upload-artifact@v3
       with:
