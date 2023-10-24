@@ -9,21 +9,15 @@ ifeq ($(OS),Windows_NT)
 	ENTRY := src\\main.py
 
 	RM := rmdir /s /q
-	COPY := robocopy /e
-	MKDIR := md
-	TOUCH := copy NUL
 else
 	OS_TYPE := $(shell uname -s)
-	SEP := "/"
+	SEP := /
 	BIN := $(VENV_NAME)/bin
 	PYTHON := $(BIN)/python
 	PRECOMMIT := $(BIN)/pre-commit
 	ENTRY := ./src/main.py
 	
 	RM := rm -rf
-	COPY := cp
-	MKDIR := mkdir
-	TOUCH := touch
 endif
 
 .PHONY: setup-tk
@@ -63,11 +57,18 @@ start:
 	$(PYTHON) -m src.main
 
 .PHONY: build
-build: clean
-	$(PYTHON) -m PyInstaller $(ENTRY)
-	-$(COPY) resources dist$(SEP)main$(SEP)resources
-	-$(MKDIR) dist$(SEP)main$(SEP)astroquery
-	-$(TOUCH) dist$(SEP)main$(SEP)astroquery$(SEP)CITATION
+build:
+# 	lots of nonsense here
+#   - astroquery requires the CITATION file but for some reason it doesn't automatically get added in
+#   - we need to for some reason copy the Pillow metadata in, otherwise astropy hats us
+#   - need to copy in our resources of course, this isn't nonsense
+	$(PYTHON) -m PyInstaller $(ENTRY) \
+		--name "EMU Viewer" \
+        --icon resources$(SEP)assets$(SEP)favicon-32x32.png \
+		--add-data resources$(SEP)assets:resources$(SEP)assets \
+		--add-data resources$(SEP)CITATION:astroquery \
+		--copy-metadata Pillow \
+		--noconfirm --onedir --windowed
 
 .PHONY: lint
 lint:
