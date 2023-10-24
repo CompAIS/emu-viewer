@@ -1,7 +1,6 @@
 import tkinter as tk
 from functools import partial
 
-from src.constants import FAVICON_PATH
 from src.widgets import image_widget as iw
 from src.widgets import tool_bar as tool_bar
 
@@ -16,7 +15,6 @@ class StandaloneImage(tk.Toplevel):
         self.root = root
 
         self.title(file_name)
-        self.iconbitmap(FAVICON_PATH)
         self.geometry("800x600")
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=0)

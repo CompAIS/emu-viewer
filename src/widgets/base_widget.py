@@ -2,7 +2,6 @@ from functools import partial
 
 import ttkbootstrap as tb
 
-from src.constants import FAVICON_PATH
 from src.lib.event_handler import EventHandler
 
 
@@ -22,7 +21,6 @@ class BaseWidget(tb.Toplevel):
             )
 
         self.title(self.__class__.label)
-        self.iconbitmap(FAVICON_PATH)
         self.resizable(False, False)
 
         self.on_close_eh = EventHandler()

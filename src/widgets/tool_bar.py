@@ -3,7 +3,8 @@ import tkinter as tk
 import ttkbootstrap as tb
 from PIL import Image, ImageTk
 
-ASSETS_FOLDER = "./resources/assets"
+from src.constants import ASSETS_FOLDER
+
 BUTTON_PAD = 5
 SIZE = 30
 
