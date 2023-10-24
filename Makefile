@@ -58,7 +58,7 @@ start:
 
 .PHONY: build
 build:
-	$(PYTHON) -m PyInstaller "EMU Viewer.spec"
+	$(PYTHON) -m PyInstaller main.spec
 
 .PHONY: lint
 lint:
