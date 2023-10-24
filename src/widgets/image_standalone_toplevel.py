@@ -16,11 +16,10 @@ class StandaloneImage(tk.Toplevel):
         self.title(file_name)
         self.geometry("800x600")
         self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=0)
-        self.grid_columnconfigure(1, weight=1)
+        self.grid_columnconfigure(0, weight=1)
 
         self.dummy_frame = tk.Frame(self)
-        self.dummy_frame.grid(column=1, row=0, sticky=tk.NSEW)
+        self.dummy_frame.grid(column=0, row=0, sticky=tk.NSEW)
         self.dummy_frame.grid_rowconfigure(0, weight=1)
         self.dummy_frame.grid_columnconfigure(0, weight=1)
 

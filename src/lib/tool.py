@@ -13,6 +13,8 @@ from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 from PIL import Image, ImageTk
 from ttkbootstrap.dialogs.colorchooser import ColorChooserDialog
 
+from src.constants import ASSETS_FOLDER
+
 ASSETS_FOLDER = "./resources/assets"
 
 
@@ -515,14 +517,7 @@ class NavigationToolbar(NavigationToolbar2Tk):
         if button._image_file is None:
             return
 
-        path_regular = os.path.join(
-            os.path.dirname(__file__),
-            "..",
-            "..",
-            "resources",
-            "assets",
-            button._image_file,
-        )
+        path_regular = os.path.join(ASSETS_FOLDER, button._image_file)
         size = button.winfo_pixels("18p")
 
         # Nested functions because ToolbarTk calls  _Button.
