@@ -26,17 +26,17 @@ jobs:
           choco install make
         fi
         make venv
-        make setup-dev
-    - run: make lint
-    - run: make test
+        make setup
     - run: make build
     - name: zip for ${{ env.ArtifactName }}
       uses: thedoctor0/zip-release@0.7.1
+      working-directory: ./dist
       with:
         filename: '${{ env.ArtifactName }}.zip'
-        path: './dist/*'
+        path: '*'
     - name: Upload .zip as artifact
       uses: actions/upload-artifact@v3
+      working-directory: ./dist
       with:
         name: ${{ env.ArtifactName }}
         path: ${{ env.ArtifactName }}.zip
@@ -60,3 +60,4 @@ jobs:
         tag_name: ${{ steps.commit.outputs.short }}
         generate_release_notes: true
         files: combined_artifacts/*.zip
+        prerelease: true

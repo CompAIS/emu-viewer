@@ -28,11 +28,10 @@ count as being "on windows".
 
 1. If you have Python 3.11.4 already installed and you are not on windows, you should first uninstall that version. If you are on Windows, skip to step 3.
 2. Install the tk headers with `make setup-tk`. Python needs to install after these headers are installed so it can compile with them. It's weird, I don't know.
-3. Install vips by following https://www.libvips.org/install.html. Make sure it is added to PATH.
-4. Then install python 3.11.4 with `pyenv install 3.11.4`, and set your local python version with `pyenv local 3.11.4`. Confirm with `python --version`.
-5. Run `make venv` to create the virtual environment.
-6. Run `make setup-dev`. This sets up your python virtual environment and installs the pip requirements in it.
-7. Activate the virtual environment in your terminal:
+3. Then install python 3.11.4 with `pyenv install 3.11.4`, and set your local python version with `pyenv local 3.11.4`. Confirm with `python --version`.
+4. Run `make venv` to create the virtual environment.
+5. Run `make setup-dev`. This sets up your python virtual environment and installs the pip requirements in it.
+6. Activate the virtual environment in your terminal:
    1. Windows: `.\venv\Scripts\activate`
    2. Mac / Linux: `source venv/bin/activate`
 
