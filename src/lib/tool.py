@@ -13,6 +13,7 @@ from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 from PIL import Image, ImageTk
 from ttkbootstrap.dialogs.colorchooser import ColorChooserDialog
 
+import tkmacosx
 from src.constants import ASSETS_FOLDER
 
 
@@ -477,7 +478,7 @@ class NavigationToolbar(NavigationToolbar2Tk):
     # Overriding to allow for custom images
     def _Button(self, text, image_file, toggle, command):
         if not toggle:
-            b = tk.Button(
+            b = tkmacosx.Button(
                 master=self,
                 text=text,
                 command=command,
