@@ -576,3 +576,40 @@ class NavigationToolbar(NavigationToolbar2Tk):
                 image_kwargs["selectimage"] = image
 
         button.configure(**image_kwargs, height="18p", width="18p")
+
+
+class HistoToolbar(NavigationToolbar2Tk):
+    def __init__(self, canvas, parent, pack):
+        # Edit toolitems to add new actions to toolbar
+        # format of new tool is:
+        # (
+        #   text, # the text of the button (often not visible to users)
+        #   tooltip_text, # the tooltip shown on hover (where possible)
+        #   image_file, # name of the image for the button (without the extension)
+        #   name_of_function, # name of the method in NavigationToolbar to call
+        # )
+
+        self.toolitems = (
+            ("Home", "Reset original view", "home", "home"),
+            ("Back", "Back to previous view", "back", "back"),
+            ("Forward", "Forward to next view", "forward", "forward"),
+            (None, None, None, None),
+            (
+                "Pan",
+                "Left button pans, Right button zooms\n"
+                "x/y fixes axis, CTRL fixes aspect",
+                "move",
+                "pan",
+            ),
+            ("Save", "Save the figure", "filesave", "save_figure"),
+        )
+
+        super().__init__(canvas, parent, pack_toolbar=pack)
+
+    def drag_pan(self, event):
+        """Callback for dragging in pan/zoom mode."""
+        for ax in self._pan_info.axes:
+            # Using the recorded button at the press is safer than the current
+            # button, as multiple buttons can get pressed during motion.
+            ax.drag_pan(self._pan_info.button, "x", event.x, event.y)
+        self.canvas.draw_idle()
