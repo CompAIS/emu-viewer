@@ -120,24 +120,48 @@ class ContourWidget(BaseWidget):
 
         # Apply / Close buttons
         self.buttons = tb.Frame(self.frame, bootstyle="light")
-        self.buttons.grid(column=3, row=7, sticky=tk.NSEW, padx=10, pady=10)
+        self.buttons.grid(
+            column=0, columnspan=4, row=7, sticky=tk.NSEW, padx=10, pady=10
+        )
         self.buttons.rowconfigure(0, weight=1)
         self.buttons.columnconfigure(0, weight=1)
 
         self.clear_button = tb.Button(
-            self.buttons, bootstyle="warning", text="Clear", command=self.clear_contours
+            self.buttons,
+            bootstyle="warning",
+            text="Clear Selected",
+            command=partial(self.clear_contours, selected=True),
         )
         self.clear_button.grid(column=0, row=0, sticky=tk.SE)
 
         self.apply_button = tb.Button(
-            self.buttons, bootstyle="success", text="Apply", command=self.apply_contours
+            self.buttons,
+            bootstyle="success",
+            text="Apply Selected",
+            command=partial(self.apply_contours, selected=True),
         )
         self.apply_button.grid(column=1, row=0, sticky=tk.SE, padx=10)
+
+        self.clear_button = tb.Button(
+            self.buttons,
+            bootstyle="warning",
+            text="Clear All",
+            command=partial(self.clear_contours, selected=False),
+        )
+        self.clear_button.grid(column=2, row=0, sticky=tk.SE)
+
+        self.apply_button = tb.Button(
+            self.buttons,
+            bootstyle="success",
+            text="Apply All",
+            command=partial(self.apply_contours, selected=False),
+        )
+        self.apply_button.grid(column=3, row=0, sticky=tk.SE, padx=10)
 
         self.close_button = tb.Button(
             self.buttons, bootstyle="danger-outline", text="Close", command=self.close
         )
-        self.close_button.grid(column=2, row=0, sticky=tk.SE)
+        self.close_button.grid(column=4, row=0, sticky=tk.SE)
 
         # Configuration
         config_label = tb.Label(
@@ -287,18 +311,13 @@ class ContourWidget(BaseWidget):
         self.levels_entry.delete(0, tk.END)
         self.levels_entry.insert(0, ",".join(str(x) for x in levels))
 
-    def apply_contours(self):
+    def apply_contours(self, selected):
         """
         We clicked "Apply".
         """
 
         if self.get_data_source() is None:
             messagebox.showerror(title=INVALID_INPUT, message=NO_DATA_SOURCE)
-            return
-
-        image = self.root.image_controller.get_selected_image()
-        if image is None or image.file_type == "png":
-            messagebox.showerror(title=INVALID_INPUT, message=INVALID_IMAGE)
             return
 
         try:
@@ -321,18 +340,38 @@ class ContourWidget(BaseWidget):
             )
             return
 
-        image.update_contours(
-            self.data_source.image_data,
-            self.data_source.image_wcs,
-            [float(x) for x in input.split(",")],
-            gaussian_factor,
-            self.line_colour,
-            self.line_opacity,
-            line_width,
+        images = (
+            self.root.image_controller.get_images()
+            if not selected
+            else [self.root.image_controller.get_selected_image()]
         )
 
-    def clear_contours(self):
-        self.root.image_controller.get_selected_image().clear_contours()
+        for image in images:
+            if image is None or image.file_type == "png":
+                if selected:
+                    messagebox.showerror(title=INVALID_INPUT, message=INVALID_IMAGE)
+                    return
+                continue
+
+            image.update_contours(
+                self.data_source.image_data,
+                self.data_source.image_wcs,
+                [float(x) for x in input.split(",")],
+                gaussian_factor,
+                self.line_colour,
+                self.line_opacity,
+                line_width,
+            )
+
+    def clear_contours(self, selected):
+        images = (
+            self.root.image_controller.get_images()
+            if not selected
+            else [self.root.image_controller.get_selected_image()]
+        )
+
+        for image in images:
+            image.clear_contours()
 
     def set_line_colour(self, _evt):
         cd = ColorChooserDialog(
