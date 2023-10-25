@@ -32,18 +32,17 @@ jobs:
 
     - name: Set excludes
       shell: bash
+      working-directory: ./dist
       run: |
-        echo "ZipExcludes=" >> $GITHUB_ENV
         if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-          echo "ZipExcludes=/EMU\ Viewer/*" >> $GITHUB_ENV
+          rm -rf EMU\ Viewer
         fi
-    - name: zip for ${{ env.ArtifactName }}, excluding "${{ env.ZipExcludes }}"
+    - name: zip for ${{ env.ArtifactName }}"
       uses: thedoctor0/zip-release@0.7.1
       with:
         filename: "${{ env.ArtifactName }}.zip"
         directory: ./dist
         path: "*"
-        exclusions: "${{ env.ZipExcludes }}"
 
     - name: Upload .zip as artifact
       uses: actions/upload-artifact@v3
