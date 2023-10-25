@@ -30,16 +30,15 @@ jobs:
     - run: make build
     - name: zip for ${{ env.ArtifactName }}
       uses: thedoctor0/zip-release@0.7.1
-      working-directory: ./dist
       with:
         filename: '${{ env.ArtifactName }}.zip'
+        directory: ./dist
         path: '*'
     - name: Upload .zip as artifact
       uses: actions/upload-artifact@v3
-      working-directory: ./dist
       with:
         name: ${{ env.ArtifactName }}
-        path: ${{ env.ArtifactName }}.zip
+        path: ./dist/${{ env.ArtifactName }}.zip
 
   release:
     name: Create a release from artifacts
