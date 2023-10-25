@@ -98,20 +98,16 @@ class RendererWidget(BaseWidget):
                 button.configure(bootstyle="medium")
 
     def histogram_graph(self):
-        histogram = tb.Frame(self.histogram_main_frame, bootstyle="light")
-        c = len(Render.PERCENTILES) + 1
-        histogram.grid(
-            column=0, columnspan=c, row=1, sticky=tk.NSEW, padx=10, pady=(10, 0)
-        )
-        histogram.grid_rowconfigure(0, weight=1)
-        histogram.grid_columnconfigure(0, weight=1)
+        self.histogram_frame = tb.Frame(self.histogram_main_frame, bootstyle="light")
+        self.histogram_frame.grid_rowconfigure(0, weight=1)
+        self.histogram_frame.grid_columnconfigure(0, weight=1)
 
         self.histo_fig = Render.create_histogram_graph()
-        self.canvas = HistogramCanvasTkAgg(self.histo_fig, master=histogram)
+        self.canvas = HistogramCanvasTkAgg(self.histo_fig, master=self.histogram_frame)
         self.canvas.get_tk_widget().grid(column=0, row=0, sticky=tk.NSEW)
         self.canvas.draw()
 
-        self.toolbar = HistoToolbar(self.canvas, histogram, pack=False)
+        self.toolbar = HistoToolbar(self.canvas, self.histogram_frame, pack=False)
         self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
         self.toolbar.update()
 
@@ -123,9 +119,16 @@ class RendererWidget(BaseWidget):
 
     def update_histogram_graph(self):
         if not self.check_if_image_selected():
+            self.histogram_frame.grid_forget()
             return
 
+        c = len(Render.PERCENTILES) + 1
+        self.histogram_frame.grid(
+            column=0, columnspan=c, row=1, sticky=tk.NSEW, padx=10, pady=(10, 0)
+        )
+
         image_selected = self.root.image_controller.get_selected_image()
+
         self.histo_fig = Render.draw_histogram_graph(
             self.histo_fig,
             image_selected.histo_counts,
