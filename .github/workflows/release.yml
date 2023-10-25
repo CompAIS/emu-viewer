@@ -36,7 +36,6 @@ jobs:
         path: '*'
     - name: Upload .zip as artifact
       uses: actions/upload-artifact@v3
-      working-directory: ./dist
       with:
         name: ${{ env.ArtifactName }}
         path: ./dist/${{ env.ArtifactName }}.zip
