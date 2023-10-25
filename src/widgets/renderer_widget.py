@@ -45,14 +45,15 @@ class RendererWidget(BaseWidget):
 
     def __init__(self, root):
         super().__init__(root)
-        self.geometry("787x316")
-        self.rowconfigure(0, weight=1)
-        self.columnconfigure((0, 1), weight=1)
 
-        self.canvas = None
+        self.canvas = self.toolbar = None
 
-        self.histogram()
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=0)
+
         self.render_options()
+        self.histogram()
 
         self.root.image_controller.selected_image_eh.add(self.on_image_change)
         self.on_image_change(self.root.image_controller.get_selected_image())
@@ -62,14 +63,18 @@ class RendererWidget(BaseWidget):
         self.histogram_main_frame.grid(
             column=0, row=0, sticky=tk.NSEW, padx=10, pady=10
         )
+        self.histogram_main_frame.grid_rowconfigure(0, weight=0)
+        self.histogram_main_frame.grid_rowconfigure(1, weight=1)
 
-        self.histogram_graph()
         self.histogram_buttons()
+        self.root.update()
+        self.histogram_graph()
 
     def histogram_buttons(self):
         self.percentile_buttons = {}
         for col, percentile in enumerate([*Render.PERCENTILES, "Custom"]):
             text = f"{percentile}%" if percentile != "Custom" else percentile
+            self.histogram_main_frame.grid_columnconfigure(col, weight=0)
             self.percentile_buttons[percentile] = tb.Button(
                 self.histogram_main_frame,
                 text=text,
@@ -98,28 +103,38 @@ class RendererWidget(BaseWidget):
         self.histogram.grid(
             column=0, columnspan=c, row=1, sticky=tk.NSEW, padx=10, pady=(10, 0)
         )
+        self.histogram.grid_rowconfigure(0, weight=1)
+        self.histogram.grid_columnconfigure(0, weight=1)
+
+        self.root.update()
         self.update_histogram_graph()
 
     def update_histogram_graph(self):
-        if self.check_if_image_selected():
-            image_selected = self.root.image_controller.get_selected_image()
+        if self.canvas is not None:
+            self.canvas.get_tk_widget().destroy()
 
-            image_selected.update_histogram_lines()
-            fig = image_selected.histogram
+        if self.toolbar is not None:
+            self.toolbar.destroy()
 
-            if self.canvas is not None:
-                self.canvas.get_tk_widget().destroy()
+        if not self.check_if_image_selected():
+            return
 
-            self.canvas = HistogramCanvasTkAgg(fig, master=self.histogram)
-            self.canvas.get_tk_widget().grid(column=0, row=0, sticky=tk.NSEW)
-            self.canvas.draw()
+        image_selected = self.root.image_controller.get_selected_image()
+        image_selected.update_histogram_lines()
+        fig = image_selected.histogram
 
-            self.toolbar = NavigationToolbar2Tk(
-                self.canvas, self.histogram, pack_toolbar=False
-            )
-            self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
+        self.canvas = HistogramCanvasTkAgg(fig, master=self.histogram)
+        self.canvas.get_tk_widget().grid(column=0, row=0, sticky=tk.NSEW)
+        self.canvas.draw()
 
-            self.toolbar.update()
+        self.toolbar = NavigationToolbar2Tk(
+            self.canvas, self.histogram, pack_toolbar=False
+        )
+        self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
+        self.toolbar.update()
+
+        # dynamically set size of the figure based the amount of space the histogram can take up
+        fig.set_size_inches(*Render.get_size_inches(self.canvas.get_tk_widget()))
 
     def render_options(self):
         render = tb.Frame(self, width=100, bootstyle="light")
@@ -309,6 +324,7 @@ class RendererWidget(BaseWidget):
             self.set_percentile(None)
             self.set_vmin_vmax(None)
             self.update_percentile_buttons()
+            self.update_histogram_graph()
             self.set_grid_lines_box_state(None)
             return
 
@@ -316,7 +332,6 @@ class RendererWidget(BaseWidget):
         self.set_vmin_vmax(image)
         self.set_scaling(image.stretch)
         self.set_colour_map(image.colour_map)
-        self.histogram_graph()
         self.update_histogram_graph()
         self.set_grid_lines_box_state(image.grid_lines)
 

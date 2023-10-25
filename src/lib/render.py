@@ -218,8 +218,18 @@ def set_limits(fig, wcs, limits):
     return fig
 
 
-def create_histogram(image_data, min_value, max_value):
-    fig = Figure(figsize=(3.24, 1.1733333), dpi=150)
+DPI = 150
+
+
+def get_size_inches(widget):
+    return widget.winfo_width() / DPI, widget.winfo_height() / DPI
+
+
+# 486, 176
+def create_histogram(image_data, min_value, max_value, width_px=1, height_px=1):
+    width_inches = width_px / DPI
+    height_inches = height_px / DPI
+    fig = Figure(figsize=(width_inches, height_inches), dpi=DPI)
     fig.patch.set_facecolor("#afbac5")
     ax = fig.add_subplot(projection="HistogramAxes")
     ax.set_facecolor("#afbac5")
