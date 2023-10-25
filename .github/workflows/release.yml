@@ -17,6 +17,7 @@ jobs:
     - name: Set Artifact Name
       shell: bash
       run: echo "ArtifactName=emu-viewer--${{ matrix.os }}--${{ steps.commit.outputs.short }}" >> $GITHUB_ENV
+
     - uses: actions/checkout@v3
     - uses: actions/setup-python@v4
     - name: Setup Dependencies
@@ -28,12 +29,21 @@ jobs:
         make venv
         make setup
     - run: make build
+
+    - name: Set excludes
+      shell: bash
+      run: |
+        echo "ZipExcludes=" >> $GITHUB_ENV
+        if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+          echo "ZipExcludes=EMU\ Viewer/*" >> $GITHUB_ENV
+        fi
     - name: zip for ${{ env.ArtifactName }}
       uses: thedoctor0/zip-release@0.7.1
       with:
         filename: '${{ env.ArtifactName }}.zip'
         directory: ./dist
         path: '*'
+
     - name: Upload .zip as artifact
       uses: actions/upload-artifact@v3
       with:
