@@ -1,4 +1,5 @@
 import os.path
+import platform
 import tkinter as tk
 import tkinter.font
 from collections import namedtuple
@@ -506,8 +507,6 @@ class NavigationToolbar(NavigationToolbar2Tk):
         b._image_file = image_file
         if image_file is not None:
             NavigationToolbar._set_image_for_button(self, b)
-            # print(b.winfo_rgb(b.cget("background")))
-            # print(b.winfo_rgb(b.cget("foreground")))
         else:
             b.configure(font=self._label_font)
         b.pack(side=tk.LEFT)
@@ -518,7 +517,6 @@ class NavigationToolbar(NavigationToolbar2Tk):
             return
 
         path_regular = os.path.join(ASSETS_FOLDER, f"{button._image_file}.png")
-        path_select = os.path.join(ASSETS_FOLDER, f"{button._image_file}_select.png")
         size = button.winfo_pixels("18p")
 
         # Nested functions because ToolbarTk calls  _Button.
@@ -546,7 +544,14 @@ class NavigationToolbar(NavigationToolbar2Tk):
 
         image_kwargs = {"image": image}
 
-        if isinstance(button, tk.Checkbutton) and button.cget("selectcolor") != "":
+        if (
+            isinstance(button, tk.Checkbutton)
+            and button.cget("selectcolor") != ""
+            and platform.system() == "Darwin"
+        ):
+            path_select = os.path.join(
+                ASSETS_FOLDER, f"{button._image_file}_select.png"
+            )
             with Image.open(path_select) as im_s:
                 button._nt_image_select = ImageTk.PhotoImage(
                     im_s.resize((size, size)), master=self
