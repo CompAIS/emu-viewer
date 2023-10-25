@@ -28,7 +28,6 @@ jobs:
         make venv
         make setup
     - run: make build
-    - run
     - name: zip for ${{ env.ArtifactName }}
       uses: thedoctor0/zip-release@0.7.1
       working-directory: ./dist
