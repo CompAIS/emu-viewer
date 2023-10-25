@@ -544,30 +544,14 @@ class NavigationToolbar(NavigationToolbar2Tk):
             image = ImageTk.PhotoImage(im.resize((size, size)), master=self)
             button._ntimage = image
 
-            # create a version of the icon with the button's text color
-            foreground = (255 / 65535) * np.array(
-                button.winfo_rgb(button.cget("foreground"))
-            )
-            im_alt = _recolor_icon(im, foreground)
-            image_alt = ImageTk.PhotoImage(im_alt.resize((size, size)), master=self)
-            button._ntimage_alt = image_alt
+        image_kwargs = {"image": image}
 
-        if _is_dark("background"):
-            # For Checkbuttons, we need to set `image` and `selectimage` at
-            # the same time. Otherwise, when updating the `image` option
-            # (such as when changing DPI), if the old `selectimage` has
-            # just been overwritten, Tk will throw an error.
-            image_kwargs = {"image": image_alt}
-        else:
-            image_kwargs = {"image": image}
-        # Checkbuttons may switch the background to `selectcolor` in the
-        # checked state, so check separately which image it needs to use in
-        # that state to still ensure enough contrast with the background.
         if isinstance(button, tk.Checkbutton) and button.cget("selectcolor") != "":
             with Image.open(path_select) as im_s:
-                image_kwargs["selectimage"] = ImageTk.PhotoImage(
+                button._nt_image_select = ImageTk.PhotoImage(
                     im_s.resize((size, size)), master=self
                 )
+                image_kwargs["selectimage"] = button._nt_image_select
 
         button.configure(**image_kwargs, height="18p", width="18p")
 
@@ -840,6 +824,7 @@ class HistoToolbar(NavigationToolbar2Tk):
         # that state to still ensure enough contrast with the background.
         if isinstance(button, tk.Checkbutton) and button.cget("selectcolor") != "":
             with Image.open(path_select) as im_s:
+                im_s = im.convert("RGBA")
                 image_kwargs["selectimage"] = ImageTk.PhotoImage(
                     im_s.resize((size, size)), master=self
                 )
