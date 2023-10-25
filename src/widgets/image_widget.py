@@ -89,6 +89,7 @@ class ImageFrame(tb.Frame):
 
     def create_image(self):
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
+        self.context_menu = ImageContextMenu(self, self)
         self.canvas.get_tk_widget().grid(
             column=0, row=0, sticky=tk.NSEW, padx=10, pady=10
         )
@@ -98,6 +99,10 @@ class ImageFrame(tb.Frame):
         self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
 
         self.toolbar.update()
+
+        # Bind right-click event to show the context menu
+        if self.image:
+            self.canvas.get_tk_widget().bind("<Button-3>", self.on_right_click)
 
     def is_matched(self, match_type: MatchType) -> bool:
         """
@@ -295,3 +300,77 @@ class ImageFrame(tb.Frame):
                 ).set_ra_dec_entries(coords[0], coords[1])
             except (ValueError, OverflowError) as e:
                 print(e)
+
+    def show_context_menu(self, event):
+        self.context_menu = ImageContextMenu(self, self)
+        self.context_menu.post(event.x_root, event.y_root)
+
+    def is_within_image_bounds(self, event):
+        # Assuming you have stored image's width and height as self.image_width and self.image_height
+        # Get the shape of the array from AxesImage
+        self.image_height, self.image_width = self.image.get_array().shape[:2]
+        return 0 <= event.x <= self.image_width and 0 <= event.y <= self.image_height
+
+    def on_right_click(self, event):
+        if self.is_within_image_bounds(event):
+            self.show_context_menu(event)
+
+
+class ImageContextMenu(tk.Menu):
+    def __init__(self, parent, image_frame):
+        super().__init__(parent, tearoff=0)
+        self.image_frame = image_frame
+
+        self.add_command(label="Copy WCS Coords", command=self.copy_wcs_coords)
+        self.add_command(label="Copy Image Coords", command=self.copy_image_coords)
+
+    def copy_wcs_coords(self):
+        wcs_coords = self.get_wcs_coordinates(
+            self.image_frame.image_data_header, self.get_current_pointer_position()
+        )
+        if wcs_coords:
+            self.copy_to_clipboard(wcs_coords)
+
+    def copy_image_coords(self):
+        image_coords = self.get_image_coordinates(
+            self.image_frame.image_wcs, self.get_current_pointer_position()
+        )
+        if image_coords:
+            self.copy_to_clipboard(image_coords)
+
+    def get_current_pointer_position(self):
+        # Return the current position of the pointer within the canvas
+        return (
+            self.image_frame.canvas.get_tk_widget().winfo_pointerx(),
+            self.image_frame.canvas.get_tk_widget().winfo_pointery(),
+        )
+
+    def get_wcs_coordinates(self, image_data_header, position):
+        if image_data_header:
+            x_coord, y_coord = position
+            try:
+                wcs_ra = image_data_header["CRVAL1"]
+                wcs_dec = image_data_header["CRVAL2"]
+                wcs_coords = f"RA: {wcs_ra}, Dec: {wcs_dec}"
+                return f"WCS Coordinates at (X={x_coord}, Y={y_coord}): {wcs_coords}"
+            except KeyError:
+                return "WCS Coordinates: N/A"
+        else:
+            return "WCS Coordinates: N/A"
+
+    def get_image_coordinates(self, image_wcs, position):
+        if image_wcs:
+            x_coord, y_coord = position
+            try:
+                img_x, img_y = image_wcs.pixel_to_world_values(x_coord, y_coord)
+                return f"Image Coordinates at (X={x_coord}, Y={y_coord}): X={img_x}, Y={img_y}"
+            except (AttributeError, ValueError):
+                return "Image Coordinates: N/A"
+        else:
+            return "Image Coordinates: N/A"
+
+    def copy_to_clipboard(self, text):
+        # Implement the logic to copy text to the clipboard
+        self.image_frame.clipboard_clear()
+        self.image_frame.clipboard_append(text)
+        self.image_frame.update()  # Now it stays on the clipboard after the window is closed
