@@ -552,10 +552,6 @@ class NavigationToolbar(NavigationToolbar2Tk):
             image_alt = ImageTk.PhotoImage(im_alt.resize((size, size)), master=self)
             button._ntimage_alt = image_alt
 
-        with Image.open(path_select) as im_s:
-            im_selected = ImageTk.PhotoImage(im_s.resize((size, size)), master=self)
-            button._selected_image_not_a_real_thing_just_tricking_the_gc = im_selected
-
         if _is_dark("background"):
             # For Checkbuttons, we need to set `image` and `selectimage` at
             # the same time. Otherwise, when updating the `image` option
@@ -568,7 +564,10 @@ class NavigationToolbar(NavigationToolbar2Tk):
         # checked state, so check separately which image it needs to use in
         # that state to still ensure enough contrast with the background.
         if isinstance(button, tk.Checkbutton) and button.cget("selectcolor") != "":
-            image_kwargs["selectimage"] = image
+            with Image.open(path_select) as im_s:
+                image_kwargs["selectimage"] = ImageTk.PhotoImage(
+                    im_s.resize((size, size)), master=self
+                )
 
         button.configure(**image_kwargs, height="18p", width="18p")
 
@@ -828,10 +827,6 @@ class HistoToolbar(NavigationToolbar2Tk):
             image_alt = ImageTk.PhotoImage(im_alt.resize((size, size)), master=self)
             button._ntimage_alt = image_alt
 
-        with Image.open(path_select) as im_s:
-            im_selected = ImageTk.PhotoImage(im_s.resize((size, size)), master=self)
-            button._selected_image_not_a_real_thing_just_tricking_the_gc = im_selected
-
         if _is_dark("background"):
             # For Checkbuttons, we need to set `image` and `selectimage` at
             # the same time. Otherwise, when updating the `image` option
@@ -844,6 +839,9 @@ class HistoToolbar(NavigationToolbar2Tk):
         # checked state, so check separately which image it needs to use in
         # that state to still ensure enough contrast with the background.
         if isinstance(button, tk.Checkbutton) and button.cget("selectcolor") != "":
-            image_kwargs["selectimage"] = im_selected
+            with Image.open(path_select) as im_s:
+                image_kwargs["selectimage"] = ImageTk.PhotoImage(
+                    im_s.resize((size, size)), master=self
+                )
 
         button.configure(**image_kwargs, height="18p", width="18p")
