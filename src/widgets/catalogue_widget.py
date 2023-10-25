@@ -1,6 +1,7 @@
+import os
 import tkinter as tk
 from functools import partial
-from tkinter import ttk
+from tkinter import filedialog, ttk
 
 import ttkbootstrap as tb
 from PIL import Image, ImageTk
@@ -8,6 +9,7 @@ from ttkbootstrap.dialogs.colorchooser import ColorChooserDialog
 from ttkbootstrap.tableview import Tableview
 
 import src.lib.catalogue_handler as catalogue_handler
+from src.constants import ASSETS_FOLDER
 from src.widgets.base_widget import BaseWidget
 
 
@@ -38,14 +40,17 @@ class CatalogueWidget(BaseWidget):
         self.colour_outline = "green"
         self.colour_fill = "none"
 
-        self.chked_image = ImageTk.PhotoImage(
-            Image.open("./resources/assets/checked_box.png")
-        )
-        self.unchked_image = ImageTk.PhotoImage(
-            Image.open("./resources/assets/unchecked_box.png")
-        )
+        chked_image_path = os.path.join(ASSETS_FOLDER, "checked_box.png")
+        unchked_image_path = os.path.join(ASSETS_FOLDER, "unchecked_box.png")
 
-        self.create_tables()
+        self.chked_image = ImageTk.PhotoImage(Image.open(chked_image_path))
+        self.unchked_image = ImageTk.PhotoImage(Image.open(unchked_image_path))
+
+        try:
+            self.create_tables()
+        except Exception:
+            self.destroy()
+            raise Exception("Widget no longer exists")
 
         self.create_controls()
 
@@ -66,14 +71,13 @@ class CatalogueWidget(BaseWidget):
         self.create_controls()
 
     def open_catalogue_xml(self):
-        file_name = tk.filedialog.askopenfilename(
+        file_name = filedialog.askopenfilename(
             title="Select catalogue file",
             filetypes=(("xml files", "*.xml"), ("All files", "*.*")),
         )
 
         if file_name == "":
-            self.close()
-            return
+            raise Exception("Filename is empty")
 
         self.catalogue = catalogue_handler.open_catalogue(file_name)
         self.fields = catalogue_handler.retrieve_fields(self.catalogue)
@@ -121,6 +125,10 @@ class CatalogueWidget(BaseWidget):
     def select_row(self, event):
         if self.fields_table is not None:
             row_id = self.fields_table.identify_row(event.y)
+
+            if row_id == "":
+                return
+
             tag = self.fields_table.item(row_id, "tags")[0]
             tags = list(self.fields_table.item(row_id, "tags"))
             tags.remove(tag)
