@@ -300,12 +300,6 @@ class ImageFrame(tb.Frame):
             except (ValueError, OverflowError) as e:
                 print(e)
 
-    def is_within_image_bounds(self, event):
-        # Assuming you have stored image's width and height as self.image_width and self.image_height
-        # Get the shape of the array from AxesImage
-        self.image_height, self.image_width = self.image.get_array().shape[:2]
-        return 0 <= event.x <= self.image_width and 0 <= event.y <= self.image_height
-
     def on_click(self, event):
         if (
             self.fig.canvas.toolbar.mode == "pan/zoom"
