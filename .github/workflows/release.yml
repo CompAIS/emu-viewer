@@ -35,7 +35,7 @@ jobs:
       run: |
         echo "ZipExcludes=" >> $GITHUB_ENV
         if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-          echo "ZipExcludes=EMU\ Viewer/*" >> $GITHUB_ENV
+          echo "ZipExcludes=/EMU\ Viewer/*" >> $GITHUB_ENV
         fi
     - name: zip for ${{ env.ArtifactName }}, excluding "${{ env.ZipExcludes }}"
       uses: thedoctor0/zip-release@0.7.1
