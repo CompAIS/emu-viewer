@@ -138,6 +138,19 @@ class RendererWidget(BaseWidget):
         )
         self.canvas.draw()
 
+    def update_histogram_lines(self):
+        if not self.check_if_image_selected():
+            return
+
+        image_selected = self.root.image_controller.get_selected_image()
+
+        self.histo_fig = Render.draw_histogram_lines(
+            self.histo_fig,
+            image_selected.vmin,
+            image_selected.vmax,
+        )
+        self.canvas.draw()
+
     def render_options(self):
         render = tb.Frame(self, width=100, bootstyle="light")
         render.grid(column=1, row=0, sticky=tk.NSEW, padx=10, pady=10)
@@ -257,7 +270,7 @@ class RendererWidget(BaseWidget):
         selected_image.set_selected_percentile(percentile)
         self.update_percentile_buttons()
         self.set_vmin_vmax(selected_image)
-        self.update_histogram_graph()
+        self.update_histogram_lines()
         self.root.image_controller.get_selected_image().update_norm()
 
         self.update_matched_images()
@@ -316,7 +329,7 @@ class RendererWidget(BaseWidget):
         self.update_percentile_buttons()
         self.root.image_controller.get_selected_image().update_norm()
         self.update_matched_images()
-        self.update_histogram_graph()
+        self.update_histogram_lines()
         self.root.update()
 
     def on_image_change(self, image):

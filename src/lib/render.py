@@ -226,9 +226,7 @@ def get_size_inches(widget):
 
 # 486, 176
 def create_histogram_data(image_data, min_value, max_value, width_px=1, height_px=1):
-    counts, bins = np.histogram(image_data, bins=10000, range=(min_value, max_value))
-
-    # ax.stairs(counts, bins)
+    counts, bins = np.histogram(image_data, bins=20000, range=(min_value, max_value))
 
     return counts, bins
 
@@ -262,6 +260,7 @@ def create_histogram_graph(width_px=1, height_px=1):
     )
     ax.set_xlabel("")
     ax.set_ylabel("")
+    ax.format_coord = lambda x, y: str(x)
 
     return fig
 
@@ -270,10 +269,19 @@ def draw_histogram_graph(fig, count, bins, vmin, vmax):
     ax = fig.axes[0]
     ax.clear()
     ax.set_yscale("log")
-    ax.format_coord = lambda x, y: str(x)
 
     ax.stairs(count, bins)
     ax.autoscale(enable=True, axis="both")
+
+    fig = draw_histogram_lines(fig, vmin, vmax)
+
+    return fig
+
+
+def draw_histogram_lines(fig, vmin, vmax):
+    ax = fig.axes[0]
+    for line in ax.lines:
+        line.remove()
 
     ax.axvline(vmin, color="red", label="Min", linestyle="solid", linewidth=0.5)
     ax.axvline(vmax, color="red", label="Max", linestyle="solid", linewidth=0.5)
