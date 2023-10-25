@@ -1,6 +1,5 @@
 import astropy.visualization as vis
 import astropy.wcs.utils as sc
-import matplotlib
 import numpy as np
 from matplotlib import ticker
 from matplotlib.figure import Figure
@@ -226,31 +225,10 @@ def get_size_inches(widget):
 
 
 # 486, 176
-def create_histogram(image_data, min_value, max_value, width_px=1, height_px=1):
-    width_inches = width_px / DPI
-    height_inches = height_px / DPI
-    fig = Figure(figsize=(width_inches, height_inches), dpi=DPI)
-    fig.patch.set_facecolor("#afbac5")
-    ax = fig.add_subplot(projection="HistogramAxes")
-    ax.set_facecolor("#afbac5")
-    fig.subplots_adjust(top=1, bottom=0.25, right=1, left=0, hspace=0, wspace=0)
-    ax.tick_params(
-        which="major",
-        labelsize=5,
-        labelleft=False,
-        left=False,
-    )
-    ax.set_xlabel("")
-    ax.set_ylabel("")
+def create_histogram_data(image_data, min_value, max_value, width_px=1, height_px=1):
+    counts, bins = np.histogram(image_data, bins=20000, range=(min_value, max_value))
 
-    ax.set_yscale("log")
-    ax.format_coord = lambda x, y: str(x)
-
-    counts, bins = np.histogram(image_data, bins=10000, range=(min_value, max_value))
-
-    ax.stairs(counts, bins)
-
-    return fig
+    return counts, bins
 
 
 def get_limits(fig, wcs):
@@ -266,30 +244,46 @@ def get_limits(fig, wcs):
     return limits
 
 
-def update_histogram_lines(fig, vmin, vmax, min_line, max_line):
-    if min_line is not None:
-        min_line.remove()
+def create_histogram_graph(width_px=1, height_px=1):
+    width_inches = width_px / DPI
+    height_inches = height_px / DPI
+    fig = Figure(figsize=(width_inches, height_inches), dpi=DPI)
+    fig.patch.set_facecolor("#afbac5")
+    ax = fig.add_subplot()
+    ax.set_facecolor("#afbac5")
+    fig.subplots_adjust(top=1, bottom=0.25, right=1, left=0, hspace=0, wspace=0)
+    ax.tick_params(
+        which="major",
+        labelsize=5,
+        labelleft=False,
+        left=False,
+    )
+    ax.set_xlabel("")
+    ax.set_ylabel("")
+    ax.format_coord = lambda x, y: str(x)
 
-    if max_line is not None:
-        max_line.remove()
+    return fig
 
+
+def draw_histogram_graph(fig, count, bins, vmin, vmax):
     ax = fig.axes[0]
-    min_line = ax.axvline(
-        vmin, color="red", label="Min", linestyle="solid", linewidth=0.5
-    )
-    max_line = ax.axvline(
-        vmax, color="red", label="Max", linestyle="solid", linewidth=0.5
-    )
+    ax.clear()
+    ax.set_yscale("log")
 
-    return fig, min_line, max_line
+    ax.stairs(count, bins)
+    ax.autoscale(enable=True, axis="both")
 
+    fig = draw_histogram_lines(fig, vmin, vmax)
 
-# https://stackoverflow.com/questions/16705452/matplotlib-forcing-pan-zoom-to-constrain-to-x-axes
-class HistogramAxes(matplotlib.axes.Axes):
-    name = "HistogramAxes"
-
-    def drag_pan(self, button, key, x, y):
-        matplotlib.axes.Axes.drag_pan(self, button, "x", x, y)  # pretend key=='x'
+    return fig
 
 
-matplotlib.projections.register_projection(HistogramAxes)
+def draw_histogram_lines(fig, vmin, vmax):
+    ax = fig.axes[0]
+    for line in ax.lines:
+        line.remove()
+
+    ax.axvline(vmin, color="red", label="Min", linestyle="solid", linewidth=0.5)
+    ax.axvline(vmax, color="red", label="Max", linestyle="solid", linewidth=0.5)
+
+    return fig

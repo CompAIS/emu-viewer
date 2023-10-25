@@ -72,7 +72,7 @@ class ImageFrame(tb.Frame):
 
             min_value, max_value = self.cached_percentiles["100"]
 
-            self.histogram = Render.create_histogram(
+            self.histo_counts, self.histo_bins = Render.create_histogram_data(
                 self.image_data, min_value, max_value
             )
 
@@ -269,11 +269,6 @@ class ImageFrame(tb.Frame):
                 continue
 
             image.set_limits(self.limits)
-
-    def update_histogram_lines(self):
-        self.histogram, self.vmin_line, self.vmax_line = Render.update_histogram_lines(
-            self.histogram, self.vmin, self.vmax, self.vmin_line, self.vmax_line
-        )
 
     def toggle_grid_lines(self):
         self.grid_lines = not self.grid_lines

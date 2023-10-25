@@ -8,10 +8,10 @@ from matplotlib.backend_bases import CloseEvent
 from matplotlib.backends import _backend_tk
 from matplotlib.backends._backend_tk import FigureCanvasTk
 from matplotlib.backends.backend_agg import FigureCanvasAgg
-from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 
 import src.lib.render as Render
 from src.lib.match_type import MatchType
+from src.lib.tool import HistoToolbar
 from src.widgets.base_widget import BaseWidget
 
 scaling_options = [
@@ -53,12 +53,12 @@ class RendererWidget(BaseWidget):
         self.grid_columnconfigure(1, weight=0)
 
         self.render_options()
-        self.histogram()
+        self.create_histogram()
 
         self.root.image_controller.selected_image_eh.add(self.on_image_change)
         self.on_image_change(self.root.image_controller.get_selected_image())
 
-    def histogram(self):
+    def create_histogram(self):
         self.histogram_main_frame = tb.Frame(self, bootstyle="light")
         self.histogram_main_frame.grid(
             column=0, row=0, sticky=tk.NSEW, padx=10, pady=10
@@ -98,43 +98,58 @@ class RendererWidget(BaseWidget):
                 button.configure(bootstyle="medium")
 
     def histogram_graph(self):
-        self.histogram = tb.Frame(self.histogram_main_frame, bootstyle="light")
-        c = len(Render.PERCENTILES) + 1
-        self.histogram.grid(
-            column=0, columnspan=c, row=1, sticky=tk.NSEW, padx=10, pady=(10, 0)
-        )
-        self.histogram.grid_rowconfigure(0, weight=1)
-        self.histogram.grid_columnconfigure(0, weight=1)
+        self.histogram_frame = tb.Frame(self.histogram_main_frame, bootstyle="light")
+        self.histogram_frame.grid_rowconfigure(0, weight=1)
+        self.histogram_frame.grid_columnconfigure(0, weight=1)
+
+        self.histo_fig = Render.create_histogram_graph()
+        self.canvas = HistogramCanvasTkAgg(self.histo_fig, master=self.histogram_frame)
+        self.canvas.get_tk_widget().grid(column=0, row=0, sticky=tk.NSEW)
+        self.canvas.draw()
+
+        self.toolbar = HistoToolbar(self.canvas, self.histogram_frame, pack=False)
+        self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
+        self.toolbar.update()
 
         self.root.update()
-        self.update_histogram_graph()
+
+        self.histo_fig.set_size_inches(
+            *Render.get_size_inches(self.canvas.get_tk_widget())
+        )
 
     def update_histogram_graph(self):
-        if self.canvas is not None:
-            self.canvas.get_tk_widget().destroy()
+        if not self.check_if_image_selected():
+            self.histogram_frame.grid_forget()
+            return
 
-        if self.toolbar is not None:
-            self.toolbar.destroy()
+        c = len(Render.PERCENTILES) + 1
+        self.histogram_frame.grid(
+            column=0, columnspan=c, row=1, sticky=tk.NSEW, padx=10, pady=(10, 0)
+        )
 
+        image_selected = self.root.image_controller.get_selected_image()
+
+        self.histo_fig = Render.draw_histogram_graph(
+            self.histo_fig,
+            image_selected.histo_counts,
+            image_selected.histo_bins,
+            image_selected.vmin,
+            image_selected.vmax,
+        )
+        self.canvas.draw()
+
+    def update_histogram_lines(self):
         if not self.check_if_image_selected():
             return
 
         image_selected = self.root.image_controller.get_selected_image()
-        image_selected.update_histogram_lines()
-        fig = image_selected.histogram
 
-        self.canvas = HistogramCanvasTkAgg(fig, master=self.histogram)
-        self.canvas.get_tk_widget().grid(column=0, row=0, sticky=tk.NSEW)
-        self.canvas.draw()
-
-        self.toolbar = NavigationToolbar2Tk(
-            self.canvas, self.histogram, pack_toolbar=False
+        self.histo_fig = Render.draw_histogram_lines(
+            self.histo_fig,
+            image_selected.vmin,
+            image_selected.vmax,
         )
-        self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
-        self.toolbar.update()
-
-        # dynamically set size of the figure based the amount of space the histogram can take up
-        fig.set_size_inches(*Render.get_size_inches(self.canvas.get_tk_widget()))
+        self.canvas.draw()
 
     def render_options(self):
         render = tb.Frame(self, width=100, bootstyle="light")
@@ -255,7 +270,7 @@ class RendererWidget(BaseWidget):
         selected_image.set_selected_percentile(percentile)
         self.update_percentile_buttons()
         self.set_vmin_vmax(selected_image)
-        self.histogram_graph()
+        self.update_histogram_lines()
         self.root.image_controller.get_selected_image().update_norm()
 
         self.update_matched_images()
@@ -314,7 +329,7 @@ class RendererWidget(BaseWidget):
         self.update_percentile_buttons()
         self.root.image_controller.get_selected_image().update_norm()
         self.update_matched_images()
-        self.histogram_graph()
+        self.update_histogram_lines()
         self.root.update()
 
     def on_image_change(self, image):
