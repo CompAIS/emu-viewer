@@ -103,7 +103,7 @@ class NavigationToolbar(NavigationToolbar2Tk):
                 self._buttons[text] = button = self._Button(
                     text,
                     # Modified for custom images
-                    str(f"{image_file}.png"),
+                    image_file,
                     # Modified to allow for custom toggled buttons
                     toggle=callback
                     in ["zoom", "pan", "lock_line", "lock_text", "lock_erase"],
@@ -517,7 +517,8 @@ class NavigationToolbar(NavigationToolbar2Tk):
         if button._image_file is None:
             return
 
-        path_regular = os.path.join(ASSETS_FOLDER, button._image_file)
+        path_regular = os.path.join(ASSETS_FOLDER, f"{button._image_file}.png")
+        path_select = os.path.join(ASSETS_FOLDER, f"{button._image_file}_select.png")
         size = button.winfo_pixels("18p")
 
         # Nested functions because ToolbarTk calls  _Button.
@@ -551,6 +552,10 @@ class NavigationToolbar(NavigationToolbar2Tk):
             image_alt = ImageTk.PhotoImage(im_alt.resize((size, size)), master=self)
             button._ntimage_alt = image_alt
 
+        with Image.open(path_select) as im_s:
+            im_selected = ImageTk.PhotoImage(im_s.resize((size, size)), master=self)
+            button._selected_image_not_a_real_thing_just_tricking_the_gc = im_selected
+
         if _is_dark("background"):
             # For Checkbuttons, we need to set `image` and `selectimage` at
             # the same time. Otherwise, when updating the `image` option
@@ -563,19 +568,7 @@ class NavigationToolbar(NavigationToolbar2Tk):
         # checked state, so check separately which image it needs to use in
         # that state to still ensure enough contrast with the background.
         if isinstance(button, tk.Checkbutton) and button.cget("selectcolor") != "":
-            if self._windowingsystem != "x11":
-                selectcolor = "selectcolor"
-            else:
-                # On X11, selectcolor isn't used directly for indicator-less
-                # buttons. See `::tk::CheckEnter` in the Tk button.tcl source
-                # code for details.
-                r1, g1, b1 = _get_color("selectcolor")
-                r2, g2, b2 = _get_color("activebackground")
-                selectcolor = ((r1 + r2) / 2, (g1 + g2) / 2, (b1 + b2) / 2)
-            if _is_dark(selectcolor):
-                image_kwargs["selectimage"] = image_alt
-            else:
-                image_kwargs["selectimage"] = image
+            image_kwargs["selectimage"] = image
 
         button.configure(**image_kwargs, height="18p", width="18p")
 
@@ -642,7 +635,7 @@ class HistoToolbar(NavigationToolbar2Tk):
                 self._buttons[text] = button = self._Button(
                     text,
                     # Modified for custom images
-                    str(f"{image_file}.png"),
+                    image_file,
                     # Modified to allow for custom toggled buttons
                     toggle=callback
                     in ["zoom", "pan", "lock_line", "lock_text", "lock_erase"],
@@ -800,7 +793,8 @@ class HistoToolbar(NavigationToolbar2Tk):
         if button._image_file is None:
             return
 
-        path_regular = os.path.join(ASSETS_FOLDER, button._image_file)
+        path_regular = os.path.join(ASSETS_FOLDER, f"{button._image_file}.png")
+        path_select = os.path.join(ASSETS_FOLDER, f"{button._image_file}_select.png")
         size = button.winfo_pixels("18p")
 
         # Nested functions because ToolbarTk calls  _Button.
@@ -834,6 +828,10 @@ class HistoToolbar(NavigationToolbar2Tk):
             image_alt = ImageTk.PhotoImage(im_alt.resize((size, size)), master=self)
             button._ntimage_alt = image_alt
 
+        with Image.open(path_select) as im_s:
+            im_selected = ImageTk.PhotoImage(im_s.resize((size, size)), master=self)
+            button._selected_image_not_a_real_thing_just_tricking_the_gc = im_selected
+
         if _is_dark("background"):
             # For Checkbuttons, we need to set `image` and `selectimage` at
             # the same time. Otherwise, when updating the `image` option
@@ -846,18 +844,6 @@ class HistoToolbar(NavigationToolbar2Tk):
         # checked state, so check separately which image it needs to use in
         # that state to still ensure enough contrast with the background.
         if isinstance(button, tk.Checkbutton) and button.cget("selectcolor") != "":
-            if self._windowingsystem != "x11":
-                selectcolor = "selectcolor"
-            else:
-                # On X11, selectcolor isn't used directly for indicator-less
-                # buttons. See `::tk::CheckEnter` in the Tk button.tcl source
-                # code for details.
-                r1, g1, b1 = _get_color("selectcolor")
-                r2, g2, b2 = _get_color("activebackground")
-                selectcolor = ((r1 + r2) / 2, (g1 + g2) / 2, (b1 + b2) / 2)
-            if _is_dark(selectcolor):
-                image_kwargs["selectimage"] = image_alt
-            else:
-                image_kwargs["selectimage"] = image
+            image_kwargs["selectimage"] = im_selected
 
         button.configure(**image_kwargs, height="18p", width="18p")
