@@ -608,7 +608,73 @@ class HistoToolbar(NavigationToolbar2Tk):
             ("Save", "Save the figure", "filesave", "save_figure"),
         )
 
-        super().__init__(canvas, parent, pack_toolbar=pack)
+        self._line_info = None
+        self._erase_info = None
+
+        self.super_init(canvas, parent)
+
+        self.prev_x = None
+        self.prev_y = None
+
+        self.line_size = 5
+        self.line_colour = "red"
+        self.text_size = 5
+        self.text_colour = "red"
+        self.erase_size = 5
+
+    def super_init(self, canvas, window):
+        if window is None:
+            window = canvas.get_tk_widget().master
+        tk.Frame.__init__(
+            self,
+            master=window,
+            borderwidth=2,
+            width=int(canvas.figure.bbox.width),
+            height=50,
+        )
+
+        self._buttons = {}
+        for text, tooltip_text, image_file, callback in self.toolitems:
+            if text is None:
+                # Add a spacer; return value is unused.
+                self._Spacer()
+            else:
+                self._buttons[text] = button = self._Button(
+                    text,
+                    # Modified for custom images
+                    str(f"{image_file}.png"),
+                    # Modified to allow for custom toggled buttons
+                    toggle=callback
+                    in ["zoom", "pan", "lock_line", "lock_text", "lock_erase"],
+                    command=getattr(self, callback),
+                )
+                if tooltip_text is not None:
+                    ToolTip.createToolTip(button, tooltip_text)
+
+        self._label_font = tkinter.font.Font(root=window, size=10)
+
+        # This filler item ensures the toolbar is always at least two text
+        # lines high. Otherwise the canvas gets redrawn as the mouse hovers
+        # over images because those use two-line messages which resize the
+        # toolbar.
+        label = tk.Label(
+            master=self,
+            font=self._label_font,
+            # Adjusted to add 4 lines to cover all different coordinates
+            text="\N{NO-BREAK SPACE}\n\N{NO-BREAK SPACE}",
+        )
+        label.pack(side=tk.RIGHT)
+
+        self.message = tk.StringVar(master=self)
+        self._message_label = tk.Label(
+            master=self,
+            font=self._label_font,
+            textvariable=self.message,
+            justify=tk.RIGHT,
+        )
+        self._message_label.pack(side=tk.RIGHT)
+
+        NavigationToolbar2.__init__(self, canvas)
 
     def drag_pan(self, event):
         """Callback for dragging in pan/zoom mode."""
