@@ -506,6 +506,8 @@ class NavigationToolbar(NavigationToolbar2Tk):
         b._image_file = image_file
         if image_file is not None:
             NavigationToolbar._set_image_for_button(self, b)
+            # print(b.winfo_rgb(b.cget("background")))
+            # print(b.winfo_rgb(b.cget("foreground")))
         else:
             b.configure(font=self._label_font)
         b.pack(side=tk.LEFT)
