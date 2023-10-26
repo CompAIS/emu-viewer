@@ -301,10 +301,7 @@ class ImageFrame(tb.Frame):
                 print(e)
 
     def on_click(self, event):
-        if (
-            self.fig.canvas.toolbar.mode == "pan/zoom"
-            or self.fig.canvas.toolbar.mode == "zoom rect"
-        ):
+        if self.fig.canvas.toolbar.mode != "":
             return
 
         # this is a matplotlib event, so we don't have the access to the x/y for the context menu position
