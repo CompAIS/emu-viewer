@@ -1,16 +1,15 @@
 import tkinter as tk
 
 import ttkbootstrap as tb
+from ttkbootstrap.scrolled import ScrolledFrame
 
-# from ttkbootstrap.scrolled import ScrolledFrame
 
-
-class TableWidget(tb.Frame):
+class TableWidget(ScrolledFrame):
     def __init__(self, parent, headers, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
 
-        self.grid_rowconfigure(0, weight=1, uniform="r")
-        self.grid_columnconfigure(
+        self.container.grid_rowconfigure(0, weight=1, uniform="r")
+        self.container.grid_columnconfigure(
             tuple([col for col in range(len(headers))]), weight=1, uniform="c"
         )
 
@@ -28,6 +27,7 @@ class TableWidget(tb.Frame):
         for col, cell in enumerate(row):
             cell.grid(row=len(self.rows) + 1, column=col, sticky=tk.NSEW)
             cell.bind("<Button-1>", row_click_el)
+            cell.configure(master=self.container)
 
         self.rows.append(row)
 

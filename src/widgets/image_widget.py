@@ -76,10 +76,7 @@ class ImageFrame(tb.Frame):
                 self.image_data, min_value, max_value
             )
 
-            # self.fig.canvas.callbacks.connect(
-            #     "button_release_event", self.on_lims_change
-            # )
-            self.fig.canvas.callbacks.connect("button_press_event", self.get_ra_dec)
+            self.fig.canvas.mpl_connect("button_press_event", self.on_click)
             self.coord_matching_cid = None
         else:
             self.fig, self.image = Render.create_figure_png(self.image_data)
@@ -98,10 +95,6 @@ class ImageFrame(tb.Frame):
         self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
 
         self.toolbar.update()
-
-        # Bind right-click event to show the context menu
-        if self.image:
-            self.canvas.mpl_connect("button_press_event", self.on_click)
 
     def is_matched(self, match_type: MatchType) -> bool:
         """
@@ -282,26 +275,8 @@ class ImageFrame(tb.Frame):
 
         return self.grid_lines
 
-    def get_ra_dec(self, event):
-        if not self.fig.canvas.toolbar.mode == "":
-            return
-
-        if self.root.widget_controller.open_windows.get(Widget.HIPS_SELECT) is None:
-            return
-
-        if event.inaxes and event.inaxes.get_navigate():
-            try:
-                c = self.image_wcs.pixel_to_world(event.xdata, event.ydata)
-                decimal = c.to_string(style="decimal", precision=5)
-                coords = decimal.split()
-                self.root.widget_controller.open_windows.get(
-                    Widget.HIPS_SELECT
-                ).set_ra_dec_entries(coords[0], coords[1])
-            except (ValueError, OverflowError) as e:
-                print(e)
-
     def on_click(self, event):
-        if self.fig.canvas.toolbar.mode != "":
+        if self.fig.canvas.toolbar.mode != "" or self.file_type != "fits":
             return
 
         # this is a matplotlib event, so we don't have the access to the x/y for the context menu position
@@ -338,6 +313,10 @@ class ImageContextMenu(tk.Menu):
             label="Copy WCS Coords (HMSDMS)", command=self.copy_hmsdms_coords
         )
         self.add_command(label="Copy Image Coords", command=self.copy_image_coords)
+        self.add_separator()
+        self.add_command(
+            label="Set RA/DEC in HiPs Survey Selector", command=self.set_ra_dec
+        )
 
     def copy_decimal_coords(self):
         decimal = self.coord.to_string(style="decimal").replace(" ", ", ")
@@ -356,3 +335,12 @@ class ImageContextMenu(tk.Menu):
         self.image_frame.clipboard_clear()
         self.image_frame.clipboard_append(text)
         self.image_frame.update()
+
+    def set_ra_dec(self):
+        wc = self.image_frame.root.widget_controller
+        if wc.open_windows.get(Widget.HIPS_SELECT) is None:
+            wc.open_widget(Widget.HIPS_SELECT)
+
+        decimal = self.coord.to_string(style="decimal")
+        coords = decimal.split()
+        wc.open_windows.get(Widget.HIPS_SELECT).set_ra_dec_entries(coords[0], coords[1])
