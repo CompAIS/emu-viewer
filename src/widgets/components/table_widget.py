@@ -2,8 +2,6 @@ import tkinter as tk
 
 import ttkbootstrap as tb
 
-# from ttkbootstrap.scrolled import ScrolledFrame
-
 
 class TableWidget(tb.Frame):
     def __init__(self, parent, headers, *args, **kwargs):
