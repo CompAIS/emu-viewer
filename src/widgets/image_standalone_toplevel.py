@@ -1,6 +1,7 @@
 import tkinter as tk
 from functools import partial
 
+from src import constants
 from src.widgets import image_widget as iw
 
 
@@ -10,11 +11,13 @@ class StandaloneImage(tk.Toplevel):
     ):
         super().__init__(root)
 
+        self.title(file_name)
+        self.geometry("800x600")
+        self.iconbitmap(constants.FAVICON_PATH)  # windows title icon
+
         self.parent = parent
         self.root = root
 
-        self.title(file_name)
-        self.geometry("800x600")
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 

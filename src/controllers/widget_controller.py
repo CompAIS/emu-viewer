@@ -39,7 +39,11 @@ class WidgetController:
                 partial(self.close_widget, widget)
             )
 
-        self.open_windows[widget].after(1, self.open_windows[widget].focus_set())
+        def focus_window(window):
+            window.wm_state("normal")
+            window.focus_set()
+
+        self.open_windows[widget].after(1, focus_window(self.open_windows[widget]))
 
     def close_widget(self, widget):
         if widget in self.open_windows:
