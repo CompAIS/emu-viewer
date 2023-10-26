@@ -99,6 +99,10 @@ class ImageFrame(tb.Frame):
 
         self.toolbar.update()
 
+        # Bind right-click event to show the context menu
+        if self.image:
+            self.canvas.mpl_connect("button_press_event", self.on_click)
+
     def is_matched(self, match_type: MatchType) -> bool:
         """
         Is the image currently being matched on this dimension?
@@ -295,3 +299,60 @@ class ImageFrame(tb.Frame):
                 ).set_ra_dec_entries(coords[0], coords[1])
             except (ValueError, OverflowError) as e:
                 print(e)
+
+    def on_click(self, event):
+        if self.fig.canvas.toolbar.mode != "":
+            return
+
+        # this is a matplotlib event, so we don't have the access to the x/y for the context menu position
+        # (the pointer)
+        # so grab it manually
+        window_x, window_y = (
+            self.canvas.get_tk_widget().winfo_pointerx(),
+            self.canvas.get_tk_widget().winfo_pointery(),
+        )
+
+        ax = self.fig.axes[0]
+        if ax == event.inaxes and event.button == 3:
+            # transform from position on the canvas to image position
+            image_x, image_y = ax.transData.inverted().transform((event.x, event.y))
+            self.show_context_menu(event, image_x, image_y, window_x, window_y)
+
+    def show_context_menu(self, event, image_x, image_y, window_x, window_y):
+        self.context_menu = ImageContextMenu(self, image_x, image_y)
+        self.context_menu.post(window_x, window_y)
+
+
+class ImageContextMenu(tk.Menu):
+    def __init__(self, image_frame, xdata, ydata):
+        super().__init__(image_frame, tearoff=0)
+        self.image_frame = image_frame
+        self.xdata = xdata
+        self.ydata = ydata
+        self.coord = image_frame.image_wcs.pixel_to_world(xdata, ydata)
+
+        self.add_command(
+            label="Copy WCS Coords (Decimal)", command=self.copy_decimal_coords
+        )
+        self.add_command(
+            label="Copy WCS Coords (HMSDMS)", command=self.copy_hmsdms_coords
+        )
+        self.add_command(label="Copy Image Coords", command=self.copy_image_coords)
+
+    def copy_decimal_coords(self):
+        decimal = self.coord.to_string(style="decimal").replace(" ", ", ")
+        self.copy_to_clipboard(f"WCS: ({decimal})")
+
+    def copy_hmsdms_coords(self):
+        hmsdms = self.coord.to_string(style="hmsdms", sep=":", pad=True).replace(
+            " ", ", "
+        )
+        self.copy_to_clipboard(f"WCS: ({hmsdms})")
+
+    def copy_image_coords(self):
+        self.copy_to_clipboard(f"Image: ({self.xdata}, {self.ydata})")
+
+    def copy_to_clipboard(self, text):
+        self.image_frame.clipboard_clear()
+        self.image_frame.clipboard_append(text)
+        self.image_frame.update()
