@@ -354,10 +354,7 @@ class RendererWidget(BaseWidget):
         self.root.update()
 
     def on_histo_click(self, event):
-        if (
-            self.histo_fig.canvas.toolbar.mode == "pan/zoom"
-            or self.histo_fig.canvas.toolbar.mode == "zoom rect"
-        ):
+        if self.histo_fig.canvas.toolbar.mode != "":
             return
 
         # this is a matplotlib event, so we don't have the access to the x/y for the context menu position
