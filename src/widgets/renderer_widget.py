@@ -105,6 +105,7 @@ class RendererWidget(BaseWidget):
         self.histo_fig = Render.create_histogram_graph()
         self.canvas = HistogramCanvasTkAgg(self.histo_fig, master=self.histogram_frame)
         self.canvas.get_tk_widget().grid(column=0, row=0, sticky=tk.NSEW)
+        self.canvas.mpl_connect("button_press_event", self.on_histo_click)
         self.canvas.draw()
 
         self.toolbar = HistoToolbar(self.canvas, self.histogram_frame, pack=False)
@@ -352,6 +353,28 @@ class RendererWidget(BaseWidget):
 
         self.root.update()
 
+    def on_histo_click(self, event):
+        if self.histo_fig.canvas.toolbar.mode != "":
+            return
+
+        # this is a matplotlib event, so we don't have the access to the x/y for the context menu position
+        # (the pointer)
+        # so grab it manually
+        window_x, window_y = (
+            self.canvas.get_tk_widget().winfo_pointerx(),
+            self.canvas.get_tk_widget().winfo_pointery(),
+        )
+
+        ax = self.histo_fig.axes[0]
+        if ax == event.inaxes and event.button == 3:
+            # transform from position on the canvas to image position
+            image_x, _ = ax.transData.inverted().transform((event.x, event.y))
+            self.show_context_menu(event, image_x, window_x, window_y)
+
+    def show_context_menu(self, event, image_x, window_x, window_y):
+        self.context_menu = HistogramContextMenu(self, self.histo_fig, image_x)
+        self.context_menu.post(window_x, window_y)
+
     def check_if_image_selected(self):
         image = self.root.image_controller.get_selected_image()
         return image is not None and image.file_type != "png"
@@ -367,6 +390,35 @@ class RendererWidget(BaseWidget):
         self.root.image_controller.selected_image_eh.remove(self.on_image_change)
 
         super().close()
+
+
+class HistogramContextMenu(tk.Menu):
+    def __init__(self, render_widget, histogram, xdata):
+        super().__init__(render_widget, tearoff=0)
+        self.render_widget = render_widget
+        self.xdata = xdata
+
+        self.add_command(label="Copy value", command=self.copy_value)
+        self.add_command(label="Set Min to this value", command=self.set_min)
+        self.add_command(label="Set Max to this value", command=self.set_max)
+
+    def copy_value(self):
+        self.copy_to_clipboard(str(self.xdata))
+
+    def set_min(self):
+        self.render_widget.min_entry.delete(0, tk.END)
+        self.render_widget.min_entry.insert(0, str(self.xdata))
+        self.render_widget.on_entry_focusout(None)
+
+    def set_max(self):
+        self.render_widget.max_entry.delete(0, tk.END)
+        self.render_widget.max_entry.insert(0, str(self.xdata))
+        self.render_widget.on_entry_focusout(None)
+
+    def copy_to_clipboard(self, text):
+        self.render_widget.clipboard_clear()
+        self.render_widget.clipboard_append(text)
+        self.render_widget.update()
 
 
 # overriding internals again because YAY matplotlib!!!
