@@ -2,6 +2,7 @@ from functools import partial
 
 import ttkbootstrap as tb
 
+from src import constants
 from src.lib.event_handler import EventHandler
 
 
@@ -22,6 +23,7 @@ class BaseWidget(tb.Toplevel):
 
         self.title(self.__class__.label)
         self.resizable(False, False)
+        self.iconbitmap(constants.FAVICON_PATH)  # windows title icon
 
         self.on_close_eh = EventHandler()
 

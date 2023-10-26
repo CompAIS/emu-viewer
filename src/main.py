@@ -17,6 +17,7 @@ class MainWindow(tb.Window):
 
         self.title("EMU Viewer")
         self.iconphoto(True, constants.ICONPNG)
+        self.iconbitmap(constants.FAVICON_PATH)  # windows title icon
         self.geometry("800x800")
 
         self.grid_rowconfigure(0, weight=1)

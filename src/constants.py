@@ -12,6 +12,8 @@ else:
 ICONPNG_PATH = os.path.join(ASSETS_FOLDER, "favicon-32x32.png")
 ICONPNG = None
 
+FAVICON_PATH = os.path.join(ASSETS_FOLDER, "favicon.ico")
+
 
 def load_images():
     """
