@@ -291,20 +291,29 @@ class ImageFrame(tb.Frame):
         if ax == event.inaxes and event.button == 3:
             # transform from position on the canvas to image position
             image_x, image_y = ax.transData.inverted().transform((event.x, event.y))
-            self.show_context_menu(event, image_x, image_y, window_x, window_y)
 
-    def show_context_menu(self, event, image_x, image_y, window_x, window_y):
-        self.context_menu = ImageContextMenu(self, image_x, image_y)
+            self.show_context_menu(
+                event,
+                round(image_x),
+                round(image_y),
+                window_x,
+                window_y,
+                self.image_data[round(image_y)][round(image_x)],
+            )
+
+    def show_context_menu(self, event, image_x, image_y, window_x, window_y, value):
+        self.context_menu = ImageContextMenu(self, image_x, image_y, value)
         self.context_menu.post(window_x, window_y)
 
 
 class ImageContextMenu(tk.Menu):
-    def __init__(self, image_frame, xdata, ydata):
+    def __init__(self, image_frame, xdata, ydata, value):
         super().__init__(image_frame, tearoff=0)
         self.image_frame = image_frame
         self.xdata = xdata
         self.ydata = ydata
         self.coord = image_frame.image_wcs.pixel_to_world(xdata, ydata)
+        self.value = value
 
         self.add_command(
             label="Copy WCS Coords (Decimal)", command=self.copy_decimal_coords
@@ -313,6 +322,7 @@ class ImageContextMenu(tk.Menu):
             label="Copy WCS Coords (HMSDMS)", command=self.copy_hmsdms_coords
         )
         self.add_command(label="Copy Image Coords", command=self.copy_image_coords)
+        self.add_command(label="Copy Value at Coords", command=self.copy_coord_value)
         self.add_separator()
         self.add_command(
             label="Set RA/DEC in HiPs Survey Selector", command=self.set_ra_dec
@@ -330,6 +340,9 @@ class ImageContextMenu(tk.Menu):
 
     def copy_image_coords(self):
         self.copy_to_clipboard(f"Image: ({self.xdata}, {self.ydata})")
+
+    def copy_coord_value(self):
+        self.copy_to_clipboard(str(self.value))
 
     def copy_to_clipboard(self, text):
         self.image_frame.clipboard_clear()
