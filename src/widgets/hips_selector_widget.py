@@ -298,7 +298,7 @@ class HipsSelectorWidget(BaseWidget):
             self.hips_survey.dec = self.float_validation(self.dec_entry, INVALID_DEC)
             self.hips_survey.FOV = self.float_validation(self.FOV_entry, INVALID_FOV)
 
-            if self.hips_survey.FOV <= 0:
+            if float(self.hips_survey.FOV) <= 0:
                 self.hips_survey.FOV = "F"
                 messagebox.showerror(
                     title=INVALID_INPUT,
