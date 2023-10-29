@@ -3,15 +3,12 @@ from tkinter import filedialog
 
 import ttkbootstrap as tb
 
-import src.controllers.image_controller as ic
-import src.controllers.widget_controller as wc
-from src.lib.event_handler import EventHandler
+from src.controllers import image_controller as ic
+from src.controllers import widget_controller as wc
 
 
 # Create Menu bar for tkinter window
 class MenuBar(tb.Frame):
-    open_widget_eh = EventHandler()
-
     def __init__(self, root):
         super().__init__(root)
         self.root = root
@@ -68,5 +65,5 @@ class MenuBar(tb.Frame):
     def close_images(self):
         ic.close_images()
 
-    def open_widget(self, widget):
-        self.open_widget_eh.invoke(widget)
+    def open_widget(self, widget: wc.Widget):
+        wc.open_widget(widget)

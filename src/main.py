@@ -5,9 +5,9 @@ import tkinter as tk
 import ttkbootstrap as tb
 
 import src.constants as constants
-import src.controllers.image_controller as ic
-import src.controllers.widget_controller as wc
 import src.widgets.menu_bar as menu_bar
+from src.controllers import image_controller as ic
+from src.controllers import widget_controller as wc
 
 
 # Create Main Tkinter Window
@@ -15,6 +15,8 @@ class MainWindow(tb.Window):
     def __init__(self):
         super().__init__(themename="superhero")
         constants.load_images()  # load all images once tk is up
+        ic.register_main(self)
+        wc.register_main(self)
 
         self.title("EMU Viewer")
         self.iconphoto(True, constants.ICONPNG)
@@ -34,16 +36,12 @@ class MainWindow(tb.Window):
 
         self.main_image = None
 
-        # TODO refactor widget controller
-        self.widget_controller = wc.WidgetController(self)
-        self.widget_controller.open_widget(wc.Widget.RENDERER)
+        wc.open_widget(wc.Widget.RENDERER)
         self.after(1, lambda: self.focus_set())
 
         self.config(menu=self.menu_controller.menu)
         self.bind("<FocusIn>", self.handle_focus)
         self.protocol("WM_DELETE_WINDOW", lambda: sys.exit())
-
-        ic.register_main(self)
 
     def handle_focus(self, event):
         """Event listener for <FocusIn> on the main window.

@@ -5,8 +5,9 @@ import ttkbootstrap as tb
 from astropy import wcs
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-import src.controllers.image_controller as ic
 import src.lib.render as Render
+from src.controllers import image_controller as ic
+from src.controllers import widget_controller as wc
 from src.enums import DataType, Matching
 from src.lib.tool import NavigationToolbar
 from src.lib.util import index_default
@@ -350,12 +351,8 @@ class ImageContextMenu(tk.Menu):
         self.image_frame.update()
 
     def set_ra_dec(self):
-        wc = self.image_frame.root.widget_controller
-        if wc.open_windows.get(wc.Widget.HIPS_SELECT) is None:
-            wc.open_widget(wc.Widget.HIPS_SELECT)
+        wc.open_widget(wc.Widget.HIPS_SELECT)
 
         decimal = self.coord.to_string(style="decimal")
         coords = decimal.split()
-        wc.open_windows.get(wc.Widget.HIPS_SELECT).set_ra_dec_entries(
-            coords[0], coords[1]
-        )
+        wc.get_widget(wc.Widget.HIPS_SELECT).set_ra_dec_entries(coords[0], coords[1])
