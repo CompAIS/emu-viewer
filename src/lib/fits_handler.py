@@ -80,7 +80,13 @@ def create_figure_fits(
         # Yes, round, not floor.
         pix = f"{round(x)}, {round(y)}"
 
-        return f"WCS: ({decimal});\n WCS: ({sexigesimal});\n Image: ({pix})"
+        prefix = f"WCS: ({decimal});\n WCS: ({sexigesimal});\n Image: ({pix})"
+
+        if 0 <= y < image_data.shape[0] and 0 <= x < image_data.shape[1]:
+            image_value = image_data[round(y)][round(x)]
+            return f"{prefix}\n Value: ({image_value})"
+
+        return prefix
 
     # https://matplotlib.org/stable/gallery/images_contours_and_fields/image_zcoord.html
     ax.format_coord = format_coord
@@ -89,18 +95,16 @@ def create_figure_fits(
 
     # TODO enum-ify
     if s == "Linear":
-        stretch = vis.LinearStretch()
+        stretch = vis.LinearStretch() + vis.ManualInterval(vmin, vmax)
     elif s == "Log":
-        stretch = vis.LogStretch()
+        stretch = vis.LogStretch() + vis.ManualInterval(vmin, vmax)
     elif s == "Sqrt":
-        stretch = vis.SqrtStretch()
+        stretch = vis.SqrtStretch() + vis.ManualInterval(vmin, vmax)
 
-    norm = vis.ImageNormalize(stretch=stretch, vmin=vmin, vmax=vmax)
+    data = stretch(image_data)
 
     # Render the scaled image data onto the figure
-    image = ax.imshow(
-        image_data, cmap=colour_map, origin="lower", norm=norm, interpolation="nearest"
-    )
+    image = ax.imshow(data, cmap=colour_map, origin="lower", interpolation="nearest")
 
     cbar = fig.colorbar(image, shrink=0.5)
     tick_locator = ticker.MaxNLocator(nbins=10)
@@ -111,20 +115,20 @@ def create_figure_fits(
     return fig, image, get_limits(fig, image_wcs)
 
 
-def update_image_norm(image, vmin, vmax, s):
+def update_image_norm(image, image_data, vmin, vmax, s):
     """Update the norm on the given image based on the provided options."""
     stretch = None
 
     if s == "Linear":
-        stretch = vis.LinearStretch()
+        stretch = vis.LinearStretch() + vis.ManualInterval(vmin, vmax)
     elif s == "Log":
-        stretch = vis.LogStretch()
+        stretch = vis.LogStretch() + vis.ManualInterval(vmin, vmax)
     elif s == "Sqrt":
-        stretch = vis.SqrtStretch()
+        stretch = vis.SqrtStretch() + vis.ManualInterval(vmin, vmax)
 
-    norm = vis.ImageNormalize(stretch=stretch, vmin=vmin, vmax=vmax)
+    data = stretch(image_data)
 
-    image.set_norm(norm)
+    image.set_data(data)
 
 
 def update_image_cmap(image: AxesImage, colour_map: str):
