@@ -7,6 +7,8 @@ import numpy as np
 import ttkbootstrap as tb
 from ttkbootstrap.dialogs.colorchooser import ColorChooserDialog
 
+from src.controllers import image_controller as ic
+from src.enums import DataType
 from src.lib import contour_handler
 from src.widgets.base_widget import BaseWidget
 
@@ -71,7 +73,7 @@ class ContourWidget(BaseWidget):
             data_source_frame, text=NOTHING_OPEN, bootstyle="dark"
         )
         self.data_source_dropdown.grid(column=1, row=0)
-        self.root.image_controller.update_image_list_eh.add(self.update_dropdown)
+        ic.update_image_list_eh.add(self.update_dropdown)
 
         # Parameters
         parameters_label = tb.Label(
@@ -223,8 +225,8 @@ class ContourWidget(BaseWidget):
         self.lw_entry.grid(column=3, row=6, padx=10, pady=10, sticky=tk.W)
 
         self.update_dropdown(
-            self.root.image_controller.get_selected_image(),
-            self.root.image_controller.get_images(),
+            ic.get_selected_image(),
+            ic.get_images(),
         )
 
     def get_data_source(self):
@@ -237,7 +239,7 @@ class ContourWidget(BaseWidget):
         self.sigmas_entry.delete(0, tk.END)
         self.levels_entry.delete(0, tk.END)
 
-        if image is None or image.file_type == "png":
+        if image is None or image.data_type != DataType.FITS:
             self.data_source = None
             self.data_source_dropdown["text"] = NOTHING_OPEN
             return
@@ -340,14 +342,10 @@ class ContourWidget(BaseWidget):
             )
             return
 
-        images = (
-            self.root.image_controller.get_images()
-            if not selected
-            else [self.root.image_controller.get_selected_image()]
-        )
+        images = ic.get_images() if not selected else [ic.get_selected_image()]
 
         for image in images:
-            if image is None or image.file_type == "png":
+            if image is None or image.data_type != DataType.FITS:
                 if selected:
                     messagebox.showerror(title=INVALID_INPUT, message=INVALID_IMAGE)
                     return
@@ -364,11 +362,7 @@ class ContourWidget(BaseWidget):
             )
 
     def clear_contours(self, selected):
-        images = (
-            self.root.image_controller.get_images()
-            if not selected
-            else [self.root.image_controller.get_selected_image()]
-        )
+        images = ic.get_images() if not selected else [ic.get_selected_image()]
 
         for image in images:
             image.clear_contours()
@@ -393,5 +387,5 @@ class ContourWidget(BaseWidget):
         self.lo_label["text"] = f"Line Opacity ({value:1.2f})"
 
     def close(self):
-        self.root.image_controller.update_image_list_eh.remove(self.update_dropdown)
+        ic.update_image_list_eh.remove(self.update_dropdown)
         super().close()

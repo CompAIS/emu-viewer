@@ -2,21 +2,20 @@ import tkinter as tk
 from functools import partial
 
 from src import constants
+from src.controllers import image_controller as ic
+from src.enums import DataType
 from src.widgets import image_widget as iw
 
 
 class StandaloneImage(tk.Toplevel):
     def __init__(
-        self, parent, root, image_data, image_data_header, file_name, file_type
+        self, root, image_data, image_data_header, file_name, data_type: DataType
     ):
         super().__init__(root)
 
         self.title(file_name)
         self.geometry("800x600")
         self.iconbitmap(constants.FAVICON_PATH)  # windows title icon
-
-        self.parent = parent
-        self.root = root
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -27,15 +26,12 @@ class StandaloneImage(tk.Toplevel):
         self.dummy_frame.grid_columnconfigure(0, weight=1)
 
         self.image_frame = iw.ImageFrame(
-            self.dummy_frame, root, image_data, image_data_header, file_name, file_type
+            self.dummy_frame, root, image_data, image_data_header, file_name, data_type
         )
 
         self.bind("<FocusIn>", self.handle_focus)
 
-        self.protocol(
-            "WM_DELETE_WINDOW",
-            partial(self.root.image_controller.close_appended_image, self),
-        )
+        self.protocol("WM_DELETE_WINDOW", partial(ic.close_standalone, self))
 
     def handle_focus(self, event):
-        self.parent.set_selected_image(self)
+        ic.set_selected_image(self.image_frame)

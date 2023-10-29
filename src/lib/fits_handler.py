@@ -1,5 +1,4 @@
 from astropy.io import fits
-from numpy import typing as npt
 
 
 def open_fits_file(file_path: str):

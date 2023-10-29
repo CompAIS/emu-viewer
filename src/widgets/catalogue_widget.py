@@ -10,6 +10,7 @@ from ttkbootstrap.tableview import Tableview
 
 import src.lib.catalogue_handler as catalogue_handler
 from src.constants import ASSETS_FOLDER
+from src.controllers import image_controller as ic
 from src.widgets.base_widget import BaseWidget
 
 
@@ -372,10 +373,10 @@ class CatalogueWidget(BaseWidget):
         self.ra_dropdown["text"] = "Nothing selected"
         self.dec_dropdown["text"] = "Nothing selected"
 
-        if self.root.image_controller.get_selected_image().catalogue_set is None:
+        if ic.get_selected_image().catalogue_set is None:
             return
 
-        self.root.image_controller.get_selected_image().reset_catalogue()
+        ic.get_selected_image().reset_catalogue()
 
     def apply_command(self):
         if self.selected_ra == "" or self.selected_dec == "":
@@ -389,9 +390,9 @@ class CatalogueWidget(BaseWidget):
         for data in self.row_data[self.selected_dec]:
             dec_coords.append(data)
 
-        if self.root.image_controller.get_selected_image().image_wcs is None:
+        if ic.get_selected_image().image_wcs is None:
             return
 
-        self.root.image_controller.get_selected_image().draw_catalogue(
+        ic.get_selected_image().draw_catalogue(
             ra_coords, dec_coords, self.size, self.colour_outline, self.colour_fill
         )

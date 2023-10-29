@@ -3,6 +3,7 @@ from tkinter import filedialog
 
 import ttkbootstrap as tb
 
+from src.controllers import image_controller as ic
 from src.controllers.widget_controller import Widget
 from src.lib.event_handler import EventHandler
 from src.widgets.hips_selector_widget import HipsSelectorWidget
@@ -10,10 +11,6 @@ from src.widgets.hips_selector_widget import HipsSelectorWidget
 
 # Create Menu bar for tkinter window
 class MenuBar(tb.Frame):
-    open_fits_eh = EventHandler()
-    open_png_eh = EventHandler()
-    open_hips_eh = EventHandler()
-    close_images_eh = EventHandler()
     open_widget_eh = EventHandler()
 
     def __init__(self, root):
@@ -54,9 +51,9 @@ class MenuBar(tb.Frame):
     # Open command for option in menu
     def open_file(self):
         file_name = filedialog.askopenfilename(
-            title="Select file",
+            title="Select file to open",
             filetypes=(
-                ("Fits/Png files", "*.fits *.png"),
+                ("valid image files", "*.fits *.png"),
                 ("All files", "*.*"),
             ),
         )
@@ -65,9 +62,9 @@ class MenuBar(tb.Frame):
             return
 
         if file_name.endswith("fits"):
-            self.open_fits_eh.invoke(file_name)
+            ic.open_fits(file_name)
         elif file_name.endswith("png"):
-            self.open_png_eh.invoke(file_name)
+            ic.open_png(file_name)
 
     def open_hips(self):
         hips_selector = HipsSelectorWidget(self.root)
@@ -83,10 +80,10 @@ class MenuBar(tb.Frame):
         ):
             return
 
-        self.open_hips_eh.invoke(hips_survey, wcs)
+        ic.open_hips(hips_survey, wcs)
 
     def close_images(self):
-        self.close_images_eh.invoke()
+        ic.close_images()
 
     def open_widget(self, widget):
         self.open_widget_eh.invoke(widget)

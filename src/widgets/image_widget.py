@@ -6,8 +6,9 @@ from astropy import wcs
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import src.lib.render as Render
+from src.controllers import image_controller as ic
 from src.controllers.widget_controller import Widget
-from src.lib.match_type import Matching
+from src.enums import DataType, Matching
 from src.lib.tool import NavigationToolbar
 from src.lib.util import index_default
 
@@ -17,7 +18,13 @@ warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
 # Create an Image Frame
 class ImageFrame(tb.Frame):
     def __init__(
-        self, parent, root, image_data, image_data_header, file_name, file_type
+        self,
+        parent,
+        root,
+        image_data,
+        image_data_header,
+        file_name,
+        data_type: DataType,
     ):
         super().__init__(parent)
 
@@ -32,7 +39,7 @@ class ImageFrame(tb.Frame):
         self.image_data_header = image_data_header
         self.image_wcs = None
         self.file_name = file_name
-        self.file_type = file_type
+        self.data_type = data_type
 
         # Default render config
         self.updating = False
@@ -54,7 +61,7 @@ class ImageFrame(tb.Frame):
 
         self.catalogue_set = None
         self.contour_levels = self.contour_set = None
-        if file_type == "fits":
+        if data_type == DataType.FITS:
             self.fig, self.image, self.limits = Render.create_figure(
                 self.image_data,
                 self.image_wcs,
@@ -108,7 +115,7 @@ class ImageFrame(tb.Frame):
         Is the image that is currently selected this one?
         """
 
-        return self.root.image_controller.get_selected_image() == self
+        return ic.get_selected_image() == self
 
     def toggle_match(self, match_type):
         # are we matching or unmatching
@@ -118,7 +125,7 @@ class ImageFrame(tb.Frame):
             if is_matching:
                 self.limits = Render.get_limits(self.fig, self.image_wcs)
                 # update our current limits + watch for when our limits change
-                limits = self.root.image_controller.get_coord_matched_limits(self)
+                limits = ic.get_coord_matched_limits(self)
                 self.set_limits(limits)
                 self.add_coords_event()
             else:
@@ -173,7 +180,7 @@ class ImageFrame(tb.Frame):
     def match_render(self, source_image=None):
         if source_image is None:
             source_image = index_default(
-                self.root.image_controller.get_images_matched_to(Matching.RENDER),
+                ic.get_images_matched_to(Matching.RENDER),
                 0,
                 self,
             )
@@ -232,7 +239,7 @@ class ImageFrame(tb.Frame):
         self.canvas.draw()
 
     def set_limits(self, limits):
-        if not self.file_type == "fits":
+        if not self.data_type == DataType.FITS:
             return
 
         self.limits = limits
@@ -259,7 +266,7 @@ class ImageFrame(tb.Frame):
             self.update_matched_images()
 
     def update_matched_images(self):
-        for image in self.root.image_controller.get_images_matched_to(Matching.COORD):
+        for image in ic.get_images_matched_to(Matching.COORD):
             if image == self:
                 continue
 
@@ -274,7 +281,7 @@ class ImageFrame(tb.Frame):
         return self.grid_lines
 
     def on_click(self, event):
-        if self.fig.canvas.toolbar.mode != "" or self.file_type != "fits":
+        if self.fig.canvas.toolbar.mode != "" or self.data_type != DataType.FITS:
             return
 
         # this is a matplotlib event, so we don't have the access to the x/y for the context menu position

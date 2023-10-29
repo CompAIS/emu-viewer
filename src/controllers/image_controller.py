@@ -1,28 +1,26 @@
 import os
-import tkinter as tk
 from tkinter import messagebox
-from enum import Enum
-from typing import Optional, List, Tuple
+from typing import List, Optional, Tuple
 
-from numpy import typing as npt
-import ttkbootstrap as tb
 from astropy import wcs
 from astropy.coordinates import SkyCoord
+from numpy import typing as npt
 
 # TODO figure out what to do with these handlers (and their casing)
 import src.lib.fits_handler as Fits_handler
 import src.lib.hips_handler as Hips_handler
 import src.lib.png_handler as png_handler
+from src.enums import DataType, Matching
 from src.lib.event_handler import EventHandler
-from src.enums import Matching, DataType
 from src.lib.util import index_default
 from src.widgets import image_widget as iw
 from src.widgets.image_standalone_toplevel import StandaloneImage
 
 CLOSE_CONFIRM = "Are you sure you want to close all currently open images? Changes will not be saved."
 
-_main_image = None  # the image open on the main window
-_open_windows = []  # all other, standalone windows
+# reference to the main window to avoid circular imports, see register_main
+_main_window = None
+_standalone_windows = []
 
 _selected_image = None
 
@@ -38,6 +36,7 @@ def get_selected_image() -> Optional[iw.ImageFrame]:
 
     :return: the currently selected ImageFrame, or None
     """
+    global _selected_image
 
     if _selected_image is None:
         # No image loaded so nothing to select
@@ -50,11 +49,16 @@ def get_selected_image() -> Optional[iw.ImageFrame]:
     return _selected_image
 
 
-def set_selected_image(image: iw.ImageFrame):
+def set_selected_image(image: Optional[iw.ImageFrame]):
     """Set whichever image is currently "selected".
 
     Will invoke the event handler `selected_image_eh`.
+
+    :param image: the image to set as selected. None is valid and passed
+        on to consumers of the event, will act as "no images open".
     """
+    global _selected_image
+
     if _selected_image == image:
         # Do nothing, return early to avoid the event handler invocation
         return
@@ -68,12 +72,14 @@ def get_images() -> List[iw.ImageFrame]:
 
     :return: a list of ImageFrames
     """
-    if self.main_image is None:
+    global _main_window, _standalone_windows
+
+    if _main_window.main_image is None:
         return []
 
-    images = [self.main_image]
+    images = [_main_window.main_image]
 
-    for w in self.open_windows:
+    for w in _standalone_windows:
         # unwrap the image_frame from the windows
         images.append(w.image_frame)
 
@@ -85,11 +91,11 @@ def get_images_matched_to(match: Matching) -> List[iw.ImageFrame]:
     """Get the images matched to a certain Matching.
 
     Wrapper function to get_images which filters open images on whether
-    or not they are matched to match_type.
+    or not they are matched to `match`.
 
     :return: the images matched to the given Matching
     """
-    return [i for i in self.get_images() if i.is_matched(match_type)]
+    return [i for i in get_images() if i.is_matched(match)]
 
 
 def get_coord_matched_limits(default: iw.ImageFrame) -> Tuple[SkyCoord, SkyCoord]:
@@ -121,24 +127,30 @@ def _open_image(
     Internal function intended to only be called from wrapper functions open_fits, open_hips, and open_png.
 
     :param image_data: numpy array with the image's data (fits image or png image). Note that this should
-        be 2D and have numbers.
+        be float[][].
     :param image_data_header: HDU header for the .fits file. None for png/jpeg.
     :param file_name: the name of the file where the data came from. HiPs survey name for hips
-    :param file_type: The type of the data in the file.
+    :param data_type: The type of the data in the file.
     """
-    if _main_image is None:
+    global _main_window, _standalone_windows, update_image_list_eh
+
+    if _main_window.main_image is None:
         # open to main window if nothing is currently open there
-        _main_image = iw.ImageFrame(
-            self, self.root, image_data, image_data_header, file_name, file_type
+        _main_window.main_image = iw.ImageFrame(
+            _main_window.main_image_container,
+            _main_window,
+            image_data,
+            image_data_header,
+            file_name,
+            data_type,
         )
-        # TODO set on window
-        set_selected_image(_main_image)
+        set_selected_image(_main_window.main_image)
     else:
         new_window = StandaloneImage(
-            self, self.root, image_data, image_data_header, file_name, file_type
+            _main_window, image_data, image_data_header, file_name, data_type
         )
-        _open_windows.append(new_window)
-        set_selected_image(new_window)  # TODO unwrap to image frame here
+        _standalone_windows.append(new_window)
+        set_selected_image(new_window.image_frame)
 
     # TODO this invoke is a bit weird
     update_image_list_eh.invoke(get_selected_image(), get_images())
@@ -153,7 +165,7 @@ def open_fits(file_path: str):
     """
     image_data, image_data_header = Fits_handler.open_fits_file(file_path)
     file_name = os.path.basename(file_path)
-    self.open_image(image_data, image_data_header, file_name, "fits")
+    _open_image(image_data, image_data_header, file_name, DataType.FITS)
 
 
 def open_png(file_path: str):
@@ -163,7 +175,7 @@ def open_png(file_path: str):
     """
     image_data = png_handler.open_png_file(file_path)
     file_name = os.path.basename(file_path)
-    self.open_image(image_data, None, file_name, "png")
+    _open_image(image_data, None, file_name, DataType.PNG)
 
 
 def open_hips(hips_survey: str, wcs: Optional[wcs.WCS] = None):
@@ -184,13 +196,13 @@ def open_hips(hips_survey: str, wcs: Optional[wcs.WCS] = None):
     else:
         image_data, image_header = Hips_handler.open_hips_with_wcs(hips_survey, wcs)
 
-    self.open_image(
-        image_data, image_header, hips_survey.survey, hips_survey.image_type
-    )
+    # TODO image_type here
+    _open_image(image_data, image_header, hips_survey.survey, hips_survey.image_type)
 
 
 def close_images():
     """Closes all currently open images, with a message box warning."""
+    global _main_window, _standalone_windows, update_image_list_eh
 
     if get_selected_image() is not None and not messagebox.askyesno(
         title="Confirmation", message=CLOSE_CONFIRM
@@ -200,18 +212,17 @@ def close_images():
     print("Closing all images...")
 
     # destroy all windows
-    for window in open_windows:
+    for window in _standalone_windows:
         window.destroy()
 
-    _open_windows = []
+    _standalone_windows = []
 
     # destroy main image
-    if _main_image is not None:
-        _main_image.destroy()
-        _main_image = None
+    if _main_window.main_image is not None:
+        _main_window.main_image.destroy()
+        _main_window.main_image = None
 
-    # TODO possibly event handler?
-    # self.root.update()
+    _main_window.update()
 
     set_selected_image(None)
     update_image_list_eh.invoke(None, [])
@@ -223,36 +234,33 @@ def close_standalone(window: StandaloneImage):
     Will set focus to the main window and set the selected image to
     the main image.
     """
+    global _main_window, _standalone_windows, update_image_list_eh
 
+    # destroy the standalone
     window.destroy()
-    _open_windows.remove(window)
+    _standalone_windows.remove(window)
 
-    # TODO wat do here?
-    # self.after(1, lambda: self.root.focus_set())
+    # focus the main window
+    _main_window.after(1, lambda: _main_window.focus_set())
 
-    set_selected_image(_main_image)
-    # again this is weird
+    # update selected images
+    set_selected_image(_main_window.main_image)
+    # TODO again this is weird
     update_image_list_eh.invoke(get_selected_image(), get_images())
 
 
-# Create Image Controller Frame
-class ImageController(tb.Frame):
-    def __init__(self, parent, root):
-        super().__init__(parent, bootstyle="dark")
+def register_main(main):
+    """Set a reference to the main window for image_controller to use.
 
-        self.root = root
-        self.grid(column=1, row=0, sticky=tk.NSEW)
-        self.rowconfigure(0, weight=1, uniform="c")
-        self.columnconfigure(0, weight=1, uniform="r")
+    This is a weird hack, since we need to be able to set the main_image on the window,
+    but we can't import main.py since main.py also imports this module. So it would be
+    circular in nature.
 
-        # Add open_image as an event listener to open file
-        root.menu_controller.open_fits_eh.add(self.open_fits)
-        root.menu_controller.open_png_eh.add(self.open_png)
-        root.menu_controller.open_hips_eh.add(self.open_hips)
-        root.menu_controller.close_images_eh.add(self.close_images)
+    I don't have time to think of an alternative for this.
 
-    def handle_focus(self, event):
-        if self.selected_image is None:
-            return
+    :param MainWindow main: the instance of MainWindow
+        I can't import this for the type for obvious reasons
+    """
+    global _main_window
 
-        self.set_selected_image(self.main_image)
+    _main_window = main

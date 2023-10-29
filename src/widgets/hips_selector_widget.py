@@ -4,6 +4,7 @@ from tkinter import messagebox
 
 import ttkbootstrap as tb
 
+from src.controllers import image_controller as ic
 from src.lib.hips_handler import HipsSurvey
 from src.widgets.base_widget import BaseWidget
 
@@ -68,7 +69,7 @@ class HipsSelectorWidget(BaseWidget):
 
         self.setup()
 
-        self.root.image_controller.update_image_list_eh.add(self.update_valid_images)
+        ic.update_image_list_eh.add(self.update_valid_images)
 
     def setup(self):
         frame = tb.Frame(self, bootstyle="light")
@@ -145,7 +146,7 @@ class HipsSelectorWidget(BaseWidget):
         )
         self.image_select_dropdown.grid(column=3, row=0, sticky=tk.EW, padx=10, pady=10)
 
-        self.update_valid_images(None, self.root.image_controller.get_images())
+        self.update_valid_images(None, ic.get_images())
 
         self.ra_entry = self.entry_options(frame, "RA", 2, 1)
 
@@ -313,7 +314,7 @@ class HipsSelectorWidget(BaseWidget):
             return
 
         try:
-            self.root.image_controller.open_hips(self.hips_survey, self.selected_wcs)
+            ic.open_hips(self.hips_survey, self.selected_wcs)
         except AttributeError:
             messagebox.showerror(
                 title="Error",
@@ -364,5 +365,5 @@ class HipsSelectorWidget(BaseWidget):
         self.dec_entry.insert(0, dec)
 
     def close(self):
-        self.root.image_controller.update_image_list_eh.remove(self.update_valid_images)
+        ic.update_image_list_eh.remove(self.update_valid_images)
         super().close()
