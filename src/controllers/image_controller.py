@@ -9,12 +9,9 @@ from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from numpy import typing as npt
 
-# TODO figure out what to do with these handlers (and their casing)
-import src.lib.fits_handler as Fits_handler
-import src.lib.hips_handler as Hips_handler
-import src.lib.png_handler as png_handler
 from src.components import image_frame
 from src.enums import DataType, Matching
+from src.lib import fits_handler, hips_handler, png_handler
 from src.lib.event_handler import EventHandler
 from src.lib.util import index_default
 from src.widgets.image_standalone_toplevel import StandaloneImage
@@ -170,7 +167,7 @@ def open_fits(file_path: str):
 
     :param file_path: Path to the .fits file to open.
     """
-    image_data, image_data_header = Fits_handler.open_fits_file(file_path)
+    image_data, image_data_header = fits_handler.open_fits_file(file_path)
     file_name = os.path.basename(file_path)
     _open_image(image_data, image_data_header, file_name, DataType.FITS)
 
@@ -186,7 +183,7 @@ def open_png(file_path: str):
 
 
 def open_hips(
-    box_parent, hips_survey: Hips_handler.HipsSurvey, wcs: Optional[wcs.WCS] = None
+    box_parent, hips_survey: hips_handler.HipsSurvey, wcs: Optional[wcs.WCS] = None
 ):
     """Open a HiPs survey from a survey name, and optionally a WCS.
 
@@ -200,8 +197,11 @@ def open_hips(
     :param hips_survey: the hips survey to open with the respective information about where to open it
     :param Optional[wcs.WCS] wcs: a WCS to open the survey at
     """
+
+    # so the message box doesn't block the downloading of the survey
+    # i imagine that could be quite frustrating
     pool = ThreadPool(processes=1)
-    r = pool.apply_async(Hips_handler.open_hips, (hips_survey, wcs))
+    r = pool.apply_async(hips_handler.open_hips, (hips_survey, wcs))
 
     dialogs.Messagebox.show_info(
         "Attempting to download HiPs survey - close this box so image can open once done",
