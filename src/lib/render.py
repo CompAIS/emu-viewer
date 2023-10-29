@@ -275,13 +275,6 @@ def draw_histogram_graph(fig, count, bins, vmin, vmax):
 
     fig = draw_histogram_lines(fig, vmin, vmax)
 
-    return fig, ax
-
-
-def update_histogram_graph(fig, ax):
-    fig.axes[0].remove()
-    fig.add_axes(ax)
-
     return fig
 
 

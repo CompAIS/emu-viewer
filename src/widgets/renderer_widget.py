@@ -130,18 +130,20 @@ class RendererWidget(BaseWidget):
 
         image_selected = ic.get_selected_image()
 
-        if image_selected.histo_axes is None:
-            self.histo_fig, image_selected.histo_axes = Render.draw_histogram_graph(
+        if image_selected.histogram is None:
+            self.histo_fig = Render.draw_histogram_graph(
                 self.histo_fig,
                 image_selected.histo_counts,
                 image_selected.histo_bins,
                 image_selected.vmin,
                 image_selected.vmax,
             )
+            image_selected.histogram = self.histo_fig
+            print(image_selected.histogram)
         else:
-            self.histo_fig = Render.update_histogram_graph(
-                self.histo_fig, image_selected.histo_axes
-            )
+            self.histo_fig = image_selected.histogram
+            self.canvas.figure = self.histo_fig
+            print(self.canvas.figure)
         self.canvas.draw()
 
     def update_histogram_lines(self):
