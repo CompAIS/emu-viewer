@@ -1,8 +1,8 @@
 import tkinter as tk
 from functools import partial
-from tkinter import messagebox
 
 import ttkbootstrap as tb
+import ttkbootstrap.dialogs as dialogs
 
 from src.lib.hips_handler import HipsSurvey
 from src.widgets.base_widget import BaseWidget
@@ -41,6 +41,9 @@ NO_SURVEY_SELECTED = "No Survey Selected"
 NO_IMAGE_TYPE_SELECTED = "No Image Type Selected"
 
 INVALID_INPUT = "Invalid Input"
+INVALID_SURVEY = "No survey selected, please select a survey"
+INVALID_TYPE = "No type selected, please select a type"
+INVALID_PROJECTION = "No projection selected, please select a projection"
 INVALID_RA = "Invalid RA, please enter a float"
 INVALID_DEC = "Invalid Dec, please enter a float"
 INVALID_FOV = "Invalid FOV, please enter a float"
@@ -282,56 +285,71 @@ class HipsSelectorWidget(BaseWidget):
     def select_survey(self):
         self.custom_survey_enter()
 
-        if (
-            self.selected_projection is None
-            or self.selected_hips_survey is None
-            or self.selected_image_type is None
-        ):
+        if self.selected_hips_survey is None:
+            self.validation_error(INVALID_INPUT, INVALID_SURVEY)
             return
-
-        self.hips_survey.projection = self.selected_projection
         self.hips_survey.survey = self.selected_hips_survey
+
+        if self.selected_image_type is None:
+            self.validation_error(INVALID_INPUT, INVALID_TYPE)
+            return
         self.hips_survey.image_type = self.selected_image_type
 
+        if self.selected_projection is None:
+            self.validation_error(INVALID_INPUT, INVALID_PROJECTION)
+            return
+        self.hips_survey.projection = self.selected_projection
+
         if self.selected_wcs is None:
-            self.hips_survey.ra = self.float_validation(self.ra_entry, INVALID_RA)
-            self.hips_survey.dec = self.float_validation(self.dec_entry, INVALID_DEC)
-            self.hips_survey.FOV = self.float_validation(self.FOV_entry, INVALID_FOV)
+            self.hips_survey.ra = self.float_validation(
+                self.ra_entry, INVALID_INPUT, INVALID_RA
+            )
+            if self.hips_survey.ra == "F":
+                return
+
+            self.hips_survey.dec = self.float_validation(
+                self.dec_entry, INVALID_INPUT, INVALID_DEC
+            )
+            if self.hips_survey.dec == "F":
+                return
+
+            self.hips_survey.FOV = self.float_validation(
+                self.FOV_entry, INVALID_INPUT, INVALID_FOV
+            )
+            if self.hips_survey.FOV == "F":
+                return
 
             if float(self.hips_survey.FOV) <= 0:
-                self.hips_survey.FOV = "F"
-                messagebox.showerror(
-                    title=INVALID_INPUT,
-                    message=INVALID_FOV_LOW,
-                )
-
-        if (
-            self.hips_survey.ra == "F"
-            or self.hips_survey.dec == "F"
-            or self.hips_survey.FOV == "F"
-        ):
-            return
+                self.validation_error(INVALID_INPUT, INVALID_FOV_LOW)
+                return
 
         try:
+            dialogs.Messagebox.show_info(
+                "Attempting to download HiPs survey",
+                parent=self,
+                title="Download",
+                alert=False,
+            )
             self.root.image_controller.open_hips(self.hips_survey, self.selected_wcs)
         except AttributeError:
-            messagebox.showerror(
-                title="Error",
-                message=ERROR_GENERATING,
-            )
+            self.validation_error("Error", ERROR_GENERATING)
             return
 
-        # Not sure if this is wanted or not
-        # self.reset_all_options()
+    def validation_error(self, title, error):
+        dialogs.Messagebox.show_error(
+            error,
+            parent=self,
+            title=title,
+            alert=False,
+        )
 
-    def float_validation(self, entry, error):
+        return
+
+    def float_validation(self, entry, title, error):
         try:
             valid_float = float(entry.get())
         except ValueError:
-            messagebox.showerror(
-                title=INVALID_INPUT,
-                message=error,
-            )
+            self.validation_error(title, error)
             return "F"
 
         return valid_float

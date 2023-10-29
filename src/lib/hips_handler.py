@@ -18,8 +18,8 @@ class HipsSurvey:
 def open_hips(hips_survey):
     result = hips2fits.query(
         hips=hips_survey.survey,
-        width=1000,
-        height=1000,
+        width=2000,
+        height=2000,
         ra=Longitude(hips_survey.ra * u.deg),
         dec=Latitude(hips_survey.dec * u.deg),
         fov=Angle(hips_survey.FOV * u.deg),
