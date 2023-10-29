@@ -88,7 +88,6 @@ def get_images() -> List[iw.ImageFrame]:
     return images
 
 
-# TODO check this Matching hint works correctly
 def get_images_matched_to(match: Matching) -> List[iw.ImageFrame]:
     """Get the images matched to a certain Matching.
 
