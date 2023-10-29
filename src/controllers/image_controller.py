@@ -133,7 +133,7 @@ def _open_image(
         be float[][].
     :param image_data_header: HDU header for the .fits file. None for png/jpg.
     :param file_name: the name of the file where the data came from. HiPs survey name for hips
-    :param data_type: The type of the data in the file.
+    :param data_type: The type of the data in image_data.
     """
     global _main_window, _standalone_windows, update_image_list_eh
 
