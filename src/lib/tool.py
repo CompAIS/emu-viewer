@@ -69,6 +69,8 @@ class NavigationToolbar(NavigationToolbar2Tk):
             ("Save", "Save the figure", "filesave", "save_figure"),
         )
 
+        self.parent = parent
+
         self._line_info = None
         self._erase_info = None
 
@@ -527,6 +529,36 @@ class NavigationToolbar(NavigationToolbar2Tk):
             image_kwargs = {"image": image}
 
         button.configure(**image_kwargs)
+
+    @classmethod
+    def _mouse_event_to_message(cls, event):
+        if event.inaxes and event.inaxes.get_navigate():
+            try:
+                s = event.inaxes.format_coord(event.xdata, event.ydata)
+                return s
+            except (ValueError, OverflowError):
+                pass
+        return ""
+
+    def _update_view(self):
+        """
+        Update the viewlim and position from the view and position stack for
+        each Axes.
+        """
+        nav_info = self._nav_stack()
+        if nav_info is None:
+            return
+        # Retrieve all items at once to avoid any risk of GC deleting an Axes
+        # while in the middle of the loop below.
+        items = list(nav_info.items())
+        for ax, (view, (pos_orig, pos_active)) in items:
+            ax._set_view(view)
+            # Restore both the original and modified positions
+            ax._set_position(pos_orig, "original")
+            ax._set_position(pos_active, "active")
+
+        self.parent.update_matched_images()
+        self.canvas.draw_idle()
 
 
 class HistoToolbar(NavigationToolbar2Tk):

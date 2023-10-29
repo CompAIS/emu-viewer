@@ -180,6 +180,7 @@ class ImageFrame(tb.Frame):
     def update_norm(self):
         self.image = Render.update_image_norm(
             self.image,
+            self.image_data,
             self.vmin,
             self.vmax,
             self.stretch,
@@ -274,11 +275,11 @@ class ImageFrame(tb.Frame):
             self.fig.canvas.toolbar.mode == "pan/zoom"
             or self.fig.canvas.toolbar.mode == "zoom rect"
         ):
-            self.limits = Render.get_limits(self.fig, self.image_wcs)
-
             self.update_matched_images()
 
     def update_matched_images(self):
+        self.limits = Render.get_limits(self.fig, self.image_wcs)
+
         for image in ic.get_images_matched_to(Matching.COORD):
             if image == self:
                 continue
