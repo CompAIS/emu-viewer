@@ -1,7 +1,9 @@
 import os
+from multiprocessing.pool import ThreadPool
 from tkinter import messagebox
 from typing import List, Optional, Tuple
 
+import ttkbootstrap.dialogs as dialogs
 from astropy import wcs
 from astropy.coordinates import SkyCoord
 from numpy import typing as npt
@@ -128,7 +130,7 @@ def _open_image(
 
     :param image_data: numpy array with the image's data (fits image or png image). Note that this should
         be float[][].
-    :param image_data_header: HDU header for the .fits file. None for png/jpeg.
+    :param image_data_header: HDU header for the .fits file. None for png/jpg.
     :param file_name: the name of the file where the data came from. HiPs survey name for hips
     :param data_type: The type of the data in the file.
     """
@@ -179,7 +181,9 @@ def open_png(file_path: str):
     _open_image(image_data, None, file_name, DataType.PNG)
 
 
-def open_hips(hips_survey: str, wcs: Optional[wcs.WCS] = None):
+def open_hips(
+    box_parent, hips_survey: Hips_handler.HipsSurvey, wcs: Optional[wcs.WCS] = None
+):
     """Open a HiPs survey from a survey name, and optionally a WCS.
 
     Will download the survey at once with the given configuration and convert it to it's
@@ -188,14 +192,21 @@ def open_hips(hips_survey: str, wcs: Optional[wcs.WCS] = None):
     Note that the surveys must be contactable by the [hips2fits](https://astroquery.readthedocs.io/en/latest/hips2fits/hips2fits.html)
     service. The list of valid survey names is available [here](https://aladin.cds.unistra.fr/hips/list).
 
-    :param str hips_survey: the name of the survey to open
+    :param box_parent: a tk widget to own the message box which appears
+    :param hips_survey: the hips survey to open with the respective information about where to open it
     :param Optional[wcs.WCS] wcs: a WCS to open the survey at
     """
-    # TODO this should probably be handled by the hips_handler (that's what it's there for!)
-    if wcs is None:
-        image_data, image_header = Hips_handler.open_hips(hips_survey)
-    else:
-        image_data, image_header = Hips_handler.open_hips_with_wcs(hips_survey, wcs)
+    pool = ThreadPool(processes=1)
+    r = pool.apply_async(Hips_handler.open_hips, (hips_survey, wcs))
+
+    dialogs.Messagebox.show_info(
+        "Attempting to download HiPs survey - close this box so image can open once done",
+        parent=box_parent,
+        title="Download",
+        alert=False,
+    )
+
+    image_data, image_header = r.get()
 
     _open_image(image_data, image_header, hips_survey.survey, hips_survey.data_type)
 

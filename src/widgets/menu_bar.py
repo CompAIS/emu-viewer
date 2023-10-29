@@ -6,7 +6,6 @@ import ttkbootstrap as tb
 import src.controllers.image_controller as ic
 import src.controllers.widget_controller as wc
 from src.lib.event_handler import EventHandler
-from src.widgets.hips_selector_widget import HipsSelectorWidget
 
 
 # Create Menu bar for tkinter window
@@ -65,22 +64,6 @@ class MenuBar(tb.Frame):
             ic.open_fits(file_name)
         elif file_name.endswith("png"):
             ic.open_png(file_name)
-
-    def open_hips(self):
-        hips_selector = HipsSelectorWidget(self.root)
-        self.root.wait_window(hips_selector)
-
-        hips_survey = hips_selector.hips_survey
-        wcs = hips_selector.selected_wcs
-
-        if (
-            hips_survey.projection == ""
-            or hips_survey.survey == ""
-            or hips_survey.data_type is None
-        ):
-            return
-
-        ic.open_hips(hips_survey, wcs)
 
     def close_images(self):
         ic.close_images()

@@ -25,13 +25,13 @@ class DataType(Enum):
 
     Intended to be referenced with an image_data, so we know how to process that data.
     Note that HiPs is not an option - HiPs is not a separate file format, rather a
-    protocol for streaming / transferring tiles of .fits, .png, or .jpeg data (and potentially more).
+    protocol for streaming / transferring tiles of .fits, .png, or .jpg data (and potentially more).
     Thus, HiPs surveys are treated as one of the following supported data types.
     """
 
     FITS = "fits"
     PNG = "png"
-    JPEG = "jpeg"
+    JPG = "jpg"
 
     @classmethod
     def from_str(cls, s: str):
