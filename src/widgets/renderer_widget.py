@@ -10,11 +10,11 @@ from matplotlib.backends._backend_tk import FigureCanvasTk
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 import src.controllers.image_controller as ic
-import src.lib.render as Render
 from src import constants
 from src._overrides.matplotlib.HistogramToolbar import HistogramToolbar
 from src.enums import DataType, Matching
-from src.util import get_size_inches
+from src.lib import histogram
+from src.lib.util import get_size_inches
 from src.widgets.base_widget import BaseWidget
 
 scaling_options = [
@@ -104,7 +104,7 @@ class RendererWidget(BaseWidget):
         self.histogram_frame.grid_rowconfigure(0, weight=1)
         self.histogram_frame.grid_columnconfigure(0, weight=1)
 
-        self.histo_fig = Render.create_histogram_graph()
+        self.histo_fig = histogram.create_histogram_graph()
         self.canvas = HistogramCanvasTkAgg(self.histo_fig, master=self.histogram_frame)
         self.canvas.get_tk_widget().grid(column=0, row=0, sticky=tk.NSEW)
         self.canvas.mpl_connect("button_press_event", self.on_histo_click)
@@ -130,7 +130,7 @@ class RendererWidget(BaseWidget):
 
         image_selected = ic.get_selected_image()
 
-        self.histo_fig = Render.draw_histogram_graph(
+        self.histo_fig = histogram.draw_histogram_graph(
             self.histo_fig,
             image_selected.histo_counts,
             image_selected.histo_bins,
@@ -145,7 +145,7 @@ class RendererWidget(BaseWidget):
 
         image_selected = ic.get_selected_image()
 
-        self.histo_fig = Render.draw_histogram_lines(
+        self.histo_fig = histogram.draw_histogram_lines(
             self.histo_fig,
             image_selected.vmin,
             image_selected.vmax,

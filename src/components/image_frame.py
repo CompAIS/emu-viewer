@@ -10,12 +10,11 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.collections import PathCollection
 from matplotlib.contour import QuadContourSet
 
-import src.lib.render as Render
 from src._overrides.matplotlib.ImageToolbar import ImageToolbar
 from src.controllers import image_controller as ic
 from src.controllers import widget_controller as wc
 from src.enums import DataType, Matching
-from src.lib import catalogue, contour, fits_handler
+from src.lib import catalogue, contour, fits_handler, histogram, png_handler
 from src.lib.util import index_default
 
 warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
@@ -93,14 +92,14 @@ class ImageFrame(tb.Frame):
 
             min_value, max_value = self.cached_percentiles["100"]
 
-            self.histo_counts, self.histo_bins = Render.create_histogram_data(
+            self.histo_counts, self.histo_bins = histogram.create_histogram_data(
                 self.image_data, min_value, max_value
             )
 
             self.fig.canvas.mpl_connect("button_press_event", self.on_click)
             self.coord_matching_cid = None
         else:
-            self.fig, self.image = Render.create_figure_png(self.image_data)
+            self.fig, self.image = png_handler.create_figure_png(self.image_data)
 
         self.create_image()
 

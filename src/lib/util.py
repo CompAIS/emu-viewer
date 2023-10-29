@@ -1,6 +1,8 @@
 import tkinter as tk
 from typing import List, Optional, TypeVar
 
+from src import constants
+
 T = TypeVar("T")
 
 
@@ -26,4 +28,4 @@ def index_default(list: List[T], index: int, default: T) -> T:
 def get_size_inches(widget: tk.Widget):
     """Returns the size of the given widget as a tuple of inches."""
 
-    return widget.winfo_width() / DPI, widget.winfo_height() / DPI
+    return widget.winfo_width() / constants.DPI, widget.winfo_height() / constants.DPI
