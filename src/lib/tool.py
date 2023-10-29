@@ -505,7 +505,7 @@ class NavigationToolbar(NavigationToolbar2Tk):
         return b
 
     def _set_image_for_button(self, button):
-        style = tb.Style(theme="superhero")
+        style = tb.Style()
         if button._image_file is None:
             return
 
@@ -703,7 +703,7 @@ class HistoToolbar(NavigationToolbar2Tk):
         return b
 
     def _set_image_for_button(self, button):
-        style = tb.Style(theme="superhero")
+        style = tb.Style()
         if button._image_file is None:
             return
 
