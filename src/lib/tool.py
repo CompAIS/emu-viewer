@@ -11,8 +11,8 @@ from matplotlib.backend_bases import NavigationToolbar2
 from matplotlib.backends._backend_tk import ToolTip
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 from PIL import Image, ImageTk
-from ttkbootstrap.dialogs.colorchooser import ColorChooserDialog
 
+from src.components.color_chooser import ColourChooserButton
 from src.constants import ASSETS_FOLDER
 
 
@@ -80,9 +80,7 @@ class NavigationToolbar(NavigationToolbar2Tk):
         self.prev_y = None
 
         self.line_size = 5
-        self.line_colour = "red"
         self.text_size = 5
-        self.text_colour = "red"
         self.erase_size = 5
 
     def super_init(self, canvas, window):
@@ -362,15 +360,14 @@ class NavigationToolbar(NavigationToolbar2Tk):
         )
         line_colour_label.grid(column=0, row=2, sticky=tk.NSEW, padx=10, pady=10)
 
-        box_size = 23
-        self.line_button = tk.Canvas(
-            frame, bg=self.line_colour, width=box_size + 1, height=box_size + 1
+        self.line_button = ColourChooserButton(
+            frame,
+            width=24,
+            height=24,
+            window_title="Choose Annotation Line Colour",
+            default="red",
         )
         self.line_button.grid(column=1, row=2, sticky=tk.W, padx=10, pady=10)
-        self.line_rect = self.line_button.create_rectangle(
-            0, 0, box_size, box_size, outline="black", fill=self.line_colour
-        )
-        self.line_button.bind("<Button-1>", self.set_line_colour)
 
         # Size and colour config for text tool
         text_size_label = tb.Label(
@@ -392,15 +389,14 @@ class NavigationToolbar(NavigationToolbar2Tk):
         )
         text_colour_label.grid(column=0, row=4, sticky=tk.NSEW, padx=10, pady=10)
 
-        box_size = 23
-        self.text_button = tk.Canvas(
-            frame, bg=self.line_colour, width=box_size + 1, height=box_size + 1
+        self.text_button = ColourChooserButton(
+            frame,
+            width=24,
+            height=24,
+            window_title="Choose Annotation Text Colour",
+            default="red",
         )
         self.text_button.grid(column=1, row=4, sticky=tk.W, padx=10, pady=10)
-        self.text_rect = self.text_button.create_rectangle(
-            0, 0, box_size, box_size, outline="black", fill=self.text_colour
-        )
-        self.text_button.bind("<Button-1>", self.set_text_colour)
 
         # Size config for erase tool
         erase_size_label = tb.Label(
@@ -434,36 +430,18 @@ class NavigationToolbar(NavigationToolbar2Tk):
         self.line_size = value
         size_label["text"] = f"Line Size ({value:1.2f})"
 
-    def set_line_colour(self, _evt):
-        cd = ColorChooserDialog(
-            initialcolor=self.line_colour, title="Choose line colour"
-        )
-        cd.show()
-        self.after(1, lambda: self.focus_set())
-
-        if cd.result is None:
-            return
-
-        self.line_colour = cd.result.hex
-        self.line_button.itemconfig(self.line_rect, fill=self.line_colour)
-
     def set_text_size(self, size_label, value):
         value = float(value)
         self.text_size = value
         size_label["text"] = f"Text Size ({value:1.2f})"
 
-    def set_text_colour(self, _evt):
-        cd = ColorChooserDialog(
-            initialcolor=self.text_colour, title="Choose line colour"
-        )
-        cd.show()
-        self.after(1, lambda: self.focus_set())
+    @property
+    def line_colour(self):
+        return self.line_button.get()
 
-        if cd.result is None:
-            return
-
-        self.text_colour = cd.result.hex
-        self.text_button.itemconfig(self.text_rect, fill=self.text_colour)
+    @property
+    def text_colour(self):
+        return self.text_button.get()
 
     def set_erase_size(self, size_label, value):
         value = float(value)

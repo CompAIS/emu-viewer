@@ -195,12 +195,8 @@ class ContourWidget(BaseWidget):
         lc_label = tb.Label(self.frame, text="Line Colour", bootstyle="inverse-light")
         lc_label.grid(column=2, row=4, padx=10, pady=10, sticky=tk.W)
 
-        size = 24
         self.lc_button = ColourChooserButton(
-            self.frame,
-            width=size,
-            height=size,
-            window_title="Choose Contour Line Colour",
+            self.frame, width=24, height=24, window_title="Choose Contour Line Colour"
         )
         self.lc_button.grid(column=3, row=4, sticky=tk.W, padx=10)
 
