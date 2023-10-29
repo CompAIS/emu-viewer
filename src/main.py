@@ -45,17 +45,6 @@ class MainWindow(tb.Window):
 
         ic.register_main(self)
 
-    def run(self):
-        """Run loop for the main window.
-
-        Updates the window every 100ms.
-        """
-        # TODO do we need all this
-
-        # Do not remove or edit, required for run loop to function
-        # self.update()
-        # self.after(100, self.run)
-
     def handle_focus(self, event):
         """Event listener for <FocusIn> on the main window.
 
@@ -70,7 +59,5 @@ if __name__ == "__main__":
 
     # Run the main app
     main_app = MainWindow()
-
-    main_app.after(1000, main_app.run)
 
     main_app.mainloop()
