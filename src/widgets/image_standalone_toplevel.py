@@ -30,7 +30,6 @@ class StandaloneImage(tk.Toplevel):
         )
 
         self.bind("<FocusIn>", self.handle_focus)
-
         self.protocol("WM_DELETE_WINDOW", partial(ic.close_standalone, self))
 
     def handle_focus(self, event):
