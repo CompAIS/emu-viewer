@@ -4,7 +4,8 @@ from tkinter import messagebox
 
 import ttkbootstrap as tb
 
-from src.controllers import image_controller as ic
+import src.controllers.image_controller as ic
+from src.enums import DataType
 from src.lib.hips_handler import HipsSurvey
 from src.widgets.base_widget import BaseWidget
 
@@ -34,12 +35,12 @@ radio_survey_options = [
 
 xray_survey_options = ["ov-gso/P/RASS"]
 
-image_type_options = ["fits", "png", "jpg"]
+data_type_options = [x.value for x in DataType]
 
 NO_IMAGE_SELECTED = "No Image Selected"
 NO_PROJECTION_SELECTED = "No Projection Selected"
 NO_SURVEY_SELECTED = "No Survey Selected"
-NO_IMAGE_TYPE_SELECTED = "No Image Type Selected"
+NO_DATA_TYPE_SELECTED = "No Data Type Selected"
 
 INVALID_INPUT = "Invalid Input"
 INVALID_RA = "Invalid RA, please enter a float"
@@ -62,7 +63,7 @@ class HipsSelectorWidget(BaseWidget):
 
         self.selected_projection = None
         self.selected_hips_survey = None
-        self.selected_image_type = None
+        self.selected_data_type = None
         self.selected_wcs = None
 
         self.hips_survey = HipsSurvey()
@@ -125,12 +126,12 @@ class HipsSelectorWidget(BaseWidget):
         self.custom_survey = self.entry_options(frame, "Custom Survey", 0, 4)
         self.custom_survey.bind("<FocusOut>", self.custom_survey_focusout)
 
-        self.image_type_dropdown = self.dropdown_options(
+        self.data_type_dropdown = self.dropdown_options(
             frame,
-            "Image Type",
-            NO_IMAGE_TYPE_SELECTED,
-            image_type_options,
-            self.select_image_type,
+            "Data Type",
+            NO_DATA_TYPE_SELECTED,
+            data_type_options,
+            self.select_data_type,
             COL_WIDTHS[0],
             0,
             5,
@@ -216,9 +217,9 @@ class HipsSelectorWidget(BaseWidget):
         self.xray_dropdown["text"] = NO_SURVEY_SELECTED
         self.custom_survey.delete(0, tk.END)
 
-    def select_image_type(self, image_type, dropdown):
-        self.selected_image_type = image_type
-        dropdown["text"] = image_type
+    def select_data_type(self, data_type: str, dropdown):
+        dropdown["text"] = data_type
+        self.selected_data_type = DataType.from_str(data_type)
 
     def select_image(self, image, dropdown):
         if image is None:
@@ -268,11 +269,11 @@ class HipsSelectorWidget(BaseWidget):
     def reset_all_options(self):
         self.selected_projection = None
         self.selected_hips_survey = None
-        self.selected_image_type = None
+        self.selected_data_type = None
         self.selected_wcs = None
 
         self.clear_survey_options()
-        self.image_type_dropdown["text"] = NO_IMAGE_TYPE_SELECTED
+        self.data_type_dropdown["text"] = NO_DATA_TYPE_SELECTED
 
         self.image_select_dropdown["text"] = NO_IMAGE_SELECTED
         self.ra_entry.delete(0, tk.END)
@@ -286,13 +287,13 @@ class HipsSelectorWidget(BaseWidget):
         if (
             self.selected_projection is None
             or self.selected_hips_survey is None
-            or self.selected_image_type is None
+            or self.selected_data_type is None
         ):
             return
 
         self.hips_survey.projection = self.selected_projection
         self.hips_survey.survey = self.selected_hips_survey
-        self.hips_survey.image_type = self.selected_image_type
+        self.hips_survey.data_type = self.selected_data_type
 
         if self.selected_wcs is None:
             self.hips_survey.ra = self.float_validation(self.ra_entry, INVALID_RA)
@@ -315,11 +316,12 @@ class HipsSelectorWidget(BaseWidget):
 
         try:
             ic.open_hips(self.hips_survey, self.selected_wcs)
-        except AttributeError:
+        except AttributeError as e:
             messagebox.showerror(
                 title="Error",
                 message=ERROR_GENERATING,
             )
+            print(e)
             return
 
         # Not sure if this is wanted or not

@@ -1,8 +1,8 @@
 import tkinter as tk
 from functools import partial
 
+import src.controllers.image_controller as ic
 from src import constants
-from src.controllers import image_controller as ic
 from src.enums import DataType
 from src.widgets import image_widget as iw
 

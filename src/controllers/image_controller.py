@@ -10,10 +10,10 @@ from numpy import typing as npt
 import src.lib.fits_handler as Fits_handler
 import src.lib.hips_handler as Hips_handler
 import src.lib.png_handler as png_handler
+import src.widgets.image_widget as iw
 from src.enums import DataType, Matching
 from src.lib.event_handler import EventHandler
 from src.lib.util import index_default
-from src.widgets import image_widget as iw
 from src.widgets.image_standalone_toplevel import StandaloneImage
 
 CLOSE_CONFIRM = "Are you sure you want to close all currently open images? Changes will not be saved."
@@ -146,6 +146,7 @@ def _open_image(
         )
         set_selected_image(_main_window.main_image)
     else:
+        # otherwise open up a new top-level image
         new_window = StandaloneImage(
             _main_window, image_data, image_data_header, file_name, data_type
         )
@@ -196,8 +197,7 @@ def open_hips(hips_survey: str, wcs: Optional[wcs.WCS] = None):
     else:
         image_data, image_header = Hips_handler.open_hips_with_wcs(hips_survey, wcs)
 
-    # TODO image_type here
-    _open_image(image_data, image_header, hips_survey.survey, hips_survey.image_type)
+    _open_image(image_data, image_header, hips_survey.survey, hips_survey.data_type)
 
 
 def close_images():

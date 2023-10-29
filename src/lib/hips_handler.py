@@ -1,8 +1,11 @@
 from dataclasses import dataclass
+from typing import Optional
 
 import astropy.units as u
 from astropy.coordinates import Angle, Latitude, Longitude
 from astroquery.hips2fits import hips2fits
+
+from src.enums import DataType
 
 
 @dataclass
@@ -12,7 +15,7 @@ class HipsSurvey:
     FOV: float = 0.0
     projection: str = ""
     survey: str = ""
-    image_type: str = ""
+    data_type: Optional[DataType] = None
 
 
 def open_hips(hips_survey):
@@ -25,10 +28,10 @@ def open_hips(hips_survey):
         fov=Angle(hips_survey.FOV * u.deg),
         projection=hips_survey.projection,
         get_query_payload=False,
-        format=hips_survey.image_type,
+        format=hips_survey.data_type.value,
     )
 
-    if hips_survey.image_type == "fits":
+    if hips_survey.data_type == DataType.FITS:
         hdu = result[0]
 
         # some files have (1, 1, x, y) or (x, y, 1, 1) shape so we use .squeeze
@@ -42,10 +45,10 @@ def open_hips_with_wcs(hips_survey, wcs):
         hips=hips_survey.survey,
         wcs=wcs,
         get_query_payload=False,
-        format=hips_survey.image_type,
+        format=hips_survey.data_type.value,
     )
 
-    if hips_survey.image_type == "fits":
+    if hips_survey.data_type == DataType.FITS:
         hdu = result[0]
 
         # some files have (1, 1, x, y) or (x, y, 1, 1) shape so we use .squeeze

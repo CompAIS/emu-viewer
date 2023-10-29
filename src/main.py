@@ -4,10 +4,10 @@ import tkinter as tk
 
 import ttkbootstrap as tb
 
-from src import constants
-from src.controllers import image_controller as ic
-from src.controllers import widget_controller as wc
-from src.widgets import menu_bar as menu_bar
+import src.constants as constants
+import src.controllers.image_controller as ic
+import src.controllers.widget_controller as wc
+import src.widgets.menu_bar as menu_bar
 
 
 # Create Main Tkinter Window

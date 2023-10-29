@@ -1,24 +1,28 @@
+import importlib
 from enum import Enum
 from functools import partial
 
-from src.widgets import (
-    catalogue_widget,
-    contour_widget,
-    hips_selector_widget,
-    image_table_widget,
-    renderer_widget,
-    statistics_widget,
-)
-
 
 class Widget(Enum):
-    RENDERER = renderer_widget.RendererWidget
-    IMAGE_TABLE = image_table_widget.ImageTableWidget
-    CONTOURS = contour_widget.ContourWidget
-    CATALOGUE = catalogue_widget.CatalogueWidget
-    STATISTICS = statistics_widget.StatisticsWidget
+    RENDERER = ("src.widgets.renderer_widget", "RendererWidget")
+    IMAGE_TABLE = ("src.widgets.image_table_widget", "ImageTableWidget")
+    CONTOURS = ("src.widgets.contour_widget", "ContourWidget")
+    CATALOGUE = ("src.widgets.catalogue_widget", "CatalogueWidget")
+    STATISTICS = ("src.widgets.statistics_widget", "StatisticsWidget")
 
-    HIPS_SELECT = hips_selector_widget.HipsSelectorWidget
+    HIPS_SELECT = ("src.widgets.hips_selector_widget", "HipsSelectorWidget")
+
+    def __init__(self, module_path, class_name):
+        self._value = None
+        self.module_path = module_path
+        self.class_name = class_name
+
+    @property
+    def value(self):
+        if self._value is None:
+            module = importlib.import_module(self.module_path)
+            self._value = getattr(module, self.class_name)
+        return self._value
 
 
 class WidgetController:

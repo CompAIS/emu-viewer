@@ -9,8 +9,8 @@ from matplotlib.backends import _backend_tk
 from matplotlib.backends._backend_tk import FigureCanvasTk
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
+import src.controllers.image_controller as ic
 import src.lib.render as Render
-from src.controllers import image_controller as ic
 from src.enums import DataType, Matching
 from src.lib.tool import HistoToolbar
 from src.widgets.base_widget import BaseWidget

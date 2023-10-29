@@ -7,9 +7,9 @@ import numpy as np
 import ttkbootstrap as tb
 from ttkbootstrap.dialogs.colorchooser import ColorChooserDialog
 
-from src.controllers import image_controller as ic
+import src.controllers.image_controller as ic
+import src.lib.contour_handler as contour_handler
 from src.enums import DataType
-from src.lib import contour_handler
 from src.widgets.base_widget import BaseWidget
 
 BAD_MEAN_SIGMA = 'One of the "Mean" or "Sigma" fields is invalid. They must be floats.'
@@ -30,11 +30,12 @@ INVALID_IMAGE = "Cannot apply contours to png images."
 INVALID_INPUT = "Invalid Input"
 
 
-def validate_list_entry(text):
-    """
-    Validates the given text matches the input for a "list" or "tag input"-like entry.
+def validate_list_entry(text: str) -> bool:
+    """Validates the given text matches the input for a "list" or "tag input"-like entry.
 
     Specifically to be used for sigma list and level fields.
+
+    :param text: the text to validate
     """
     r = re.search(r"^(-?\d+(\.\d+|))(,-?\d+(\.\d+|))*$", text)
     return r is not None

@@ -32,3 +32,12 @@ class DataType(Enum):
     FITS = "fits"
     PNG = "png"
     JPEG = "jpeg"
+
+    @classmethod
+    def from_str(cls, s: str):
+        """From a string, get the corresponding DataType enum variant."""
+
+        m = cls._value2member_map_.get(s)
+        if m is None:
+            raise ValueError("{s} is not a valid DataType")
+        return m

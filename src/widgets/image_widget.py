@@ -5,9 +5,8 @@ import ttkbootstrap as tb
 from astropy import wcs
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+import src.controllers.image_controller as ic
 import src.lib.render as Render
-from src.controllers import image_controller as ic
-from src.controllers.widget_controller import Widget
 from src.enums import DataType, Matching
 from src.lib.tool import NavigationToolbar
 from src.lib.util import index_default
@@ -104,16 +103,12 @@ class ImageFrame(tb.Frame):
         self.toolbar.update()
 
     def is_matched(self, match_type: Matching) -> bool:
-        """
-        Is the image currently being matched on this dimension?
-        """
+        """Is the image currently being matched on this dimension?"""
 
         return self.matched[match_type.value]
 
     def is_selected(self) -> bool:
-        """
-        Is the image that is currently selected this one?
-        """
+        """Is the image that is currently selected this one?"""
 
         return ic.get_selected_image() == self
 
@@ -356,9 +351,11 @@ class ImageContextMenu(tk.Menu):
 
     def set_ra_dec(self):
         wc = self.image_frame.root.widget_controller
-        if wc.open_windows.get(Widget.HIPS_SELECT) is None:
-            wc.open_widget(Widget.HIPS_SELECT)
+        if wc.open_windows.get(wc.Widget.HIPS_SELECT) is None:
+            wc.open_widget(wc.Widget.HIPS_SELECT)
 
         decimal = self.coord.to_string(style="decimal")
         coords = decimal.split()
-        wc.open_windows.get(Widget.HIPS_SELECT).set_ra_dec_entries(coords[0], coords[1])
+        wc.open_windows.get(wc.Widget.HIPS_SELECT).set_ra_dec_entries(
+            coords[0], coords[1]
+        )

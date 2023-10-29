@@ -8,9 +8,9 @@ from PIL import Image, ImageTk
 from ttkbootstrap.dialogs.colorchooser import ColorChooserDialog
 from ttkbootstrap.tableview import Tableview
 
+import src.controllers.image_controller as ic
 import src.lib.catalogue_handler as catalogue_handler
 from src.constants import ASSETS_FOLDER
-from src.controllers import image_controller as ic
 from src.widgets.base_widget import BaseWidget
 
 
