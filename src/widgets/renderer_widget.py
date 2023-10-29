@@ -10,7 +10,7 @@ from matplotlib.backends._backend_tk import FigureCanvasTk
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 import src.lib.render as Render
-from src.lib.match_type import MatchType
+from src.lib.match_type import Matching
 from src.lib.tool import HistoToolbar
 from src.widgets.base_widget import BaseWidget
 
@@ -380,7 +380,7 @@ class RendererWidget(BaseWidget):
         return image is not None and image.file_type != "png"
 
     def update_matched_images(self):
-        for image in self.root.image_controller.get_images_matched_to(MatchType.RENDER):
+        for image in self.root.image_controller.get_images_matched_to(Matching.RENDER):
             if image == self.root.image_controller.get_selected_image():
                 continue
 

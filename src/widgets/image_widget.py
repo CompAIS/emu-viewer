@@ -7,7 +7,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import src.lib.render as Render
 from src.controllers.widget_controller import Widget
-from src.lib.match_type import MatchType
+from src.lib.match_type import Matching
 from src.lib.tool import NavigationToolbar
 from src.lib.util import index_default
 
@@ -43,9 +43,9 @@ class ImageFrame(tb.Frame):
         self.set_selected_percentile(self.selected_percentile)
         self.grid_lines = False
 
-        self.matched = {match_type.value: False for match_type in MatchType}
+        self.matched = {match_type.value: False for match_type in Matching}
 
-        self.matched = {match_type.value: False for match_type in MatchType}
+        self.matched = {match_type.value: False for match_type in Matching}
 
         if self.image_data_header is not None:
             self.image_wcs = wcs.WCS(self.image_data_header).celestial
@@ -96,7 +96,7 @@ class ImageFrame(tb.Frame):
 
         self.toolbar.update()
 
-    def is_matched(self, match_type: MatchType) -> bool:
+    def is_matched(self, match_type: Matching) -> bool:
         """
         Is the image currently being matched on this dimension?
         """
@@ -114,22 +114,20 @@ class ImageFrame(tb.Frame):
         # are we matching or unmatching
         is_matching = not self.matched[match_type.value]
 
-        if match_type == MatchType.COORD:
+        if match_type == Matching.COORD:
             if is_matching:
                 self.limits = Render.get_limits(self.fig, self.image_wcs)
                 # update our current limits + watch for when our limits change
-                limits = self.root.image_controller.get_coord_matched_limits(
-                    self
-                ).limits
+                limits = self.root.image_controller.get_coord_matched_limits(self)
                 self.set_limits(limits)
                 self.add_coords_event()
             else:
                 self.set_limits(self.original_limits)
                 self.remove_coords_event()
-        elif match_type == MatchType.RENDER:
+        elif match_type == Matching.RENDER:
             if is_matching:
                 self.match_render()
-        elif match_type == MatchType.ANNOTATION:
+        elif match_type == Matching.ANNOTATION:
             # TODO implement #
             pass
 
@@ -175,7 +173,7 @@ class ImageFrame(tb.Frame):
     def match_render(self, source_image=None):
         if source_image is None:
             source_image = index_default(
-                self.root.image_controller.get_images_matched_to(MatchType.RENDER),
+                self.root.image_controller.get_images_matched_to(Matching.RENDER),
                 0,
                 self,
             )
@@ -261,7 +259,7 @@ class ImageFrame(tb.Frame):
             self.update_matched_images()
 
     def update_matched_images(self):
-        for image in self.root.image_controller.get_images_matched_to(MatchType.COORD):
+        for image in self.root.image_controller.get_images_matched_to(Matching.COORD):
             if image == self:
                 continue
 

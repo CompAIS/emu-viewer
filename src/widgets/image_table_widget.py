@@ -3,7 +3,7 @@ from functools import partial
 
 import ttkbootstrap as tb
 
-from src.lib.match_type import MatchType
+from src.lib.match_type import Matching
 from src.widgets.base_widget import BaseWidget
 from src.widgets.components.table_widget import TableWidget
 
@@ -86,7 +86,7 @@ class ImageTableWidget(BaseWidget):
         button_frame = tb.Frame(self.table, height=0)
         button_frame.grid_rowconfigure(0, weight=1, uniform="a")
 
-        types = MatchType if image.file_type == "fits" else [MatchType.ANNOTATION]
+        types = Matching if image.file_type == "fits" else [Matching.ANNOTATION]
 
         for column, match_type in enumerate(types):
             button_frame.grid_columnconfigure(column, weight=1, uniform="a")
