@@ -4,8 +4,8 @@ import tkinter as tk
 
 import ttkbootstrap as tb
 
+import src.components.menu_bar as menu_bar
 import src.constants as constants
-import src.widgets.menu_bar as menu_bar
 from src.controllers import image_controller as ic
 from src.controllers import widget_controller as wc
 

@@ -1,6 +1,8 @@
 import tkinter as tk
 import warnings
+from typing import Optional
 
+import numpy.typing as npt
 import ttkbootstrap as tb
 from astropy import wcs
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -15,17 +17,30 @@ from src.lib.util import index_default
 warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
 
 
-# Create an Image Frame
 class ImageFrame(tb.Frame):
+    """The frame containing the matplotlib plot and the toolbar."""
+
     def __init__(
         self,
-        parent,
-        root,
-        image_data,
-        image_data_header,
-        file_name,
+        parent: tk.Widget,
+        root: tb.Window,
+        image_data: npt.ArrayLike,
+        image_data_header,  # TODO type?
+        file_name: str,
         data_type: DataType,
     ):
+        """Construct an ImageFrame.
+
+        :param parent: the parent widget of this image frame.
+            In practice, this is either a StandaloneImage or the MainWindow.
+        :param root: the main window
+        :param image_data: numpy array with the image's data (fits image or png image). Note that this should
+            be float[][].
+        :param image_data_header: HDU header for the .fits file. None for png/jpg.
+        :param file_name: the name of the file where the data came from. HiPs survey name for hips
+        :param data_type: The type of the data in image_data.
+        """
+
         super().__init__(parent)
 
         # basic layout
@@ -37,12 +52,11 @@ class ImageFrame(tb.Frame):
         # Image data and file name
         self.image_data = image_data
         self.image_data_header = image_data_header
-        self.image_wcs = None
+        self.image_wcs: Optional[wcs.WCS] = None
         self.file_name = file_name
         self.data_type = data_type
 
         # Default render config
-        self.updating = False
         self.colour_map = "inferno"
         self.stretch = "Linear"
         self.cached_percentiles = Render.get_percentiles(image_data)
@@ -50,14 +64,10 @@ class ImageFrame(tb.Frame):
         self.set_selected_percentile(self.selected_percentile)
         self.grid_lines = False
 
-        self.matched = {match_type.value: False for match_type in Matching}
-
-        self.matched = {match_type.value: False for match_type in Matching}
+        self.matched = {Matching.value: False for Matching in Matching}
 
         if self.image_data_header is not None:
             self.image_wcs = wcs.WCS(self.image_data_header).celestial
-            # if self.image_wcs.world_n_dim > 2:
-            #     self.image_wcs = self.image_wcs.celestial
 
         self.catalogue_set = None
         self.contour_levels = self.contour_set = None
@@ -89,9 +99,11 @@ class ImageFrame(tb.Frame):
             self.fig, self.image = Render.create_figure_png(self.image_data)
 
         self.create_image()
-        self.canvas.draw()
 
     def create_image(self):
+        """Handles the creation of the base matplotlib canvas and the
+        associated toolbar.
+        """
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.canvas.get_tk_widget().grid(
             column=0, row=0, sticky=tk.NSEW, padx=10, pady=10
@@ -103,21 +115,26 @@ class ImageFrame(tb.Frame):
 
         self.toolbar.update()
 
-    def is_matched(self, match_type: Matching) -> bool:
+    def is_matched(self, Matching: Matching) -> bool:
         """Is the image currently being matched on this dimension?"""
 
-        return self.matched[match_type.value]
+        return self.matched[Matching.value]
 
     def is_selected(self) -> bool:
         """Is the image that is currently selected this one?"""
 
         return ic.get_selected_image() == self
 
-    def toggle_match(self, match_type):
-        # are we matching or unmatching
-        is_matching = not self.matched[match_type.value]
+    def toggle_match(self, Matching: Matching):
+        """Toggles whether or not this image is matching on the given matching.
 
-        if match_type == Matching.COORD:
+        :param matching: the matching to toggle this image on
+        """
+
+        # are we matching or unmatching
+        is_matching = not self.matched[Matching.value]
+
+        if Matching == Matching.COORD:
             if is_matching:
                 self.limits = Render.get_limits(self.fig, self.image_wcs)
                 # update our current limits + watch for when our limits change
@@ -127,15 +144,15 @@ class ImageFrame(tb.Frame):
             else:
                 self.set_limits(self.original_limits)
                 self.remove_coords_event()
-        elif match_type == Matching.RENDER:
+        elif Matching == Matching.RENDER:
             if is_matching:
                 self.match_render()
-        elif match_type == Matching.ANNOTATION:
+        elif Matching == Matching.ANNOTATION:
             # TODO implement #
             pass
 
         # then update our matching status
-        self.matched[match_type.value] = is_matching
+        self.matched[Matching.value] = is_matching
         self.root.update()
 
     def set_vmin_vmax_custom(self, vmin, vmax):

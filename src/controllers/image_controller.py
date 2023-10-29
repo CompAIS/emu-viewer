@@ -12,7 +12,7 @@ from numpy import typing as npt
 import src.lib.fits_handler as Fits_handler
 import src.lib.hips_handler as Hips_handler
 import src.lib.png_handler as png_handler
-import src.widgets.image_widget as iw
+from src.components import image_frame
 from src.enums import DataType, Matching
 from src.lib.event_handler import EventHandler
 from src.lib.util import index_default
@@ -30,7 +30,7 @@ selected_image_eh = EventHandler()
 update_image_list_eh = EventHandler()
 
 
-def get_selected_image() -> Optional[iw.ImageFrame]:
+def get_selected_image() -> Optional[image_frame.ImageFrame]:
     """Get currently selected image in program.
 
     The selected image is determined by whichever the last image to be focused was,
@@ -51,7 +51,7 @@ def get_selected_image() -> Optional[iw.ImageFrame]:
     return _selected_image
 
 
-def set_selected_image(image: Optional[iw.ImageFrame]):
+def set_selected_image(image: Optional[image_frame.ImageFrame]):
     """Set whichever image is currently "selected".
 
     Will invoke the event handler `selected_image_eh`.
@@ -69,7 +69,7 @@ def set_selected_image(image: Optional[iw.ImageFrame]):
     selected_image_eh.invoke(image)
 
 
-def get_images() -> List[iw.ImageFrame]:
+def get_images() -> List[image_frame.ImageFrame]:
     """Get all the currently open ImageFrames.
 
     :return: a list of ImageFrames
@@ -88,7 +88,7 @@ def get_images() -> List[iw.ImageFrame]:
     return images
 
 
-def get_images_matched_to(match: Matching) -> List[iw.ImageFrame]:
+def get_images_matched_to(match: Matching) -> List[image_frame.ImageFrame]:
     """Get the images matched to a certain Matching.
 
     Wrapper function to get_images which filters open images on whether
@@ -99,7 +99,9 @@ def get_images_matched_to(match: Matching) -> List[iw.ImageFrame]:
     return [i for i in get_images() if i.is_matched(match)]
 
 
-def get_coord_matched_limits(default: iw.ImageFrame) -> Tuple[SkyCoord, SkyCoord]:
+def get_coord_matched_limits(
+    default: image_frame.ImageFrame,
+) -> Tuple[SkyCoord, SkyCoord]:
     """Get the current limits of the images that are being coordinate-matched.
 
     If there are no images currently coordinate matched, use the provided default
@@ -131,13 +133,13 @@ def _open_image(
         be float[][].
     :param image_data_header: HDU header for the .fits file. None for png/jpg.
     :param file_name: the name of the file where the data came from. HiPs survey name for hips
-    :param data_type: The type of the data in the file.
+    :param data_type: The type of the data in image_data.
     """
     global _main_window, _standalone_windows, update_image_list_eh
 
     if _main_window.main_image is None:
         # open to main window if nothing is currently open there
-        _main_window.main_image = iw.ImageFrame(
+        _main_window.main_image = image_frame.ImageFrame(
             _main_window.main_image_container,
             _main_window,
             image_data,
