@@ -75,6 +75,7 @@ class ImageFrame(tb.Frame):
             self.histo_counts, self.histo_bins = Render.create_histogram_data(
                 self.image_data, min_value, max_value
             )
+            self.histo_axes = None
 
             self.fig.canvas.mpl_connect("button_press_event", self.on_click)
             self.coord_matching_cid = None

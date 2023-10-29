@@ -102,7 +102,7 @@ class RendererWidget(BaseWidget):
         self.histogram_frame.grid_rowconfigure(0, weight=1)
         self.histogram_frame.grid_columnconfigure(0, weight=1)
 
-        self.histo_fig = Render.create_histogram_graph()
+        self.histo_fig = Render.create_histogram_figure()
         self.canvas = HistogramCanvasTkAgg(self.histo_fig, master=self.histogram_frame)
         self.canvas.get_tk_widget().grid(column=0, row=0, sticky=tk.NSEW)
         self.canvas.mpl_connect("button_press_event", self.on_histo_click)
@@ -130,13 +130,18 @@ class RendererWidget(BaseWidget):
 
         image_selected = self.root.image_controller.get_selected_image()
 
-        self.histo_fig = Render.draw_histogram_graph(
-            self.histo_fig,
-            image_selected.histo_counts,
-            image_selected.histo_bins,
-            image_selected.vmin,
-            image_selected.vmax,
-        )
+        if image_selected.histo_axes is None:
+            self.histo_fig, image_selected.histo_axes = Render.draw_histogram_graph(
+                self.histo_fig,
+                image_selected.histo_counts,
+                image_selected.histo_bins,
+                image_selected.vmin,
+                image_selected.vmax,
+            )
+        else:
+            self.histo_fig = Render.update_histogram_graph(
+                self.histo_fig, image_selected.histo_axes
+            )
         self.canvas.draw()
 
     def update_histogram_lines(self):

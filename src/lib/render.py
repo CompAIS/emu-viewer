@@ -225,7 +225,7 @@ def get_size_inches(widget):
 
 
 # 486, 176
-def create_histogram_data(image_data, min_value, max_value, width_px=1, height_px=1):
+def create_histogram_data(image_data, min_value, max_value):
     counts, bins = np.histogram(image_data, bins=20000, range=(min_value, max_value))
 
     return counts, bins
@@ -244,7 +244,7 @@ def get_limits(fig, wcs):
     return limits
 
 
-def create_histogram_graph(width_px=1, height_px=1):
+def create_histogram_figure(width_px=1, height_px=1):
     width_inches = width_px / DPI
     height_inches = height_px / DPI
     fig = Figure(figsize=(width_inches, height_inches), dpi=DPI)
@@ -274,6 +274,13 @@ def draw_histogram_graph(fig, count, bins, vmin, vmax):
     ax.autoscale(enable=True, axis="both")
 
     fig = draw_histogram_lines(fig, vmin, vmax)
+
+    return fig, ax
+
+
+def update_histogram_graph(fig, ax):
+    fig.axes[0].remove()
+    fig.add_axes(ax)
 
     return fig
 
