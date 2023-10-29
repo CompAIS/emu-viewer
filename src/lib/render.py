@@ -30,6 +30,10 @@ def create_figure(image_data, wcs, colour_map, vmin, vmax, s, contour_levels):
         # Yes, round, not floor.
         pix = f"{round(x)}, {round(y)}"
 
+        if 0 <= y < image_data.shape[0] and 0 <= x < image_data.shape[1]:
+            image_value = image_data[round(y)][round(x)]
+            return f"WCS: ({decimal});\n WCS: ({sexigesimal});\n Image: ({pix}) \n Value: ({image_value})"
+
         return f"WCS: ({decimal});\n WCS: ({sexigesimal});\n Image: ({pix})"
 
     # https://matplotlib.org/stable/gallery/images_contours_and_fields/image_zcoord.html
@@ -38,18 +42,16 @@ def create_figure(image_data, wcs, colour_map, vmin, vmax, s, contour_levels):
     stretch = None
 
     if s == "Linear":
-        stretch = vis.LinearStretch()
+        stretch = vis.LinearStretch() + vis.ManualInterval(vmin, vmax)
     elif s == "Log":
-        stretch = vis.LogStretch()
+        stretch = vis.LogStretch() + vis.ManualInterval(vmin, vmax)
     elif s == "Sqrt":
-        stretch = vis.SqrtStretch()
+        stretch = vis.SqrtStretch() + vis.ManualInterval(vmin, vmax)
 
-    norm = vis.ImageNormalize(stretch=stretch, vmin=vmin, vmax=vmax)
+    data = stretch(image_data)
 
     # Render the scaled image data onto the figure
-    image = ax.imshow(
-        image_data, cmap=colour_map, origin="lower", norm=norm, interpolation="nearest"
-    )
+    image = ax.imshow(data, cmap=colour_map, origin="lower", interpolation="nearest")
 
     cbar = fig.colorbar(image, shrink=0.5)
     tick_locator = ticker.MaxNLocator(nbins=10)
@@ -90,19 +92,19 @@ def create_figure_png(image_data):
     return fig, image
 
 
-def update_image_norm(image, vmin, vmax, s):
+def update_image_norm(image, image_data, vmin, vmax, s):
     stretch = None
 
     if s == "Linear":
-        stretch = vis.LinearStretch()
+        stretch = vis.LinearStretch() + vis.ManualInterval(vmin, vmax)
     elif s == "Log":
-        stretch = vis.LogStretch()
+        stretch = vis.LogStretch() + vis.ManualInterval(vmin, vmax)
     elif s == "Sqrt":
-        stretch = vis.SqrtStretch()
+        stretch = vis.SqrtStretch() + vis.ManualInterval(vmin, vmax)
 
-    norm = vis.ImageNormalize(stretch=stretch, vmin=vmin, vmax=vmax)
+    data = stretch(image_data)
 
-    image.set_norm(norm)
+    image.set_data(data)
 
     return image
 

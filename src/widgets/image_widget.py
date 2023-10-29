@@ -163,6 +163,7 @@ class ImageFrame(tb.Frame):
     def update_norm(self):
         self.image = Render.update_image_norm(
             self.image,
+            self.image_data,
             self.vmin,
             self.vmax,
             self.stretch,

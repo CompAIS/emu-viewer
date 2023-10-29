@@ -550,6 +550,15 @@ class NavigationToolbar(NavigationToolbar2Tk):
 
         button.configure(**image_kwargs)
 
+    def _mouse_event_to_message(self, event):
+        if event.inaxes and event.inaxes.get_navigate():
+            try:
+                s = event.inaxes.format_coord(event.xdata, event.ydata)
+                return s
+            except (ValueError, OverflowError):
+                pass
+        return ""
+
 
 class HistoToolbar(NavigationToolbar2Tk):
     def __init__(self, canvas, parent, pack):
