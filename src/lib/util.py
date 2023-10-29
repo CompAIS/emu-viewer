@@ -1,3 +1,4 @@
+import tkinter as tk
 from typing import List, Optional, TypeVar
 
 T = TypeVar("T")
@@ -20,3 +21,9 @@ def index_default(list: List[T], index: int, default: T) -> T:
     """Does list[index] by returning the given default if `index` is OOB."""
 
     return list[index] if index >= 0 and index < len(list) else default
+
+
+def get_size_inches(widget: tk.Widget):
+    """Returns the size of the given widget as a tuple of inches."""
+
+    return widget.winfo_width() / DPI, widget.winfo_height() / DPI

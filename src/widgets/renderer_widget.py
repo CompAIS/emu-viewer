@@ -14,6 +14,7 @@ import src.lib.render as Render
 from src import constants
 from src._overrides.matplotlib.HistogramToolbar import HistogramToolbar
 from src.enums import DataType, Matching
+from src.util import get_size_inches
 from src.widgets.base_widget import BaseWidget
 
 scaling_options = [
@@ -115,9 +116,7 @@ class RendererWidget(BaseWidget):
 
         self.root.update()
 
-        self.histo_fig.set_size_inches(
-            *Render.get_size_inches(self.canvas.get_tk_widget())
-        )
+        self.histo_fig.set_size_inches(*get_size_inches(self.canvas.get_tk_widget()))
 
     def update_histogram_graph(self):
         if not self.check_if_image_selected():

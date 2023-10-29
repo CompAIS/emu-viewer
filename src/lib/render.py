@@ -25,14 +25,6 @@ def create_figure_png(image_data):
     return fig, image
 
 
-DPI = 150
-
-
-# TODO move to utils
-def get_size_inches(widget):
-    return widget.winfo_width() / DPI, widget.winfo_height() / DPI
-
-
 # 486, 176
 def create_histogram_data(image_data, min_value, max_value, width_px=1, height_px=1):
     counts, bins = np.histogram(image_data, bins=20000, range=(min_value, max_value))
