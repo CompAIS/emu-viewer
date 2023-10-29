@@ -3,8 +3,8 @@ from functools import partial
 
 import src.controllers.image_controller as ic
 from src import constants
+from src.components import image_frame
 from src.enums import DataType
-from src.widgets import image_widget as iw
 
 
 class StandaloneImage(tk.Toplevel):
@@ -25,12 +25,11 @@ class StandaloneImage(tk.Toplevel):
         self.dummy_frame.grid_rowconfigure(0, weight=1)
         self.dummy_frame.grid_columnconfigure(0, weight=1)
 
-        self.image_frame = iw.ImageFrame(
+        self.image_frame = image_frame.ImageFrame(
             self.dummy_frame, root, image_data, image_data_header, file_name, data_type
         )
 
         self.bind("<FocusIn>", self.handle_focus)
-
         self.protocol("WM_DELETE_WINDOW", partial(ic.close_standalone, self))
 
     def handle_focus(self, event):

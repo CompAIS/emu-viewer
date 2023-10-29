@@ -5,11 +5,11 @@ from tkinter import filedialog, ttk
 
 import ttkbootstrap as tb
 from PIL import Image, ImageTk
-from ttkbootstrap.dialogs.colorchooser import ColorChooserDialog
 from ttkbootstrap.tableview import Tableview
 
 import src.controllers.image_controller as ic
 import src.lib.catalogue_handler as catalogue_handler
+from src.components.color_chooser import ColourChooserButton
 from src.constants import ASSETS_FOLDER
 from src.widgets.base_widget import BaseWidget
 
@@ -38,7 +38,6 @@ class CatalogueWidget(BaseWidget):
         self.selected_dec = ""
 
         self.size = 25
-        self.colour_outline = "green"
         self.colour_fill = "none"
 
         chked_image_path = os.path.join(ASSETS_FOLDER, "checked_box.png")
@@ -326,15 +325,10 @@ class CatalogueWidget(BaseWidget):
         )
         outline_label.grid(column=0, row=2, sticky=tk.NSEW, padx=10, pady=10)
 
-        box_size = 23
-        self.outline_button = tk.Canvas(
-            frame, bg=self.colour_outline, width=box_size + 1, height=box_size + 1
+        self.outline_button = ColourChooserButton(
+            frame, width=24, height=24, window_title="Choose Outline Colour"
         )
         self.outline_button.grid(column=1, row=2, sticky=tk.W, padx=10, pady=10)
-        self.outline_rect = self.outline_button.create_rectangle(
-            0, 0, box_size, box_size, outline="black", fill=self.colour_outline
-        )
-        self.outline_button.bind("<Button-1>", self.set_colour_outline)
 
         apply_button = tb.Button(
             frame,
@@ -346,23 +340,14 @@ class CatalogueWidget(BaseWidget):
 
         config.grab_set()
 
+    @property
+    def colour_outline(self):
+        return self.outline_button.get()
+
     def set_size(self, size_label, value):
         value = float(value)
         self.size = value
         size_label["text"] = f"Size ({value:1.2f})"
-
-    def set_colour_outline(self, _evt):
-        cd = ColorChooserDialog(
-            initialcolor=self.colour_outline, title="Choose Outline Colour"
-        )
-        cd.show()
-        self.after(1, lambda: self.focus_set())
-
-        if cd.result is None:
-            return
-
-        self.colour_outline = cd.result.hex
-        self.outline_button.itemconfig(self.outline_rect, fill=self.colour_outline)
 
     def apply_config(self, config):
         config.destroy()

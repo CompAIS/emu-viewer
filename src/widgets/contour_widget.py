@@ -5,10 +5,10 @@ from tkinter import messagebox
 
 import numpy as np
 import ttkbootstrap as tb
-from ttkbootstrap.dialogs.colorchooser import ColorChooserDialog
 
 import src.controllers.image_controller as ic
 import src.lib.contour_handler as contour_handler
+from src.components.color_chooser import ColourChooserButton
 from src.enums import DataType
 from src.widgets.base_widget import BaseWidget
 
@@ -49,7 +49,6 @@ class ContourWidget(BaseWidget):
         super().__init__(root)
 
         self.data_source = None
-        self.line_colour = "#03fc49"
         self.line_opacity = 0.5
 
         self.grid_rowconfigure(0, weight=1)
@@ -196,15 +195,10 @@ class ContourWidget(BaseWidget):
         lc_label = tb.Label(self.frame, text="Line Colour", bootstyle="inverse-light")
         lc_label.grid(column=2, row=4, padx=10, pady=10, sticky=tk.W)
 
-        size = 23
-        self.lc_button = tk.Canvas(
-            self.frame, bg=self.line_colour, width=size + 1, height=size + 1
+        self.lc_button = ColourChooserButton(
+            self.frame, width=24, height=24, window_title="Choose Contour Line Colour"
         )
         self.lc_button.grid(column=3, row=4, sticky=tk.W, padx=10)
-        self.lc_rect = self.lc_button.create_rectangle(
-            0, 0, size, size, outline="black", fill=self.line_colour
-        )
-        self.lc_button.bind("<Button-1>", self.set_line_colour)
 
         self.lo_label = tb.Label(
             self.frame, text="Line Opacity (0.50)", bootstyle="inverse-light"
@@ -229,6 +223,11 @@ class ContourWidget(BaseWidget):
             ic.get_selected_image(),
             ic.get_images(),
         )
+
+    @property
+    def line_colour(self) -> str:
+        """The currently selected line_colour."""
+        return self.lc_button.get()
 
     def get_data_source(self):
         return self.data_source
@@ -367,20 +366,6 @@ class ContourWidget(BaseWidget):
 
         for image in images:
             image.clear_contours()
-
-    def set_line_colour(self, _evt):
-        cd = ColorChooserDialog(
-            initialcolor=self.line_colour, title="Choose Contour Line Colour"
-        )
-        cd.show()
-        # https://stackoverflow.com/a/22751955
-        self.after(1, lambda: self.focus_set())
-
-        if cd.result is None:
-            return
-
-        self.line_colour = cd.result.hex
-        self.lc_button.itemconfig(self.lc_rect, fill=self.line_colour)
 
     def set_line_opacity(self, value):
         value = float(value)
