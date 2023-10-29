@@ -1,12 +1,13 @@
 import multiprocessing
 import sys
+import tkinter as tk
 
 import ttkbootstrap as tb
 
-from src import constants
-from src.controllers import image_controller as ic
-from src.controllers import widget_controller as wc
-from src.widgets import menu_bar as menu_bar
+import src.constants as constants
+import src.controllers.image_controller as ic
+import src.controllers.widget_controller as wc
+import src.widgets.menu_bar as menu_bar
 
 
 # Create Main Tkinter Window
@@ -26,21 +27,30 @@ class MainWindow(tb.Window):
 
         self.menu_controller = menu_bar.MenuBar(self)
 
-        self.image_controller = ic.ImageController(self, self)
+        self.main_image_container = tb.Frame(self, bootstyle="dark")
+        self.main_image_container.grid(column=1, row=0, sticky=tk.NSEW)
+        self.main_image_container.rowconfigure(0, weight=1)
+        self.main_image_container.columnconfigure(0, weight=1)
+
+        self.main_image = None
+
+        # TODO refactor widget controller
         self.widget_controller = wc.WidgetController(self)
         self.widget_controller.open_widget(wc.Widget.RENDERER)
         self.after(1, lambda: self.focus_set())
 
         self.config(menu=self.menu_controller.menu)
-        self.bind("<FocusIn>", self.image_controller.handle_focus)
+        self.bind("<FocusIn>", self.handle_focus)
         self.protocol("WM_DELETE_WINDOW", lambda: sys.exit())
 
-    # Main run function for app
-    # Place all functions of the app here
-    def run(self):
-        # Do not remove or edit, required for run loop to function
-        self.update()
-        self.after(100, self.run)
+        ic.register_main(self)
+
+    def handle_focus(self, event):
+        """Event listener for <FocusIn> on the main window.
+
+        Should set the selected image to the main image.
+        """
+        ic.set_selected_image(self.main_image)
 
 
 if __name__ == "__main__":
@@ -49,7 +59,5 @@ if __name__ == "__main__":
 
     # Run the main app
     main_app = MainWindow()
-
-    main_app.after(1000, main_app.run)
 
     main_app.mainloop()

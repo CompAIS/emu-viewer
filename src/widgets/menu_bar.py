@@ -3,17 +3,13 @@ from tkinter import filedialog
 
 import ttkbootstrap as tb
 
-from src.controllers.widget_controller import Widget
+import src.controllers.image_controller as ic
+import src.controllers.widget_controller as wc
 from src.lib.event_handler import EventHandler
-from src.widgets.hips_selector_widget import HipsSelectorWidget
 
 
 # Create Menu bar for tkinter window
 class MenuBar(tb.Frame):
-    open_fits_eh = EventHandler()
-    open_png_eh = EventHandler()
-    open_hips_eh = EventHandler()
-    close_images_eh = EventHandler()
     open_widget_eh = EventHandler()
 
     def __init__(self, root):
@@ -33,7 +29,7 @@ class MenuBar(tb.Frame):
         file_menu.add_command(label="Open Image", command=self.open_file)
         file_menu.add_command(
             label="Open Hips Survey",
-            command=partial(self.open_widget, Widget.HIPS_SELECT),
+            command=partial(self.open_widget, wc.Widget.HIPS_SELECT),
         )
         file_menu.add_command(label="Close All Images", command=self.close_images)
         file_menu.add_command(label="Exit", command=self.root.quit)
@@ -42,7 +38,7 @@ class MenuBar(tb.Frame):
         widget_menu = tb.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label="Widget", menu=widget_menu)
 
-        for widget in Widget:
+        for widget in wc.Widget:
             if widget.value.dropdown is False:
                 continue
 
@@ -54,9 +50,9 @@ class MenuBar(tb.Frame):
     # Open command for option in menu
     def open_file(self):
         file_name = filedialog.askopenfilename(
-            title="Select file",
+            title="Select file to open",
             filetypes=(
-                ("Fits/Png files", "*.fits *.png"),
+                ("valid image files", "*.fits *.png"),
                 ("All files", "*.*"),
             ),
         )
@@ -65,28 +61,12 @@ class MenuBar(tb.Frame):
             return
 
         if file_name.endswith("fits"):
-            self.open_fits_eh.invoke(file_name)
+            ic.open_fits(file_name)
         elif file_name.endswith("png"):
-            self.open_png_eh.invoke(file_name)
-
-    def open_hips(self):
-        hips_selector = HipsSelectorWidget(self.root)
-        self.root.wait_window(hips_selector)
-
-        hips_survey = hips_selector.hips_survey
-        wcs = hips_selector.selected_wcs
-
-        if (
-            hips_survey.projection == ""
-            or hips_survey.survey == ""
-            or hips_survey.image_type == ""
-        ):
-            return
-
-        self.open_hips_eh.invoke(hips_survey, wcs)
+            ic.open_png(file_name)
 
     def close_images(self):
-        self.close_images_eh.invoke()
+        ic.close_images()
 
     def open_widget(self, widget):
         self.open_widget_eh.invoke(widget)

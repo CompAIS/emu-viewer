@@ -4,6 +4,7 @@ from tkinter import ttk
 
 import ttkbootstrap as tb
 
+import src.controllers.image_controller as ic
 from src.widgets.base_widget import BaseWidget
 
 
@@ -20,18 +21,18 @@ class StatisticsWidget(BaseWidget):
 
         self.stats_window()
 
-        self.root.image_controller.update_image_list_eh.add(self.update_open_images)
+        ic.update_image_list_eh.add(self.update_open_images)
 
     def stats_window(self):
         self.window = tb.Frame(self, bootstyle="light")
         self.window.grid(column=0, row=0, sticky=tk.NSEW, padx=10, pady=10)
 
-        if self.root.image_controller.get_selected_image() is not None:
-            if self.root.image_controller.get_selected_image().image_wcs is not None:
+        if ic.get_selected_image() is not None:
+            if ic.get_selected_image().image_wcs is not None:
                 self.image_options(
                     self.window,
                     "Select Image",
-                    self.root.image_controller.get_selected_image().file_name,
+                    ic.get_selected_image().file_name,
                     0,
                     0,
                 )
@@ -49,7 +50,7 @@ class StatisticsWidget(BaseWidget):
             column=gridX + 1, row=gridY, sticky=tk.NSEW, padx=10, pady=10
         )
 
-        self.update_dropdown(self.root.image_controller.get_images())
+        self.update_dropdown(ic.get_images())
 
     def update_dropdown(self, image_list):
         dropdown_menu = tk.Menu(self.image_dropdown, tearoff=0)
@@ -89,5 +90,5 @@ class StatisticsWidget(BaseWidget):
         self.root.update()
 
     def close(self):
-        self.root.image_controller.update_image_list_eh.remove(self.update_open_images)
+        ic.update_image_list_eh.remove(self.update_open_images)
         super().close()

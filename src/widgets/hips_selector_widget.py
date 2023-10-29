@@ -1,9 +1,12 @@
 import tkinter as tk
+import traceback
 from functools import partial
 
 import ttkbootstrap as tb
 import ttkbootstrap.dialogs as dialogs
 
+import src.controllers.image_controller as ic
+from src.enums import DataType
 from src.lib.hips_handler import HipsSurvey
 from src.widgets.base_widget import BaseWidget
 
@@ -39,13 +42,13 @@ radio_survey_options = [
 xray_survey_options = ["ov-gso/P/RASS"]
 
 # All image type options available
-image_type_options = ["fits", "png", "jpg"]
+data_type_options = [x.value for x in DataType]
 
 # Empty dropdown strings to be displayed if no option selected or widget is reset
 NO_IMAGE_SELECTED = "No Image Selected"
 NO_PROJECTION_SELECTED = "No Projection Selected"
 NO_SURVEY_SELECTED = "No Survey Selected"
-NO_IMAGE_TYPE_SELECTED = "No Image Type Selected"
+NO_DATA_TYPE_SELECTED = "No Data Type Selected"
 
 # All validation strings to be displayed if there is an error
 INVALID_INPUT = "Invalid Input"
@@ -83,14 +86,14 @@ class HipsSelectorWidget(BaseWidget):
 
         self.selected_projection = None
         self.selected_hips_survey = None
-        self.selected_image_type = None
+        self.selected_data_type = None
         self.selected_wcs = None
 
         self.hips_survey = HipsSurvey()
 
         self.setup()
 
-        self.root.image_controller.update_image_list_eh.add(self.update_valid_images)
+        ic.update_image_list_eh.add(self.update_valid_images)
 
     def setup(self):
         """
@@ -157,12 +160,12 @@ class HipsSelectorWidget(BaseWidget):
         self.custom_survey.bind("<FocusOut>", self.custom_survey_focusout)
 
         # Creates the image type label and dropdown with the specified image type options
-        self.image_type_dropdown = self.dropdown_options(
+        self.data_type_dropdown = self.dropdown_options(
             frame,
-            "Image Type",
-            NO_IMAGE_TYPE_SELECTED,
-            image_type_options,
-            self.select_image_type,
+            "Data Type",
+            NO_DATA_TYPE_SELECTED,
+            data_type_options,
+            self.select_data_type,
             COL_WIDTHS[0],
             0,
             5,
@@ -178,7 +181,7 @@ class HipsSelectorWidget(BaseWidget):
             frame, text=NO_IMAGE_SELECTED, width=COL_WIDTHS[1], bootstyle="dark"
         )
         self.image_select_dropdown.grid(column=3, row=0, sticky=tk.EW, padx=10, pady=10)
-        self.update_valid_images(None, self.root.image_controller.get_images())
+        self.update_valid_images(None, ic.get_images())
 
         # Create the RA, DEC and FOV label and entry options
         self.ra_entry = self.entry_options(frame, "RA", 2, 1)
@@ -266,10 +269,10 @@ class HipsSelectorWidget(BaseWidget):
         self.xray_dropdown["text"] = NO_SURVEY_SELECTED
         self.custom_survey.delete(0, tk.END)
 
-    def select_image_type(self, image_type, dropdown):
-        """Set the image_type to the selected dropdown option"""
-        self.selected_image_type = image_type
-        dropdown["text"] = image_type
+    def select_data_type(self, data_type: str, dropdown):
+        """Set the data_type to the given data_type."""
+        dropdown["text"] = data_type
+        self.selected_data_type = DataType.from_str(data_type)
 
     def select_image(self, image, dropdown):
         """Determines whether to set the RA,DEC and FOV to a selected images values or not by disabling the
@@ -345,11 +348,11 @@ class HipsSelectorWidget(BaseWidget):
         """Resets all options in the widget back to default"""
         self.selected_projection = None
         self.selected_hips_survey = None
-        self.selected_image_type = None
+        self.selected_data_type = None
         self.selected_wcs = None
 
         self.clear_survey_options()
-        self.image_type_dropdown["text"] = NO_IMAGE_TYPE_SELECTED
+        self.data_type_dropdown["text"] = NO_DATA_TYPE_SELECTED
 
         self.image_select_dropdown["text"] = NO_IMAGE_SELECTED
         self.ra_entry.delete(0, tk.END)
@@ -367,10 +370,10 @@ class HipsSelectorWidget(BaseWidget):
             return
         self.hips_survey.survey = self.selected_hips_survey
 
-        if self.selected_image_type is None:
+        if self.selected_data_type is None:
             self.validation_error(INVALID_INPUT, INVALID_TYPE)
             return
-        self.hips_survey.image_type = self.selected_image_type
+        self.hips_survey.data_type = self.selected_data_type
 
         if self.selected_projection is None:
             self.validation_error(INVALID_INPUT, INVALID_PROJECTION)
@@ -401,14 +404,9 @@ class HipsSelectorWidget(BaseWidget):
                 return
 
         try:
-            dialogs.Messagebox.show_info(
-                "Attempting to download HiPs survey",
-                parent=self,
-                title="Download",
-                alert=False,
-            )
-            self.root.image_controller.open_hips(self.hips_survey, self.selected_wcs)
-        except AttributeError:
+            ic.open_hips(self, self.hips_survey, self.selected_wcs)
+        except AttributeError as e:
+            traceback.print_exc()
             self.validation_error("Error", ERROR_GENERATING)
             return
 
@@ -442,8 +440,8 @@ class HipsSelectorWidget(BaseWidget):
         return valid_float
 
     def update_valid_images(self, selected_image, image_list):
-        """
-        Updates the valid images to be used if selecting to open a HiPs survey based on an open image
+        """Updates the valid images to be used if selecting to open a HiPs survey based on an open image
+
         :param selected_image: The currently selected open image
         :param image_list: The list of all currently open images
         """
@@ -468,8 +466,8 @@ class HipsSelectorWidget(BaseWidget):
         self.image_select_dropdown["menu"] = dropdown_menu
 
     def set_ra_dec_entries(self, ra, dec):
-        """
-        Sets the RA and DEC entry boxes to specified values
+        """Sets the RA and DEC entry boxes to specified values
+
         :param ra: Value to set the RA entry box
         :param dec: Value to set the DEC entry box
         """
@@ -480,5 +478,5 @@ class HipsSelectorWidget(BaseWidget):
 
     def close(self):
         """Closes the widget and removes any active event handlers"""
-        self.root.image_controller.update_image_list_eh.remove(self.update_valid_images)
+        ic.update_image_list_eh.remove(self.update_valid_images)
         super().close()
