@@ -7,9 +7,15 @@ from src.controllers import image_controller as ic
 from src.controllers import widget_controller as wc
 
 
-# Create Menu bar for tkinter window
 class MenuBar(tb.Frame):
-    def __init__(self, root):
+    """The menu bar for the main window."""
+
+    def __init__(self, root: tb.Window):
+        """Construct a MenuBar.
+
+        :param root: the main window
+        """
+
         super().__init__(root)
         self.root = root
         self.grid(column=0, row=0)
@@ -19,8 +25,9 @@ class MenuBar(tb.Frame):
         self.file_menu_creation()
         self.widget_menu_creation()
 
-    # Create file menu options
     def file_menu_creation(self):
+        """Creates the File menu cascade"""
+
         file_menu = tb.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label="File", menu=file_menu)
         file_menu.add_command(label="Open Image", command=self.open_file)
@@ -32,9 +39,12 @@ class MenuBar(tb.Frame):
         file_menu.add_command(label="Exit", command=self.root.quit)
 
     def widget_menu_creation(self):
+        """Creates the Widget menu cascade"""
+
         widget_menu = tb.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label="Widget", menu=widget_menu)
 
+        # automatically construct the options from the Widget enum
         for widget in wc.Widget:
             if widget.value.dropdown is False:
                 continue
@@ -44,8 +54,9 @@ class MenuBar(tb.Frame):
                 command=partial(self.open_widget, widget),
             )
 
-    # Open command for option in menu
     def open_file(self):
+        """Command for the Open Image option."""
+
         file_name = filedialog.askopenfilename(
             title="Select file to open",
             filetypes=(
@@ -63,7 +74,14 @@ class MenuBar(tb.Frame):
             ic.open_png(file_name)
 
     def close_images(self):
+        """Command for the Close Images option."""
+
         ic.close_images()
 
     def open_widget(self, widget: wc.Widget):
+        """Command for all of the widget open options.
+
+        :param widget: the widget to open
+        """
+
         wc.open_widget(widget)

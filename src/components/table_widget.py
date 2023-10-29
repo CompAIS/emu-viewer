@@ -1,11 +1,20 @@
 import tkinter as tk
+from typing import List
 
 import ttkbootstrap as tb
 
 
 class TableWidget(tb.Frame):
-    def __init__(self, parent, headers, *args, **kwargs):
-        super().__init__(parent, *args, **kwargs)
+    """A frame that allow for arbtirary frames as cells in a table."""
+
+    def __init__(self, master: tk.Widget, headers: List[str], *args, **kwargs):
+        """Construct a TableWidget.
+
+        :param master: the parent of this widget
+        :param headers: the headings of the table. Determines the number of columns in the table.
+        """
+
+        super().__init__(master, *args, **kwargs)
 
         self.grid_rowconfigure(0, weight=1, uniform="r")
         self.grid_columnconfigure(
@@ -22,14 +31,24 @@ class TableWidget(tb.Frame):
             label = tb.Label(f, text=header, anchor=tk.CENTER)
             label.grid(row=0, column=0, sticky=tk.NSEW)
 
-    def add_row(self, *row, row_click_el):
+    def add_row(self, *row: List[tk.Widget], row_click_el=None):
+        """Add a row to the table.
+
+        Note that each cell added to the table needs to have their parent set to the TableWidget.
+
+        :param row: a list of cells to be added
+        :param row_click_el: event listener to the left click event
+        """
+
         for col, cell in enumerate(row):
             cell.grid(row=len(self.rows) + 1, column=col, sticky=tk.NSEW)
-            cell.bind("<Button-1>", row_click_el)
+            if row_click_el is not None:
+                cell.bind("<Button-1>", row_click_el)
 
         self.rows.append(row)
 
     def clear_rows(self):
+        """Remove all rows from the table."""
         for row in self.rows:
             for cell in row:
                 cell.destroy()
