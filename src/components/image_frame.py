@@ -115,26 +115,26 @@ class ImageFrame(tb.Frame):
 
         self.toolbar.update()
 
-    def is_matched(self, Matching: Matching) -> bool:
+    def is_matched(self, matching: Matching) -> bool:
         """Is the image currently being matched on this dimension?"""
 
-        return self.matched[Matching.value]
+        return self.matched[matching.value]
 
     def is_selected(self) -> bool:
         """Is the image that is currently selected this one?"""
 
         return ic.get_selected_image() == self
 
-    def toggle_match(self, Matching: Matching):
+    def toggle_match(self, matching: Matching):
         """Toggles whether or not this image is matching on the given matching.
 
         :param matching: the matching to toggle this image on
         """
 
         # are we matching or unmatching
-        is_matching = not self.matched[Matching.value]
+        is_matching = not self.matched[matching.value]
 
-        if Matching == Matching.COORD:
+        if matching == Matching.COORD:
             if is_matching:
                 self.limits = Render.get_limits(self.fig, self.image_wcs)
                 # update our current limits + watch for when our limits change
@@ -144,15 +144,15 @@ class ImageFrame(tb.Frame):
             else:
                 self.set_limits(self.original_limits)
                 self.remove_coords_event()
-        elif Matching == Matching.RENDER:
+        elif matching == Matching.RENDER:
             if is_matching:
                 self.match_render()
-        elif Matching == Matching.ANNOTATION:
+        elif matching == Matching.ANNOTATION:
             # TODO implement #
             pass
 
         # then update our matching status
-        self.matched[Matching.value] = is_matching
+        self.matched[matching.value] = is_matching
         self.root.update()
 
     def set_vmin_vmax_custom(self, vmin, vmax):

@@ -2,13 +2,15 @@ import os
 import tkinter as tk
 from functools import partial
 from tkinter import filedialog, ttk
+from typing import Optional
 
 import ttkbootstrap as tb
+from astropy.io.votable import Votable
 from PIL import Image, ImageTk
 from ttkbootstrap.tableview import Tableview
 
 import src.controllers.image_controller as ic
-import src.lib.catalogue_handler as catalogue_handler
+import src.lib.catalogue as catalogue
 from src.components.color_chooser import ColourChooserButton
 from src.constants import ASSETS_FOLDER
 from src.widgets.base_widget import BaseWidget
@@ -28,10 +30,9 @@ class CatalogueWidget(BaseWidget):
         self.rowconfigure(0, weight=1)
         self.rowconfigure(1, weight=0)
 
-        self.catalogue = None
-        self.fields = None
-        self.field_names = None
-        self.field_data = None
+        self.catalogue: Optional[Votable.tree.Table] = None
+        self.fields: Optional[List[Votable.tree.Field]] = None
+        self.field_names: Optional[List[str]] = None
         self.row_data = None
 
         self.selected_ra = ""
@@ -79,12 +80,10 @@ class CatalogueWidget(BaseWidget):
         if file_name == "":
             raise Exception("Filename is empty")
 
-        self.catalogue = catalogue_handler.open_catalogue(file_name)
-        self.fields = catalogue_handler.retrieve_fields(self.catalogue)
-        self.field_names, self.field_data = catalogue_handler.retrieve_field_data(
-            self.fields
-        )
-        self.row_data = catalogue_handler.retrieve_row_data(self.catalogue)
+        self.catalogue = catalogue.open_catalogue(file_name)
+        self.fields = catalogue.retrieve_fields(self.catalogue)
+        self.field_names = [x.name for x in self.fields]
+        self.row_data = self.catalogue.array
 
     def create_fields_table(self, parent, gridX, gridY):
         self.fields_table = ttk.Treeview(
@@ -112,10 +111,8 @@ class CatalogueWidget(BaseWidget):
         self.fields_table.bind("<Button 1>", self.select_row)
 
     def insert_fields_table(self):
-        for field in self.field_data:
-            self.insert_fields_table_row(
-                field["name"], field["unit"], field["datatype"]
-            )
+        for field in self.fields:
+            self.insert_fields_table_row(field.name, field.unit, field.datatype)
 
     def insert_fields_table_row(self, name, unit, datatype):
         self.fields_table.insert(
@@ -157,17 +154,17 @@ class CatalogueWidget(BaseWidget):
         self.main_table.autofit_columns()
 
         for f_n in self.field_names:
-            self.main_table.hide_selected_column(None, self.field_names.index(f_n))
+            self.hide_table_column(f_n)
 
-    def hide_table_column(self, f_n):
+    def hide_table_column(self, f_n: str):
         for n in self.field_names:
-            if f_n == n["text"]:
+            if f_n == n:
                 self.main_table.hide_selected_column(None, self.field_names.index(n))
                 return
 
-    def show_table_column(self, f_n):
+    def show_table_column(self, f_n: str):
         for n in self.field_names:
-            if f_n == n["text"]:
+            if f_n == n:
                 self.main_table.unhide_selected_column(None, self.field_names.index(n))
                 return
 
@@ -184,7 +181,7 @@ class CatalogueWidget(BaseWidget):
         self.buttons(controls_frame, 4, 0)
 
     def ra_dropdown_setup(self, parent, text, ra, gridX, gridY):
-        ra_options = self.generate_ra_options()
+        ra_options = self.generate_options("ra")
 
         label = tb.Label(parent, text=text, bootstyle="inverse-light")
         label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
@@ -204,25 +201,12 @@ class CatalogueWidget(BaseWidget):
 
         self.ra_dropdown["menu"] = dropdown_menu
 
-    def generate_ra_options(self):
-        options = []
-
-        for n in self.field_data:
-            if (
-                n["name"].startswith("ra")
-                or n["name"].endswith("ra")
-                or n["name"].endswith("RA")
-            ):
-                options.append(n["name"])
-
-        return options
-
     def select_ra(self, option):
         self.selected_ra = option
         self.ra_dropdown["text"] = option
 
     def dec_dropdown_setup(self, parent, text, dec, gridX, gridY):
-        dec_options = self.generate_dec_options()
+        dec_options = self.generate_options("dec")
 
         label = tb.Label(parent, text=text, bootstyle="inverse-light")
         label.grid(column=gridX, row=gridY, sticky=tk.NSEW, padx=10, pady=10)
@@ -242,16 +226,21 @@ class CatalogueWidget(BaseWidget):
 
         self.dec_dropdown["menu"] = dropdown_menu
 
-    def generate_dec_options(self):
+    def generate_options(self, key: str):
+        """Get all fields which start or end with `key`.
+
+        Used for generating the list of ra/dec options.
+
+        :param key: the key to search for
+        """
+
+        key = key.lower()
         options = []
 
-        for n in self.field_data:
-            if (
-                n["name"].startswith("dec")
-                or n["name"].endswith("dec")
-                or n["name"].endswith("DEC")
-            ):
-                options.append(n["name"])
+        for n in self.fields:
+            name = n.name.lower()
+            if name.startswith(key) or name.endswith(key):
+                options.append(n.name)
 
         return options
 
@@ -342,7 +331,8 @@ class CatalogueWidget(BaseWidget):
 
     @property
     def colour_outline(self):
-        return self.outline_button.get()
+        return "green"
+        # TODO lol return self.outline_button.get()
 
     def set_size(self, size_label, value):
         value = float(value)

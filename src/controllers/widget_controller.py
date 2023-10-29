@@ -1,4 +1,5 @@
 import importlib
+import traceback
 from enum import Enum
 from functools import partial
 
@@ -72,7 +73,7 @@ def open_widget(widget: Widget):
         try:
             _open_widgets[widget] = widget.value(_main_window)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return
 
         _open_widgets[widget].on_close_eh.add(partial(_cleanup_widget, widget))
