@@ -6,12 +6,14 @@ import numpy.typing as npt
 import ttkbootstrap as tb
 from astropy import wcs
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.collections import PathCollection
+from matplotlib.contour import QuadContourSet
 
 import src.lib.render as Render
 from src.controllers import image_controller as ic
 from src.controllers import widget_controller as wc
 from src.enums import DataType, Matching
-from src.lib import catalogue
+from src.lib import catalogue, contour
 from src.lib.tool import NavigationToolbar
 from src.lib.util import index_default
 
@@ -70,8 +72,9 @@ class ImageFrame(tb.Frame):
         if self.image_data_header is not None:
             self.image_wcs = wcs.WCS(self.image_data_header).celestial
 
-        self.catalogue_set = None
-        self.contour_levels = self.contour_set = None
+        self.catalogue_set: Optional[PathCollection] = None
+        self.contour_set: Optional[QuadContourSet] = None
+
         if data_type == DataType.FITS:
             self.fig, self.image, self.limits = Render.create_figure(
                 self.image_data,
@@ -80,7 +83,6 @@ class ImageFrame(tb.Frame):
                 self.vmin,
                 self.vmax,
                 self.stretch,
-                self.contour_levels,
             )
 
             self.original_limits = self.limits
@@ -208,42 +210,30 @@ class ImageFrame(tb.Frame):
         self.update_norm()
 
     def draw_catalogue(self, options: catalogue.RenderCatalogueOptions):
-        self.fig, self.catalogue_set = catalogue.draw_catalogue(
+        """Draw the catalogue on this image with the given options and data.
+
+        :param options: the options for the catalogue drawing
+        """
+        self.catalogue_set = catalogue.draw_catalogue(
             self.fig, self.catalogue_set, options
         )
         self.canvas.draw()
 
     def clear_catalogue(self):
+        """Clear the catalogue on this image."""
         self.catalogue_set = catalogue.clear_catalogue(self.catalogue_set)
         self.canvas.draw()
 
-    def update_contours(
-        self,
-        data_source,
-        data_source_wcs,
-        new_contours,
-        gaussian_factor,
-        line_colour,
-        line_opacity,
-        line_width,
-    ):
-        self.contour_levels = new_contours
+    def update_contours(self, options: contour.RenderContourOptions):
+        """Draw the contours on this image with the given options and data.
 
-        self.contour_set = Render.update_contours(
-            self.fig,
-            data_source,
-            data_source_wcs,
-            self.contour_levels,
-            self.contour_set,
-            gaussian_factor,
-            line_colour,
-            line_opacity,
-            line_width,
-        )
+        :param options: the options for the contour drawing"""
+        self.contour_set = contour.update_contours(self.fig, self.contour_set, options)
         self.canvas.draw()
 
     def clear_contours(self):
-        self.contour_set = Render.clear_contours(self.contour_set)
+        """Clear the contours on this image."""
+        self.contour_set = contour.clear_contours(self.contour_set)
         self.canvas.draw()
 
     def set_limits(self, limits):

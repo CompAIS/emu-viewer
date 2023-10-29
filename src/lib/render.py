@@ -3,12 +3,11 @@ import astropy.wcs.utils as sc
 import numpy as np
 from matplotlib import ticker
 from matplotlib.figure import Figure
-from scipy.ndimage.filters import gaussian_filter
 
 PERCENTILES = [90, 95, 99, 99.5, 99.9, 100]
 
 
-def create_figure(image_data, wcs, colour_map, vmin, vmax, s, contour_levels):
+def create_figure(image_data, wcs, colour_map, vmin, vmax, s):
     fig = Figure(figsize=(5, 5), dpi=150)
     fig.patch.set_facecolor("#afbac5")
 
@@ -111,43 +110,6 @@ def update_image_cmap(image, colour_map):
     image.set_cmap(colour_map)
 
     return image
-
-
-def clear_contours(contour_set):
-    if contour_set is not None:
-        for contour in contour_set.collections:
-            contour.remove()
-    return None
-
-
-def update_contours(
-    fig,
-    image_data,
-    wcs,
-    contour_levels,
-    contour_set,
-    gaussian_factor,
-    line_colour,
-    line_opacity,
-    line_width,
-):
-    clear_contours(contour_set)
-
-    if contour_levels is None:
-        return None
-
-    print("I'm trying to contour!")
-
-    # https://stackoverflow.com/questions/12274529/how-to-smooth-matplotlib-contour-plot
-    image_data_smooth = gaussian_filter(image_data, gaussian_factor)
-    return fig.axes[0].contour(
-        image_data_smooth,
-        levels=contour_levels,
-        colors=line_colour,
-        alpha=line_opacity,
-        linewidths=line_width,
-        transform=fig.axes[0].get_transform(wcs),
-    )
 
 
 def set_grid_lines(fig, visible):

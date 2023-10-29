@@ -47,7 +47,9 @@ class RenderCatalogueOptions:
 
 
 def clear_catalogue(catalogue_set: PathCollection):
-    """Remove all paths from the axes."""
+    """Remove all paths from the axes.
+
+    :param catalogue_set: the collection of paths to remove from"""
     if catalogue_set is not None:
         catalogue_set.remove()
 
@@ -86,4 +88,4 @@ def draw_catalogue(
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
 
-    return fig, catalogue_set
+    return catalogue_set

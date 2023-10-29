@@ -7,7 +7,7 @@ import numpy as np
 import ttkbootstrap as tb
 
 import src.controllers.image_controller as ic
-import src.lib.contour_handler as contour_handler
+import src.lib.contour as contour
 from src.components.color_chooser import ColourChooserButton
 from src.enums import DataType
 from src.widgets.base_widget import BaseWidget
@@ -250,9 +250,7 @@ class ContourWidget(BaseWidget):
         # TODO Potentially remember these between data sources so that you don't lose information?
         # TODO I guess I'm more curious what behaviour we expect here. CARTA maintains it when switching
         self.mean_entry.insert(0, str(np.nanmean(self.data_source.image_data)))
-        self.sigma_entry.insert(
-            0, str(contour_handler.get_sigma(self.data_source.image_data))
-        )
+        self.sigma_entry.insert(0, str(contour.get_sigma(self.data_source.image_data)))
         # TODO better default? this is the default from carta
         self.sigmas_entry.insert(0, "-5,5,9,13,17")
         self.generate_levels()
@@ -309,7 +307,7 @@ class ContourWidget(BaseWidget):
 
         sigma_list = [float(x) for x in sigma_list.split(",")]
 
-        levels = contour_handler.generate_levels(mean, sigma, sigma_list)
+        levels = contour.generate_levels(mean, sigma, sigma_list)
         self.levels_entry.delete(0, tk.END)
         self.levels_entry.insert(0, ",".join(str(x) for x in levels))
 
@@ -342,6 +340,16 @@ class ContourWidget(BaseWidget):
             )
             return
 
+        options = contour.RenderContourOptions(
+            data_source=self.data_source.image_data,
+            data_source_wcs=self.data_source.image_wcs,
+            contour_levels=[float(x) for x in input.split(",")],
+            gaussian_factor=gaussian_factor,
+            line_colour=self.line_colour,
+            line_opacity=self.line_opacity,
+            line_width=line_width,
+        )
+
         images = ic.get_images() if not selected else [ic.get_selected_image()]
 
         for image in images:
@@ -351,15 +359,7 @@ class ContourWidget(BaseWidget):
                     return
                 continue
 
-            image.update_contours(
-                self.data_source.image_data,
-                self.data_source.image_wcs,
-                [float(x) for x in input.split(",")],
-                gaussian_factor,
-                self.line_colour,
-                self.line_opacity,
-                line_width,
-            )
+            image.update_contours(options)
 
     def clear_contours(self, selected):
         images = ic.get_images() if not selected else [ic.get_selected_image()]
