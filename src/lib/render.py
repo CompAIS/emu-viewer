@@ -239,7 +239,7 @@ def get_limits(fig, wcs):
 
     point1 = wcs.pixel_to_world(xlim_low, ylim_low)
     point2 = wcs.pixel_to_world(xlim_high, ylim_high)
-    limits = [point1, point2]
+    limits = (point1, point2)
 
     return limits
 

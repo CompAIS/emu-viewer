@@ -9,8 +9,9 @@ from matplotlib.backends import _backend_tk
 from matplotlib.backends._backend_tk import FigureCanvasTk
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
+import src.controllers.image_controller as ic
 import src.lib.render as Render
-from src.lib.match_type import MatchType
+from src.enums import DataType, Matching
 from src.lib.tool import HistoToolbar
 from src.widgets.base_widget import BaseWidget
 
@@ -55,8 +56,8 @@ class RendererWidget(BaseWidget):
         self.render_options()
         self.create_histogram()
 
-        self.root.image_controller.selected_image_eh.add(self.on_image_change)
-        self.on_image_change(self.root.image_controller.get_selected_image())
+        ic.selected_image_eh.add(self.on_image_change)
+        self.on_image_change(ic.get_selected_image())
 
     def create_histogram(self):
         self.histogram_main_frame = tb.Frame(self, bootstyle="light")
@@ -92,8 +93,7 @@ class RendererWidget(BaseWidget):
             button.configure(bootstyle="dark")
 
             if self.check_if_image_selected() and (
-                str(percentile)
-                == self.root.image_controller.get_selected_image().selected_percentile
+                str(percentile) == ic.get_selected_image().selected_percentile
             ):
                 button.configure(bootstyle="medium")
 
@@ -128,7 +128,7 @@ class RendererWidget(BaseWidget):
             column=0, columnspan=c, row=1, sticky=tk.NSEW, padx=10, pady=(10, 0)
         )
 
-        image_selected = self.root.image_controller.get_selected_image()
+        image_selected = ic.get_selected_image()
 
         if image_selected.histo_axes is None:
             self.histo_fig, image_selected.histo_axes = Render.draw_histogram_graph(
@@ -148,7 +148,7 @@ class RendererWidget(BaseWidget):
         if not self.check_if_image_selected():
             return
 
-        image_selected = self.root.image_controller.get_selected_image()
+        image_selected = ic.get_selected_image()
 
         self.histo_fig = Render.draw_histogram_lines(
             self.histo_fig,
@@ -235,7 +235,7 @@ class RendererWidget(BaseWidget):
         if not self.check_if_image_selected():
             return
 
-        self.root.image_controller.get_selected_image().set_scaling(option)
+        ic.get_selected_image().set_scaling(option)
 
     def set_colour_map(self, option):
         if option is None:
@@ -247,7 +247,7 @@ class RendererWidget(BaseWidget):
         if not self.check_if_image_selected():
             return
 
-        self.root.image_controller.get_selected_image().set_colour_map(option)
+        ic.get_selected_image().set_colour_map(option)
 
     def set_vmin_vmax(self, image):
         # Update entries with new percentiles, from cached
@@ -272,12 +272,12 @@ class RendererWidget(BaseWidget):
             self.update_percentile_buttons()
             return
 
-        selected_image = self.root.image_controller.get_selected_image()
+        selected_image = ic.get_selected_image()
         selected_image.set_selected_percentile(percentile)
         self.update_percentile_buttons()
         self.set_vmin_vmax(selected_image)
         self.update_histogram_lines()
-        self.root.image_controller.get_selected_image().update_norm()
+        ic.get_selected_image().update_norm()
 
         self.update_matched_images()
 
@@ -294,7 +294,7 @@ class RendererWidget(BaseWidget):
             self.grid_lines_state.set(state)
 
     def on_grid_lines(self):
-        image = self.root.image_controller.get_selected_image()
+        image = ic.get_selected_image()
         if image is None:
             self.set_grid_lines_box_state(None)
             return
@@ -308,7 +308,7 @@ class RendererWidget(BaseWidget):
             return
 
         self.set_scaling(option)
-        self.root.image_controller.get_selected_image().update_norm()
+        ic.get_selected_image().update_norm()
 
         self.update_matched_images()
 
@@ -319,7 +319,7 @@ class RendererWidget(BaseWidget):
             return
 
         self.set_colour_map(option)
-        self.root.image_controller.get_selected_image().update_colour_map()
+        ic.get_selected_image().update_colour_map()
 
         self.update_matched_images()
 
@@ -331,15 +331,15 @@ class RendererWidget(BaseWidget):
 
         vmin = float(self.min_entry.get())
         vmax = float(self.max_entry.get())
-        self.root.image_controller.get_selected_image().set_vmin_vmax_custom(vmin, vmax)
+        ic.get_selected_image().set_vmin_vmax_custom(vmin, vmax)
         self.update_percentile_buttons()
-        self.root.image_controller.get_selected_image().update_norm()
+        ic.get_selected_image().update_norm()
         self.update_matched_images()
         self.update_histogram_lines()
         self.root.update()
 
     def on_image_change(self, image):
-        if image is None or image.file_type == "png":
+        if image is None or image.data_type != DataType.FITS:
             self.set_scaling(None)
             self.set_colour_map(None)
             self.set_percentile(None)
@@ -381,18 +381,18 @@ class RendererWidget(BaseWidget):
         self.context_menu.post(window_x, window_y)
 
     def check_if_image_selected(self):
-        image = self.root.image_controller.get_selected_image()
-        return image is not None and image.file_type != "png"
+        image = ic.get_selected_image()
+        return image is not None and image.data_type == DataType.FITS
 
     def update_matched_images(self):
-        for image in self.root.image_controller.get_images_matched_to(MatchType.RENDER):
-            if image == self.root.image_controller.get_selected_image():
+        for image in ic.get_images_matched_to(Matching.RENDER):
+            if image == ic.get_selected_image():
                 continue
 
-            image.match_render(self.root.image_controller.get_selected_image())
+            image.match_render(ic.get_selected_image())
 
     def close(self):
-        self.root.image_controller.selected_image_eh.remove(self.on_image_change)
+        ic.selected_image_eh.remove(self.on_image_change)
 
         super().close()
 

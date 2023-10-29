@@ -3,7 +3,8 @@ from functools import partial
 
 import ttkbootstrap as tb
 
-from src.lib.match_type import MatchType
+import src.controllers.image_controller as ic
+from src.enums import DataType, Matching
 from src.widgets.base_widget import BaseWidget
 from src.widgets.components.table_widget import TableWidget
 
@@ -25,8 +26,8 @@ class ImageTableWidget(BaseWidget):
         self.open_windows = []
         self.image_table()  # Create the image table widget
 
-        self.root.image_controller.update_image_list_eh.add(self.on_image_list_change)
-        self.root.image_controller.selected_image_eh.add(self.on_image_select)
+        ic.update_image_list_eh.add(self.on_image_list_change)
+        ic.selected_image_eh.add(self.on_image_select)
 
     def image_table(self):
         table_container = tb.Frame(self, bootstyle="light")
@@ -50,8 +51,8 @@ class ImageTableWidget(BaseWidget):
         Will avoid updating when nothing has changed by storing a primitive cache.
         """
 
-        open_images = self.root.image_controller.get_images()
-        sel_image = self.root.image_controller.get_selected_image()
+        open_images = ic.get_images()
+        sel_image = ic.get_selected_image()
         if (
             self._cached_image_list == open_images
             and self._cached_sel_image == sel_image
@@ -86,7 +87,7 @@ class ImageTableWidget(BaseWidget):
         button_frame = tb.Frame(self.table, height=0)
         button_frame.grid_rowconfigure(0, weight=1, uniform="a")
 
-        types = MatchType if image.file_type == "fits" else [MatchType.ANNOTATION]
+        types = Matching if image.data_type == DataType.FITS else [Matching.ANNOTATION]
 
         for column, match_type in enumerate(types):
             button_frame.grid_columnconfigure(column, weight=1, uniform="a")
@@ -121,7 +122,7 @@ class ImageTableWidget(BaseWidget):
         self.update_images()
 
     def on_row_clicked(self, image, event):
-        self.root.image_controller.set_selected_image(image)
+        ic.set_selected_image(image)
 
     def get_style(self, image, match_type, toggled=False):
         """
@@ -139,9 +140,7 @@ class ImageTableWidget(BaseWidget):
         return "primary" if is_matched else "primary-outline"
 
     def close(self):
-        self.root.image_controller.update_image_list_eh.remove(
-            self.on_image_list_change
-        )
-        self.root.image_controller.selected_image_eh.remove(self.on_image_select)
+        ic.update_image_list_eh.remove(self.on_image_list_change)
+        ic.selected_image_eh.remove(self.on_image_select)
 
         super().close()

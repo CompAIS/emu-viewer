@@ -5,9 +5,9 @@ import ttkbootstrap as tb
 from astropy import wcs
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+import src.controllers.image_controller as ic
 import src.lib.render as Render
-from src.controllers.widget_controller import Widget
-from src.lib.match_type import MatchType
+from src.enums import DataType, Matching
 from src.lib.tool import NavigationToolbar
 from src.lib.util import index_default
 
@@ -17,7 +17,13 @@ warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
 # Create an Image Frame
 class ImageFrame(tb.Frame):
     def __init__(
-        self, parent, root, image_data, image_data_header, file_name, file_type
+        self,
+        parent,
+        root,
+        image_data,
+        image_data_header,
+        file_name,
+        data_type: DataType,
     ):
         super().__init__(parent)
 
@@ -32,7 +38,7 @@ class ImageFrame(tb.Frame):
         self.image_data_header = image_data_header
         self.image_wcs = None
         self.file_name = file_name
-        self.file_type = file_type
+        self.data_type = data_type
 
         # Default render config
         self.updating = False
@@ -43,9 +49,9 @@ class ImageFrame(tb.Frame):
         self.set_selected_percentile(self.selected_percentile)
         self.grid_lines = False
 
-        self.matched = {match_type.value: False for match_type in MatchType}
+        self.matched = {match_type.value: False for match_type in Matching}
 
-        self.matched = {match_type.value: False for match_type in MatchType}
+        self.matched = {match_type.value: False for match_type in Matching}
 
         if self.image_data_header is not None:
             self.image_wcs = wcs.WCS(self.image_data_header).celestial
@@ -54,7 +60,7 @@ class ImageFrame(tb.Frame):
 
         self.catalogue_set = None
         self.contour_levels = self.contour_set = None
-        if file_type == "fits":
+        if data_type == DataType.FITS:
             self.fig, self.image, self.limits = Render.create_figure(
                 self.image_data,
                 self.image_wcs,
@@ -97,40 +103,34 @@ class ImageFrame(tb.Frame):
 
         self.toolbar.update()
 
-    def is_matched(self, match_type: MatchType) -> bool:
-        """
-        Is the image currently being matched on this dimension?
-        """
+    def is_matched(self, match_type: Matching) -> bool:
+        """Is the image currently being matched on this dimension?"""
 
         return self.matched[match_type.value]
 
     def is_selected(self) -> bool:
-        """
-        Is the image that is currently selected this one?
-        """
+        """Is the image that is currently selected this one?"""
 
-        return self.root.image_controller.get_selected_image() == self
+        return ic.get_selected_image() == self
 
     def toggle_match(self, match_type):
         # are we matching or unmatching
         is_matching = not self.matched[match_type.value]
 
-        if match_type == MatchType.COORD:
+        if match_type == Matching.COORD:
             if is_matching:
                 self.limits = Render.get_limits(self.fig, self.image_wcs)
                 # update our current limits + watch for when our limits change
-                limits = self.root.image_controller.get_coord_matched_limits(
-                    self
-                ).limits
+                limits = ic.get_coord_matched_limits(self)
                 self.set_limits(limits)
                 self.add_coords_event()
             else:
                 self.set_limits(self.original_limits)
                 self.remove_coords_event()
-        elif match_type == MatchType.RENDER:
+        elif match_type == Matching.RENDER:
             if is_matching:
                 self.match_render()
-        elif match_type == MatchType.ANNOTATION:
+        elif match_type == Matching.ANNOTATION:
             # TODO implement #
             pass
 
@@ -176,7 +176,7 @@ class ImageFrame(tb.Frame):
     def match_render(self, source_image=None):
         if source_image is None:
             source_image = index_default(
-                self.root.image_controller.get_images_matched_to(MatchType.RENDER),
+                ic.get_images_matched_to(Matching.RENDER),
                 0,
                 self,
             )
@@ -235,7 +235,7 @@ class ImageFrame(tb.Frame):
         self.canvas.draw()
 
     def set_limits(self, limits):
-        if not self.file_type == "fits":
+        if not self.data_type == DataType.FITS:
             return
 
         self.limits = limits
@@ -262,7 +262,7 @@ class ImageFrame(tb.Frame):
             self.update_matched_images()
 
     def update_matched_images(self):
-        for image in self.root.image_controller.get_images_matched_to(MatchType.COORD):
+        for image in ic.get_images_matched_to(Matching.COORD):
             if image == self:
                 continue
 
@@ -277,7 +277,7 @@ class ImageFrame(tb.Frame):
         return self.grid_lines
 
     def on_click(self, event):
-        if self.fig.canvas.toolbar.mode != "" or self.file_type != "fits":
+        if self.fig.canvas.toolbar.mode != "" or self.data_type != DataType.FITS:
             return
 
         # this is a matplotlib event, so we don't have the access to the x/y for the context menu position
@@ -352,9 +352,11 @@ class ImageContextMenu(tk.Menu):
 
     def set_ra_dec(self):
         wc = self.image_frame.root.widget_controller
-        if wc.open_windows.get(Widget.HIPS_SELECT) is None:
-            wc.open_widget(Widget.HIPS_SELECT)
+        if wc.open_windows.get(wc.Widget.HIPS_SELECT) is None:
+            wc.open_widget(wc.Widget.HIPS_SELECT)
 
         decimal = self.coord.to_string(style="decimal")
         coords = decimal.split()
-        wc.open_windows.get(Widget.HIPS_SELECT).set_ra_dec_entries(coords[0], coords[1])
+        wc.open_windows.get(wc.Widget.HIPS_SELECT).set_ra_dec_entries(
+            coords[0], coords[1]
+        )
