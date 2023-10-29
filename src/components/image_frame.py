@@ -10,11 +10,11 @@ from matplotlib.collections import PathCollection
 from matplotlib.contour import QuadContourSet
 
 import src.lib.render as Render
+from src._overrides.matplotlib.ImageToolbar import ImageToolbar
 from src.controllers import image_controller as ic
 from src.controllers import widget_controller as wc
 from src.enums import DataType, Matching
 from src.lib import catalogue, contour
-from src.lib.tool import NavigationToolbar
 from src.lib.util import index_default
 
 warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
@@ -113,7 +113,7 @@ class ImageFrame(tb.Frame):
         )
         self.canvas.draw()
 
-        self.toolbar = NavigationToolbar(self.canvas, self, False)
+        self.toolbar = ImageToolbar(self.canvas, self, False)
         self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
 
         self.toolbar.update()

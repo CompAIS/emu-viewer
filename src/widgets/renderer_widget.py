@@ -11,8 +11,8 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 import src.controllers.image_controller as ic
 import src.lib.render as Render
+from src._overrides.matplotlib.HistogramToolbar import HistogramToolbar
 from src.enums import DataType, Matching
-from src.lib.tool import HistoToolbar
 from src.widgets.base_widget import BaseWidget
 
 scaling_options = [
@@ -108,7 +108,7 @@ class RendererWidget(BaseWidget):
         self.canvas.mpl_connect("button_press_event", self.on_histo_click)
         self.canvas.draw()
 
-        self.toolbar = HistoToolbar(self.canvas, self.histogram_frame, pack=False)
+        self.toolbar = HistogramToolbar(self.canvas, self.histogram_frame, pack=False)
         self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
         self.toolbar.update()
 
