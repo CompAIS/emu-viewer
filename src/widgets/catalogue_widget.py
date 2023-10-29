@@ -4,8 +4,8 @@ from functools import partial
 from tkinter import filedialog, ttk
 from typing import Optional
 
+import astropy.io.votable as Votable
 import ttkbootstrap as tb
-from astropy.io.votable import Votable
 from PIL import Image, ImageTk
 from ttkbootstrap.tableview import Tableview
 
@@ -262,13 +262,13 @@ class CatalogueWidget(BaseWidget):
         )
         config_button.grid(column=0, row=0, sticky=tk.SE, padx=10)
 
-        reset_button = tb.Button(
+        clear_button = tb.Button(
             button_frame,
             bootstyle="warning",
-            text="Reset",
-            command=self.reset_command,
+            text="Clear",
+            command=self.clear_command,
         )
-        reset_button.grid(column=1, row=0, sticky=tk.SE, padx=10)
+        clear_button.grid(column=1, row=0, sticky=tk.SE, padx=10)
 
         apply_button = tb.Button(
             button_frame,
@@ -342,7 +342,7 @@ class CatalogueWidget(BaseWidget):
     def apply_config(self, config):
         config.destroy()
 
-    def reset_command(self):
+    def clear_command(self):
         self.selected_ra = ""
         self.selected_dec = ""
         self.ra_dropdown["text"] = "Nothing selected"
@@ -351,23 +351,24 @@ class CatalogueWidget(BaseWidget):
         if ic.get_selected_image().catalogue_set is None:
             return
 
-        ic.get_selected_image().reset_catalogue()
+        ic.get_selected_image().clear_catalogue()
 
     def apply_command(self):
         if self.selected_ra == "" or self.selected_dec == "":
             return
 
-        ra_coords = []
-        for data in self.row_data[self.selected_ra]:
-            ra_coords.append(data)
-
-        dec_coords = []
-        for data in self.row_data[self.selected_dec]:
-            dec_coords.append(data)
-
         if ic.get_selected_image().image_wcs is None:
             return
 
+        ra_coords = self.row_data[self.selected_ra]
+        dec_coords = self.row_data[self.selected_dec]
+
         ic.get_selected_image().draw_catalogue(
-            ra_coords, dec_coords, self.size, self.colour_outline, self.colour_fill
+            catalogue.RenderCatalogueOptions(
+                ra_coords=ra_coords,
+                dec_coords=dec_coords,
+                size=self.size,
+                colour_outline=self.colour_outline,
+                colour_fill=self.colour_fill,
+            )
         )

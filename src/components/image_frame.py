@@ -11,6 +11,7 @@ import src.lib.render as Render
 from src.controllers import image_controller as ic
 from src.controllers import widget_controller as wc
 from src.enums import DataType, Matching
+from src.lib import catalogue
 from src.lib.tool import NavigationToolbar
 from src.lib.util import index_default
 
@@ -206,20 +207,14 @@ class ImageFrame(tb.Frame):
         self.set_vmin_vmax_custom(source_image.vmin, source_image.vmax)
         self.update_norm()
 
-    def draw_catalogue(self, ra_coords, dec_coords, size, colour_outline, colour_fill):
-        self.fig, self.catalogue_set = Render.draw_catalogue(
-            self.fig,
-            self.catalogue_set,
-            ra_coords,
-            dec_coords,
-            size,
-            colour_outline,
-            colour_fill,
+    def draw_catalogue(self, options: catalogue.RenderCatalogueOptions):
+        self.fig, self.catalogue_set = catalogue.draw_catalogue(
+            self.fig, self.catalogue_set, options
         )
         self.canvas.draw()
 
-    def reset_catalogue(self):
-        self.catalogue_set = Render.reset_catalogue(self.catalogue_set)
+    def clear_catalogue(self):
+        self.catalogue_set = catalogue.clear_catalogue(self.catalogue_set)
         self.canvas.draw()
 
     def update_contours(
