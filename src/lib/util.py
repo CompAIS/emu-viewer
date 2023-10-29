@@ -1,6 +1,12 @@
-def with_defaults(*values):
-    """
-    Takes a list of values, returning the first one which is not None.
+from typing import List, Optional, TypeVar
+
+T = TypeVar("T")
+
+
+def with_defaults(*values: List[T]) -> Optional[T]:
+    """Takes a list of values, returning the first one which is not None.
+
+    :return: the first non-None argument, or None
     """
 
     for value in values:
@@ -10,9 +16,7 @@ def with_defaults(*values):
     return None
 
 
-def index_default(list, index, default):
-    """
-    Get index, if oob then default
-    """
+def index_default(list: List[T], index: int, default: T) -> T:
+    """Does list[index] by returning the given default if `index` is OOB."""
 
     return list[index] if index >= 0 and index < len(list) else default
