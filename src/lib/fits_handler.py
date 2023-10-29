@@ -115,6 +115,7 @@ def create_figure_fits(
     return fig, image, get_limits(fig, image_wcs)
 
 
+# TODO find a better pattern for "norm"
 def update_image_norm(image, image_data, vmin, vmax, s):
     """Update the norm on the given image based on the provided options."""
     stretch = None
@@ -132,11 +133,20 @@ def update_image_norm(image, image_data, vmin, vmax, s):
 
 
 def update_image_cmap(image: AxesImage, colour_map: str):
-    """Update the colour map on the given image to the given colour map."""
+    """Update the colour map on the given image to the given colour map.
+
+    :param image: the image to update the cmap on
+    :param colour_map: the colour map
+    """
     image.set_cmap(colour_map)
 
 
-def set_grid_lines(fig, visible):
+def set_grid_lines(fig: Figure, visible: bool):
+    """Set the status of the grid lines on the plot.
+
+    :param fig: the figure to update the grid lines on
+    :param visible: whether or not to show the grid lines
+    """
     if visible:
         fig.axes[0].grid(linestyle="-", linewidth=0.2)
     else:
