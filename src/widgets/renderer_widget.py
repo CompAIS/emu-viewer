@@ -11,6 +11,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 import src.controllers.image_controller as ic
 import src.lib.render as Render
+from src import constants
 from src._overrides.matplotlib.HistogramToolbar import HistogramToolbar
 from src.enums import DataType, Matching
 from src.widgets.base_widget import BaseWidget
@@ -73,7 +74,7 @@ class RendererWidget(BaseWidget):
 
     def histogram_buttons(self):
         self.percentile_buttons = {}
-        for col, percentile in enumerate([*Render.PERCENTILES, "Custom"]):
+        for col, percentile in enumerate([*constants.PERCENTILES, "Custom"]):
             text = f"{percentile}%" if percentile != "Custom" else percentile
             self.histogram_main_frame.grid_columnconfigure(col, weight=0)
             self.percentile_buttons[percentile] = tb.Button(
@@ -123,7 +124,7 @@ class RendererWidget(BaseWidget):
             self.histogram_frame.grid_forget()
             return
 
-        c = len(Render.PERCENTILES) + 1
+        c = len(constants.PERCENTILES) + 1
         self.histogram_frame.grid(
             column=0, columnspan=c, row=1, sticky=tk.NSEW, padx=10, pady=(10, 0)
         )

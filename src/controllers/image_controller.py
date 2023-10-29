@@ -6,6 +6,7 @@ from typing import List, Optional, Tuple
 import ttkbootstrap.dialogs as dialogs
 from astropy import wcs
 from astropy.coordinates import SkyCoord
+from astropy.io import fits
 from numpy import typing as npt
 
 # TODO figure out what to do with these handlers (and their casing)
@@ -121,9 +122,11 @@ def get_coord_matched_limits(
     return index_default(get_images_matched_to(Matching.COORD), 0, default).limits
 
 
-# TODO type image_data_header?
 def _open_image(
-    image_data: npt.ArrayLike, image_data_header, file_name: str, data_type: DataType
+    image_data: npt.ArrayLike,
+    image_data_header: fits.Header,
+    file_name: str,
+    data_type: DataType,
 ):
     """Open a new image with an ImageFrame.
 

@@ -5,6 +5,7 @@ from typing import Optional
 import numpy.typing as npt
 import ttkbootstrap as tb
 from astropy import wcs
+from astropy.io import fits
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.collections import PathCollection
 from matplotlib.contour import QuadContourSet
@@ -14,7 +15,7 @@ from src._overrides.matplotlib.ImageToolbar import ImageToolbar
 from src.controllers import image_controller as ic
 from src.controllers import widget_controller as wc
 from src.enums import DataType, Matching
-from src.lib import catalogue, contour
+from src.lib import catalogue, contour, fits_handler
 from src.lib.util import index_default
 
 warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
@@ -28,7 +29,7 @@ class ImageFrame(tb.Frame):
         parent: tk.Widget,
         root: tb.Window,
         image_data: npt.ArrayLike,
-        image_data_header,  # TODO type?
+        image_data_header: fits.Header,
         file_name: str,
         data_type: DataType,
     ):
@@ -62,7 +63,7 @@ class ImageFrame(tb.Frame):
         # Default render config
         self.colour_map = "inferno"
         self.stretch = "Linear"
-        self.cached_percentiles = Render.get_percentiles(image_data)
+        self.cached_percentiles = fits_handler.get_percentiles(image_data)
         self.selected_percentile = "99.5"
         self.set_selected_percentile(self.selected_percentile)
         self.grid_lines = False
@@ -76,7 +77,7 @@ class ImageFrame(tb.Frame):
         self.contour_set: Optional[QuadContourSet] = None
 
         if data_type == DataType.FITS:
-            self.fig, self.image, self.limits = Render.create_figure(
+            self.fig, self.image, self.limits = fits_handler.create_figure_fits(
                 self.image_data,
                 self.image_wcs,
                 self.colour_map,
@@ -139,7 +140,7 @@ class ImageFrame(tb.Frame):
 
         if matching == Matching.COORD:
             if is_matching:
-                self.limits = Render.get_limits(self.fig, self.image_wcs)
+                self.limits = fits_handler.get_limits(self.fig, self.image_wcs)
                 # update our current limits + watch for when our limits change
                 limits = ic.get_coord_matched_limits(self)
                 self.set_limits(limits)
@@ -181,7 +182,7 @@ class ImageFrame(tb.Frame):
         self.colour_map = colour_map
 
     def update_norm(self):
-        self.image = Render.update_image_norm(
+        fits_handler.update_image_norm(
             self.image,
             self.vmin,
             self.vmax,
@@ -190,7 +191,7 @@ class ImageFrame(tb.Frame):
         self.canvas.draw()
 
     def update_colour_map(self):
-        self.image = Render.update_image_cmap(self.image, self.colour_map)
+        fits_handler.update_image_cmap(self.image, self.colour_map)
         self.canvas.draw()
 
     def match_render(self, source_image=None):
@@ -243,7 +244,7 @@ class ImageFrame(tb.Frame):
         self.limits = limits
         self.toolbar.update_stack()
 
-        self.fig = Render.set_limits(self.fig, self.image_wcs, self.limits)
+        fits_handler.set_limits(self.fig, self.image_wcs, self.limits)
         self.canvas.draw()
 
     def add_coords_event(self):
@@ -259,7 +260,7 @@ class ImageFrame(tb.Frame):
             self.fig.canvas.toolbar.mode == "pan/zoom"
             or self.fig.canvas.toolbar.mode == "zoom rect"
         ):
-            self.limits = Render.get_limits(self.fig, self.image_wcs)
+            self.limits = fits_handler.get_limits(self.fig, self.image_wcs)
 
             self.update_matched_images()
 
@@ -273,7 +274,7 @@ class ImageFrame(tb.Frame):
     def toggle_grid_lines(self):
         self.grid_lines = not self.grid_lines
 
-        Render.set_grid_lines(self.fig, self.grid_lines)
+        fits_handler.set_grid_lines(self.fig, self.grid_lines)
         self.canvas.draw()
 
         return self.grid_lines
