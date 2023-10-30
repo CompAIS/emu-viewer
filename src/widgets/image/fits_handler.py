@@ -1,4 +1,3 @@
-import math
 from tkinter import filedialog
 from typing import Dict, Tuple
 
@@ -105,13 +104,17 @@ def create_figure_fits(
         sexigesimal = c.to_string(
             style="hmsdms", sep=":", pad=True, precision=2
         ).replace(" ", ", ")
+
         # Yes, round, not floor.
-        pix = f"{round(x)}, {round(y)}"
+        roundx = round(x)
+        roundy = round(y)
+
+        pix = f"{roundx}, {roundy}"
 
         prefix = f"WCS: ({decimal});\n WCS: ({sexigesimal});\n Image: ({pix})"
 
-        if 0 <= y < image_data.shape[1] and 0 <= x < image_data.shape[0]:
-            image_value = image_data[math.floor(y)][math.floor(x)]
+        if 0 <= roundx < image_data.shape[1] and 0 <= roundy < image_data.shape[0]:
+            image_value = image_data[roundy][roundx]
             return f"{prefix}\n Value: ({image_value:.3e})"
 
         return prefix
