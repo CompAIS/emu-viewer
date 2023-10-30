@@ -16,13 +16,15 @@ def open_catalogue(file_path: str) -> Votable.tree.Table:
     """Open a catalogue file.
 
     :param file_path: Path to the catalogue file to open
+    :return: An astropy votable
     """
     return Votable.parse_single_table(file_path)
 
 
 def retrieve_fields(catalogue: Votable.tree.Table) -> list[Votable.tree.Field]:
-    """Retrieve all of the fields in a catalogue table.
+    """Retrieve all the fields in a catalogue table.
 
+    :param catalogue: An astropy votable
     :return: the list of fields
     """
 
