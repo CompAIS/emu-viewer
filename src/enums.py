@@ -1,4 +1,17 @@
 from enum import Enum
+from typing import TYPE_CHECKING, Type
+
+from astropy.visualization import (
+    LinearStretch,
+    LogStretch,
+    ManualInterval,
+    PowerStretch,
+    SqrtStretch,
+)
+
+if TYPE_CHECKING:
+    import numpy.typing as npt
+    from astropy.visualization import BaseStretch
 
 
 class Matching(Enum):
@@ -39,5 +52,46 @@ class DataType(Enum):
 
         m = cls._value2member_map_.get(s)
         if m is None:
-            raise ValueError("{s} is not a valid DataType")
+            raise ValueError(f"{s} is not a valid DataType")
         return m
+
+
+class Scaling(Enum):
+    """Represents a scaling / stretch to be done to data"""
+
+    LINEAR = "Linear", LinearStretch
+    LOG = "Log", LogStretch
+    SQRT = "Sqrt", SqrtStretch
+    SQUARED = "Squared", PowerStretch, 2
+
+    def __init__(self, label: str, stretch_class: Type["BaseStretch"], *stretch_args):
+        self.label = label
+        self.stretch_class = stretch_class
+        self.stretch_args = stretch_args
+
+    @classmethod
+    def from_str(cls, s: str):
+        """From a string, get the corresponding Scaling enum variant."""
+
+        for member in cls:
+            if member.label == s:
+                return member
+
+        raise ValueError(f"{s} is not a valid Scaling")
+
+    @property
+    def value(self):
+        return self.label
+
+    def stretch(
+        self, image_data: "npt.ArrayLike", vmin: float, vmax: float
+    ) -> "npt.ArrayLike":
+        """Stretches the given data according to the scaling.
+
+        :param image_data: the data to stretch
+        :param vmin: the minimum value - anything below will be clipped
+        :param vmax: the maximum value - anything above will be clipped
+        """
+        return (self.stretch_class(*self.stretch_args) + ManualInterval(vmin, vmax))(
+            image_data
+        )

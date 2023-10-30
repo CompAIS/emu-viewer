@@ -11,7 +11,7 @@ from matplotlib.collections import PathCollection
 from matplotlib.contour import QuadContourSet
 
 from src._overrides.matplotlib.ImageToolbar import ImageToolbar
-from src.enums import DataType, Matching
+from src.enums import DataType, Matching, Scaling
 from src.lib.util import index_default
 from src.widgets.catalogue import catalogue
 from src.widgets.contour import contour
@@ -65,7 +65,7 @@ class ImageFrame(tb.Frame):
 
         # Default render config
         self.colour_map = "inferno"
-        self.stretch = "Linear"
+        self.scaling = Scaling.LINEAR
         self.cached_percentiles = fits_handler.get_percentiles(image_data)
         self.selected_percentile = "99.5"
         self.set_selected_percentile(self.selected_percentile)
@@ -86,7 +86,7 @@ class ImageFrame(tb.Frame):
                 self.colour_map,
                 self.vmin,
                 self.vmax,
-                self.stretch,
+                self.scaling,
             )
 
             self.original_limits = self.limits
@@ -169,8 +169,8 @@ class ImageFrame(tb.Frame):
 
         self.vmin, self.vmax = self.cached_percentiles[self.selected_percentile]
 
-    def set_scaling(self, scaling):
-        self.stretch = scaling
+    def set_scaling(self, scaling: Scaling):
+        self.scaling = scaling
 
     def set_colour_map(self, colour_map):
         self.colour_map = colour_map
@@ -181,7 +181,7 @@ class ImageFrame(tb.Frame):
             self.image_data,
             self.vmin,
             self.vmax,
-            self.stretch,
+            self.scaling,
         )
         self.canvas.draw()
 
@@ -201,7 +201,7 @@ class ImageFrame(tb.Frame):
 
         self.set_colour_map(source_image.colour_map)
         self.update_colour_map()
-        self.set_scaling(source_image.stretch)
+        self.set_scaling(source_image.scaling)
         self.set_vmin_vmax_custom(source_image.vmin, source_image.vmax)
         self.update_norm()
 

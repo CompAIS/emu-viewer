@@ -1,6 +1,5 @@
 from typing import Dict, Tuple
 
-import astropy.visualization as vis
 import astropy.wcs.utils as sc
 import numpy as np
 import numpy.typing as npt
@@ -12,6 +11,7 @@ from matplotlib.figure import Figure
 from matplotlib.image import AxesImage
 
 from src import constants
+from src.enums import Scaling
 
 ImageLimits = Tuple[SkyCoord, SkyCoord]
 
@@ -45,7 +45,7 @@ def create_figure_fits(
     colour_map: str,
     vmin: float,
     vmax: float,
-    s: str,
+    scaling: Scaling,
 ) -> Tuple[Figure, AxesImage, ImageLimits]:
     """Create a figure from image_data with default options.
 
@@ -82,7 +82,7 @@ def create_figure_fits(
 
         prefix = f"WCS: ({decimal});\n WCS: ({sexigesimal});\n Image: ({pix})"
 
-        if 0 <= y < image_data.shape[0] and 0 <= x < image_data.shape[1]:
+        if 0 <= y < image_data.shape[1] and 0 <= x < image_data.shape[0]:
             image_value = image_data[round(y)][round(x)]
             return f"{prefix}\n Value: ({image_value})"
 
@@ -91,17 +91,7 @@ def create_figure_fits(
     # https://matplotlib.org/stable/gallery/images_contours_and_fields/image_zcoord.html
     ax.format_coord = format_coord
 
-    stretch = None
-
-    # TODO enum-ify
-    if s == "Linear":
-        stretch = vis.LinearStretch() + vis.ManualInterval(vmin, vmax)
-    elif s == "Log":
-        stretch = vis.LogStretch() + vis.ManualInterval(vmin, vmax)
-    elif s == "Sqrt":
-        stretch = vis.SqrtStretch() + vis.ManualInterval(vmin, vmax)
-
-    data = stretch(image_data)
+    data = scaling.stretch(image_data, vmin, vmax)
 
     # Render the scaled image data onto the figure
     image = ax.imshow(data, cmap=colour_map, origin="lower", interpolation="nearest")
@@ -116,18 +106,10 @@ def create_figure_fits(
 
 
 # TODO find a better pattern for "norm"
-def update_image_norm(image, image_data, vmin, vmax, s):
+def update_image_norm(image: AxesImage, image_data, vmin, vmax, scaling: Scaling):
     """Update the norm on the given image based on the provided options."""
-    stretch = None
 
-    if s == "Linear":
-        stretch = vis.LinearStretch() + vis.ManualInterval(vmin, vmax)
-    elif s == "Log":
-        stretch = vis.LogStretch() + vis.ManualInterval(vmin, vmax)
-    elif s == "Sqrt":
-        stretch = vis.SqrtStretch() + vis.ManualInterval(vmin, vmax)
-
-    data = stretch(image_data)
+    data = scaling.stretch(image_data, vmin, vmax)
 
     image.set_data(data)
 
