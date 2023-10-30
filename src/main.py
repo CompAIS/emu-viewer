@@ -4,8 +4,8 @@ import tkinter as tk
 
 import ttkbootstrap as tb
 
-import src.components.menu_bar as menu_bar
 import src.constants as constants
+from src.menu_bar import MenuBar
 from src.widgets import widget_controller as wc
 from src.widgets.image import image_controller as ic
 
@@ -26,8 +26,6 @@ class MainWindow(tb.Window):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        self.menu_controller = menu_bar.MenuBar(self)
-
         self.main_image_container = tb.Frame(self, bootstyle="dark")
         self.main_image_container.grid(column=0, row=0, sticky=tk.NSEW)
         self.main_image_container.rowconfigure(0, weight=1)
@@ -38,7 +36,10 @@ class MainWindow(tb.Window):
         wc.open_widget(wc.Widget.RENDERER)
         self.after(1, lambda: self.focus_set())
 
-        self.config(menu=self.menu_controller.menu)
+        self.menu = MenuBar(self)
+        ic.selected_image_eh.add(self.menu.update_hips_option)
+
+        self.config(menu=self.menu)
         self.bind("<FocusIn>", self.handle_focus)
         self.protocol("WM_DELETE_WINDOW", lambda: sys.exit())
 

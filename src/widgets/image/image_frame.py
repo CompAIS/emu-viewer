@@ -35,6 +35,7 @@ class ImageFrame(tb.Frame):
         image_data_header: fits.Header,
         file_name: str,
         data_type: DataType,
+        from_hips: bool,
     ):
         """Construct an ImageFrame.
 
@@ -45,7 +46,8 @@ class ImageFrame(tb.Frame):
             be float[][].
         :param image_data_header: HDU header for the .fits file. None for png/jpg.
         :param file_name: the name of the file where the data came from. HiPs survey name for hips
-        :param data_type: The type of the data in image_data.
+        :param data_type: the type of the data in image_data.
+        :param from_hips: if the data came from a HiPs survey
         """
 
         super().__init__(parent)
@@ -62,6 +64,7 @@ class ImageFrame(tb.Frame):
         self.image_wcs: Optional[wcs.WCS] = None
         self.file_name = file_name
         self.data_type = data_type
+        self.from_hips = from_hips
 
         # Default render config
         self.colour_map = "inferno"
