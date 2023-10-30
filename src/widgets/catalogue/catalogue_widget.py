@@ -24,8 +24,7 @@ class CatalogueWidget(BaseWidget):
 
     def __init__(self, root):
         super().__init__(root)
-        self.resizable(True, True)
-        self.geometry("{}x{}".format(850, 775))
+        self.geometry("940x775")
         self.root = root
 
         self.columnconfigure(0, weight=1)
@@ -73,8 +72,6 @@ class CatalogueWidget(BaseWidget):
         self.insert_fields_table()
 
         self.create_row_table(self.main_frame, 0, 1)
-
-        self.create_controls()
 
     def open_catalogue_xml(self):
         """Opens a votable xml catalogue and stores the required data"""
@@ -318,15 +315,23 @@ class CatalogueWidget(BaseWidget):
             text="Config",
             command=self.config_command,
         )
-        config_button.grid(column=0, row=0, sticky=tk.SE, padx=10)
+        config_button.grid(column=0, row=0, sticky=tk.SE)
 
         clear_button = tb.Button(
             button_frame,
             bootstyle="warning",
-            text="Clear",
+            text="Clear Selected",
             command=self.clear_command,
         )
-        clear_button.grid(column=1, row=0, sticky=tk.SE, padx=10)
+        clear_button.grid(column=1, row=0, sticky=tk.SE, padx=(10, 0))
+
+        apply_button = tb.Button(
+            button_frame,
+            bootstyle="success",
+            text="Apply Selected",
+            command=self.apply_command,
+        )
+        apply_button.grid(column=2, row=0, sticky=tk.SE, padx=(10, 0))
 
         clear_button = tb.Button(
             button_frame,
@@ -334,15 +339,7 @@ class CatalogueWidget(BaseWidget):
             text="Clear All",
             command=partial(self.clear_command, True),
         )
-        clear_button.grid(column=2, row=0, sticky=tk.SE, padx=10)
-
-        apply_button = tb.Button(
-            button_frame,
-            bootstyle="success",
-            text="Apply",
-            command=self.apply_command,
-        )
-        apply_button.grid(column=3, row=0, sticky=tk.SE, padx=10)
+        clear_button.grid(column=3, row=0, sticky=tk.SE, padx=(10, 0))
 
         apply_all_button = tb.Button(
             button_frame,
@@ -350,7 +347,7 @@ class CatalogueWidget(BaseWidget):
             text="Apply All",
             command=partial(self.apply_command, True),
         )
-        apply_all_button.grid(column=4, row=0, sticky=tk.SE, padx=10)
+        apply_all_button.grid(column=4, row=0, sticky=tk.SE, padx=(10, 0))
 
     def config_command(self):
         """On config button select bring up a window to configure all styling options"""
