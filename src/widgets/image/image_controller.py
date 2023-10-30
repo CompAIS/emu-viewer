@@ -221,6 +221,15 @@ def open_hips(
 
     image_data, image_header = r.get()
 
+    if len(image_data.shape) > 2 and hips_survey.data_type == DataType.FITS:
+        dialogs.Messagebox.show_error(
+            "This HiPs survey does not support FITS, please select png or jpeg instead",
+            parent=None,
+            title="Incorrect Data Type",
+            alert=False,
+        )
+        return
+
     _open_image(
         image_data, image_header, hips_survey.survey, hips_survey.data_type, True
     )
