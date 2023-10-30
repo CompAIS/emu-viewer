@@ -292,7 +292,6 @@ class RendererWidget(BaseWidget):
 
     def on_grid_lines(self):
         image = ic.get_selected_image()
-        print(image)
         if image is None:
             self.set_grid_lines_box_state(None)
             return

@@ -161,10 +161,8 @@ def set_grid_lines(fig: Figure, visible: bool):
     :param visible: whether to show the grid lines
     """
     if visible:
-        print("adding this MF!")
         fig.axes[0].grid(linestyle="-", linewidth=0.2)
     else:
-        print("removing this MF!")
         fig.axes[0].grid(b=False, linewidth=0)
 
 
