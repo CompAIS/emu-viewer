@@ -16,6 +16,7 @@ class ColourChooserButton(tk.Canvas):
         height: int,
         window_title: str,
         default: str = "#03fc49",
+        variable: tk.StringVar = None,
     ):
         """Construct a ColourChooserButton.
 
@@ -28,20 +29,33 @@ class ColourChooserButton(tk.Canvas):
         super().__init__(master, width=width, height=height, bg=default)
 
         self.master = master
-        self.selected_colour = default
         self.window_title = window_title
+        self.variable = variable
+        self.selected_colour = (
+            default
+            if self.variable is None or self.variable.get() == ""
+            else self.variable.get()
+        )
 
         self.rect = self.create_rectangle(
-            0, 0, width - 1, height - 1, outline="black", fill=default
+            0, 0, width - 1, height - 1, outline="black", fill=self.selected_colour
         )
-        self.bind("<Button-1>", self.on_click)
 
+        self.set_selected_colour(self.selected_colour)
+
+        self.bind("<Button-1>", self.on_click)
         self.config(cursor="hand2")
 
     def get(self) -> str:
         """Get the currently selected colour."""
-        # TODO tk.StringVar support? not needed right now
         return self.selected_colour
+
+    def set_selected_colour(self, colour: str):
+        """Set the current selected colour manually."""
+        self.selected_colour = colour
+        self.itemconfig(self.rect, fill=self.selected_colour)
+        if self.variable is not None:
+            self.variable.set(colour)
 
     def on_click(self, _event):
         """Handler for when the user clicks this button."""
@@ -58,5 +72,4 @@ class ColourChooserButton(tk.Canvas):
         if cd.result is None:
             return
 
-        self.selected_colour = cd.result.hex
-        self.itemconfig(self.rect, fill=self.selected_colour)
+        self.set_selected_colour(cd.result.hex)

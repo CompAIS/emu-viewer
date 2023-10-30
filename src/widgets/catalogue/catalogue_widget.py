@@ -39,6 +39,7 @@ class CatalogueWidget(BaseWidget):
         self.selected_dec = ""
 
         self.size = 25
+        self.outline_colour = tk.StringVar()
         self.colour_fill = "none"
 
         chked_image_path = os.path.join(ASSETS_FOLDER, "checked_box.png")
@@ -315,7 +316,11 @@ class CatalogueWidget(BaseWidget):
         outline_label.grid(column=0, row=2, sticky=tk.NSEW, padx=10, pady=10)
 
         self.outline_button = ColourChooserButton(
-            frame, width=24, height=24, window_title="Choose Outline Colour"
+            frame,
+            width=24,
+            height=24,
+            window_title="Choose Outline Colour",
+            variable=self.outline_colour,
         )
         self.outline_button.grid(column=1, row=2, sticky=tk.W, padx=10, pady=10)
 
@@ -331,8 +336,7 @@ class CatalogueWidget(BaseWidget):
 
     @property
     def colour_outline(self):
-        return "green"
-        # TODO lol return self.outline_button.get()
+        return self.outline_colour.get()
 
     def set_size(self, size_label, value):
         value = float(value)
