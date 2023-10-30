@@ -13,6 +13,7 @@ from matplotlib.contour import QuadContourSet
 from src._overrides.matplotlib.ImageToolbar import ImageToolbar
 from src.enums import DataType, Matching, Scaling
 from src.lib.util import index_default
+from src.widgets import widget_controller
 from src.widgets.catalogue import catalogue
 from src.widgets.contour import contour
 from src.widgets.image import fits_handler
@@ -207,12 +208,10 @@ class ImageFrame(tb.Frame):
         self.set_scaling(source_image.scaling)
         self.set_vmin_vmax_custom(source_image.vmin, source_image.vmax)
         self.update_norm()
-
-        self.grid_lines = source_image.grid_lines
-        if self.grid_lines:
-            self.set_grid_lines()
-        else:
-            self.hide_grid_lines()
+        self.set_grid_lines(source_image.grid_lines)
+        widget_controller.get_widget(widget_controller.Widget.RENDERER).on_image_change(
+            ic.get_selected_image()
+        )
 
     def draw_catalogue(self, options: catalogue.RenderCatalogueOptions):
         """Draw the catalogue on this image with the given options and data.
@@ -275,25 +274,17 @@ class ImageFrame(tb.Frame):
 
             image.set_limits(self.limits)
 
-    def update_grid_lines(self):
-        self.grid_lines = not self.grid_lines
+    def toggle_grid_lines(self):
+        return self.set_grid_lines(not self.grid_lines)
 
-        if self.grid_lines:
-            fits_handler.set_grid_lines(self.fig)
-        else:
-            fits_handler.hide_grid_lines(self.fig)
+    def set_grid_lines(self, visible):
+        if visible == self.grid_lines:
+            return visible
 
+        self.grid_lines = visible
+        fits_handler.set_grid_lines(self.fig, visible)
         self.canvas.draw()
-
-        return self.grid_lines
-
-    def set_grid_lines(self):
-        fits_handler.set_grid_lines(self.fig)
-        self.canvas.draw()
-
-    def hide_grid_lines(self):
-        fits_handler.hide_grid_lines(self.fig)
-        self.canvas.draw()
+        return visible
 
     def on_click(self, event):
         if self.fig.canvas.toolbar.mode != "" or self.data_type != DataType.FITS:

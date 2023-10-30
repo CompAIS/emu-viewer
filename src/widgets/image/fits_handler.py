@@ -151,20 +151,18 @@ def update_image_cmap(image: AxesImage, colour_map: str):
     image.set_cmap(colour_map)
 
 
-def set_grid_lines(fig: Figure):
-    """Set the grid lines on the plot.
+def set_grid_lines(fig: Figure, visible: bool):
+    """Set the status of the grid lines on the plot.
 
     :param fig: the figure to update the grid lines on
+    :param visible: whether to show the grid lines
     """
-    fig.axes[0].grid(linestyle="-", linewidth=0.2)
-
-
-def hide_grid_lines(fig: Figure):
-    """Hide the grid lines on the plot.
-
-    :param fig: the figure to update the grid lines on
-    """
-    fig.axes[0].grid(False)
+    if visible:
+        print("adding this MF!")
+        fig.axes[0].grid(linestyle="-", linewidth=0.2)
+    else:
+        print("removing this MF!")
+        fig.axes[0].grid(b=False, linewidth=0)
 
 
 def get_percentiles(image_data: npt.ArrayLike) -> Dict[str, Tuple[float, float]]:
