@@ -1,5 +1,4 @@
 import tkinter as tk
-from typing import List
 
 import ttkbootstrap as tb
 
@@ -7,7 +6,7 @@ import ttkbootstrap as tb
 class TableWidget(tb.Frame):
     """A frame that allow for arbtirary frames as cells in a table."""
 
-    def __init__(self, master: tk.Widget, headers: List[str], *args, **kwargs):
+    def __init__(self, master: tk.Widget, headers: list[str], *args, **kwargs):
         """Construct a TableWidget.
 
         :param master: the parent of this widget
@@ -31,7 +30,7 @@ class TableWidget(tb.Frame):
             label = tb.Label(f, text=header, anchor=tk.CENTER)
             label.grid(row=0, column=0, sticky=tk.NSEW)
 
-    def add_row(self, *row: List[tk.Widget], row_click_el=None):
+    def add_row(self, *row: list[tk.Widget], row_click_el=None):
         """Add a row to the table.
 
         Note that each cell added to the table needs to have their parent set to the TableWidget.

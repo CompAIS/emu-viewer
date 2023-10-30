@@ -1,12 +1,12 @@
 import tkinter as tk
-from typing import List, Optional, TypeVar
+from typing import Optional, TypeVar
 
 from src import constants
 
 T = TypeVar("T")
 
 
-def with_defaults(*values: List[T]) -> Optional[T]:
+def with_defaults(*values: list[T]) -> Optional[T]:
     """Takes a list of values, returning the first one which is not None.
 
     :return: the first non-None argument, or None
@@ -19,10 +19,10 @@ def with_defaults(*values: List[T]) -> Optional[T]:
     return None
 
 
-def index_default(list: List[T], index: int, default: T) -> T:
-    """Does list[index] by returning the given default if `index` is OOB."""
+def index_default(arr: list[T], index: int, default: T) -> T:
+    """Does arr[index] by returning the given default if `index` is OOB."""
 
-    return list[index] if index >= 0 and index < len(list) else default
+    return arr[index] if 0 <= index < len(arr) else default
 
 
 def get_size_inches(widget: tk.Widget):

@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import List
 
 import astropy.io.votable as Votable
 from matplotlib.collections import PathCollection
@@ -21,7 +20,7 @@ def open_catalogue(file_path: str) -> Votable.tree.Table:
     return Votable.parse_single_table(file_path)
 
 
-def retrieve_fields(catalogue: Votable.tree.Table) -> List[Votable.tree.Field]:
+def retrieve_fields(catalogue: Votable.tree.Table) -> list[Votable.tree.Field]:
     """Retrieve all of the fields in a catalogue table.
 
     :return: the list of fields
@@ -39,8 +38,8 @@ def retrieve_fields(catalogue: Votable.tree.Table) -> List[Votable.tree.Field]:
 class RenderCatalogueOptions:
     """Determines where and how to draw a catalogue."""
 
-    ra_coords: List[float]
-    dec_coords: List[float]
+    ra_coords: list[float]
+    dec_coords: list[float]
     size: float
     colour_outline: str
     colour_fill: str
