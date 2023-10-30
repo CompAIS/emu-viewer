@@ -1,10 +1,8 @@
 import os
-import tkinter
 from multiprocessing.pool import ThreadPool
 from tkinter import messagebox
-from typing import List, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
-import ttkbootstrap as tb
 import ttkbootstrap.dialogs as dialogs
 from astropy import wcs
 from astropy.coordinates import SkyCoord
@@ -16,21 +14,16 @@ from src.lib.event_handler import EventHandler
 from src.lib.util import index_default
 from src.widgets.hips_survey_selector import hips_handler
 from src.widgets.image import fits_handler, image_frame, png_handler
-from src.widgets.image.image_frame import ImageFrame
 from src.widgets.image.image_standalone_toplevel import StandaloneImage
+
+if TYPE_CHECKING:
+    from src.main import MainWindow
 
 CLOSE_CONFIRM = "Are you sure you want to close all currently open images? Changes will not be saved."
 
 
-class DummyMainWindow(tb.Window):
-    """A shell of the MainWindow with appropriate types so we don't have to import"""
-
-    main_image: ImageFrame
-    main_image_container: tkinter.Frame
-
-
 # reference to the main window to avoid circular imports, see register_main
-_main_window: Optional[DummyMainWindow] = None
+_main_window: Optional["MainWindow"] = None
 _standalone_windows = []
 
 _selected_image = None

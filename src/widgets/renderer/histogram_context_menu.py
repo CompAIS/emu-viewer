@@ -1,10 +1,12 @@
 import tkinter as tk
+from typing import TYPE_CHECKING
 
-from src.widgets.renderer.renderer_widget import RendererWidget
+if TYPE_CHECKING:
+    from src.widgets.renderer.renderer_widget import RendererWidget
 
 
 class HistogramContextMenu(tk.Menu):
-    def __init__(self, render_widget: RendererWidget, xdata: float):
+    def __init__(self, render_widget: "RendererWidget", xdata: float):
         super().__init__(render_widget, tearoff=0)
         self.render_widget = render_widget
         self.xdata = xdata

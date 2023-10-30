@@ -37,13 +37,16 @@ class Widget(Enum):
     #   that class, and then cache it and reference that cached imported module
     #   for every subsequent call, meaning we lose no performance
     # I threw up a little in my mouth did you
-    RENDERER = ("src.widgets.renderer_widget", "RendererWidget")
-    IMAGE_TABLE = ("src.widgets.image_table_widget", "ImageTableWidget")
-    CONTOURS = ("src.widgets.contour_widget", "ContourWidget")
-    CATALOGUE = ("src.widgets.catalogue_widget", "CatalogueWidget")
-    STATISTICS = ("src.widgets.statistics_widget", "StatisticsWidget")
+    RENDERER = ("src.widgets.renderer.renderer_widget", "RendererWidget")
+    IMAGE_TABLE = ("src.widgets.image_table.image_table_widget", "ImageTableWidget")
+    CONTOURS = ("src.widgets.contour.contour_widget", "ContourWidget")
+    CATALOGUE = ("src.widgets.catalogue.catalogue_widget", "CatalogueWidget")
+    STATISTICS = ("src.widgets.statistics.statistics_widget", "StatisticsWidget")
 
-    HIPS_SELECT = ("src.widgets.hips_selector_widget", "HipsSelectorWidget")
+    HIPS_SELECT = (
+        "src.widgets.hips_survey_selector.hips_selector_widget",
+        "HipsSelectorWidget",
+    )
 
     def __init__(self, module_path: str, class_name: str):
         self._value = None

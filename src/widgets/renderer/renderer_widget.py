@@ -6,13 +6,13 @@ import ttkbootstrap as tb
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import src.widgets.image.image_controller as ic
+import src.widgets.renderer.histogram_context_menu as hcm
 from src import constants
 from src._overrides.matplotlib.HistogramToolbar import HistogramToolbar
 from src.enums import DataType, Matching
 from src.lib.util import get_size_inches
 from src.widgets.base_widget import BaseWidget
 from src.widgets.renderer import histogram
-from src.widgets.renderer.histogram_context_menu import HistogramContextMenu
 
 scaling_options = [
     "Linear",
@@ -48,7 +48,7 @@ class RendererWidget(BaseWidget):
 
         self.canvas: Optional[FigureCanvasTkAgg] = None
         self.toolbar: Optional[HistogramToolbar] = None
-        self.context_menu: Optional[HistogramContextMenu] = None
+        self.context_menu: Optional[hcm.HistogramContextMenu] = None
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
