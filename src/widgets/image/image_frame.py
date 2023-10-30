@@ -264,6 +264,9 @@ class ImageFrame(tb.Frame):
             self.update_matched_images()
 
     def update_matched_images(self):
+        if not self.is_matched(Matching.COORD):
+            return
+
         self.limits = fits_handler.get_limits(self.fig, self.image_wcs)
 
         for image in ic.get_images_matched_to(Matching.COORD):
