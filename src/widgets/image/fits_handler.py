@@ -84,7 +84,7 @@ def create_figure_fits(
 
         if 0 <= y < image_data.shape[1] and 0 <= x < image_data.shape[0]:
             image_value = image_data[round(y)][round(x)]
-            return f"{prefix}\n Value: ({image_value})"
+            return f"{prefix}\n Value: ({image_value:.3e})"
 
         return prefix
 
