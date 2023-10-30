@@ -3,7 +3,6 @@ import tkinter as tk
 import tkinter.font
 from collections import namedtuple
 from functools import partial
-from tkinter import simpledialog
 
 import numpy as np
 import ttkbootstrap as tb
@@ -11,6 +10,7 @@ from matplotlib.backend_bases import NavigationToolbar2
 from matplotlib.backends._backend_tk import ToolTip
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 from PIL import Image, ImageTk
+from ttkbootstrap.dialogs.dialogs import Querybox
 
 from src.components.color_chooser import ColourChooserButton
 from src.constants import ASSETS_FOLDER
@@ -264,7 +264,9 @@ class ImageToolbar(NavigationToolbar2Tk):
         if not axes:
             return
 
-        text = simpledialog.askstring("Type on Figure", "Enter text:")
+        text = Querybox.get_string(
+            "Type on Figure", "Enter text:", initialvalue=None, parent=self
+        )
 
         if text is None:
             return
