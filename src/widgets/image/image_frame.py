@@ -13,7 +13,7 @@ from matplotlib.contour import QuadContourSet
 from src._overrides.matplotlib.ImageToolbar import ImageToolbar
 from src.enums import DataType, Matching, Scaling
 from src.lib.util import index_default
-from src.widgets import widget_controller
+from src.widgets import widget_controller as wc
 from src.widgets.catalogue import catalogue
 from src.widgets.contour import contour
 from src.widgets.image import fits_handler
@@ -209,9 +209,7 @@ class ImageFrame(tb.Frame):
         self.set_vmin_vmax_custom(source_image.vmin, source_image.vmax)
         self.update_norm()
         self.set_grid_lines(source_image.grid_lines)
-        widget_controller.get_widget(widget_controller.Widget.RENDERER).on_image_change(
-            ic.get_selected_image()
-        )
+        wc.get_widget(wc.Widget.RENDERER).on_image_change(ic.get_selected_image())
 
     def draw_catalogue(self, options: catalogue.RenderCatalogueOptions):
         """Draw the catalogue on this image with the given options and data.
