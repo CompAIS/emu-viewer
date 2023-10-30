@@ -21,7 +21,6 @@ if TYPE_CHECKING:
 
 CLOSE_CONFIRM = "Are you sure you want to close all currently open images? Changes will not be saved."
 
-
 # reference to the main window to avoid circular imports, see register_main
 _main_window: Optional["MainWindow"] = None
 _standalone_windows = []
@@ -128,6 +127,7 @@ def _open_image(
     image_data_header: Optional[fits.Header],
     file_name: str,
     data_type: DataType,
+    from_hips: bool = False,
 ):
     """Open a new image with an ImageFrame.
 
@@ -138,6 +138,7 @@ def _open_image(
     :param image_data_header: HDU header for the .fits file. None for png/jpg.
     :param file_name: the name of the file where the data came from. HiPs survey name for hips
     :param data_type: The type of the data in image_data.
+    :param from_hips: if the data came from a HiPs survey
     """
     global _main_window, _standalone_windows, update_image_list_eh
 
@@ -150,12 +151,13 @@ def _open_image(
             image_data_header,
             file_name,
             data_type,
+            from_hips,
         )
         set_selected_image(_main_window.main_image)
     else:
         # otherwise open up a new top-level image
         new_window = StandaloneImage(
-            _main_window, image_data, image_data_header, file_name, data_type
+            _main_window, image_data, image_data_header, file_name, data_type, from_hips
         )
         _standalone_windows.append(new_window)
         set_selected_image(new_window.image_frame)
@@ -219,7 +221,9 @@ def open_hips(
 
     image_data, image_header = r.get()
 
-    _open_image(image_data, image_header, hips_survey.survey, hips_survey.data_type)
+    _open_image(
+        image_data, image_header, hips_survey.survey, hips_survey.data_type, True
+    )
 
 
 def close_images():

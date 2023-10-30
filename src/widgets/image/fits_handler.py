@@ -1,3 +1,4 @@
+from tkinter import filedialog
 from typing import Dict, Tuple
 
 import astropy.wcs.utils as sc
@@ -21,7 +22,7 @@ def open_fits_file(file_path: str) -> Tuple[npt.ArrayLike, fits.Header]:
 
     Will always return the image at [0].
 
-    :param str file_path: Path to the file to open.
+    :param file_path: Path to the file to open.
 
     :return: a tuple of the image's data and the associated headers
     """
@@ -37,6 +38,32 @@ def open_fits_file(file_path: str) -> Tuple[npt.ArrayLike, fits.Header]:
     fits_file.close()
 
     return image_data, image_data_header
+
+
+def save_fits_file(image_data: npt.ArrayLike, image_data_header: fits.Header):
+    """Save to a .fits file given image_data and headers.
+
+    Will just save a single, PrimaryHDU. I think.
+
+    :param image_data: the data to save
+    :param image_data_header: the headers to sa
+    """
+
+    files = [
+        ("fits Files", "*.fits"),
+        ("All Files", "*.*"),
+    ]
+    file_path = filedialog.asksaveasfilename(
+        title="Save .hips as .fits file",
+        filetypes=files,
+    )
+
+    fits.writeto(
+        file_path,
+        data=image_data,
+        header=image_data_header,
+        overwrite=True,
+    )
 
 
 def create_figure_fits(
