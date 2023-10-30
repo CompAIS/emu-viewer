@@ -10,9 +10,11 @@ from matplotlib.backends._backend_tk import FigureCanvasTk
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 import src.controllers.image_controller as ic
-import src.lib.render as Render
+from src import constants
+from src._overrides.matplotlib.HistogramToolbar import HistogramToolbar
 from src.enums import DataType, Matching
-from src.lib.tool import HistoToolbar
+from src.lib import histogram
+from src.lib.util import get_size_inches
 from src.widgets.base_widget import BaseWidget
 
 scaling_options = [
@@ -73,7 +75,7 @@ class RendererWidget(BaseWidget):
 
     def histogram_buttons(self):
         self.percentile_buttons = {}
-        for col, percentile in enumerate([*Render.PERCENTILES, "Custom"]):
+        for col, percentile in enumerate([*constants.PERCENTILES, "Custom"]):
             text = f"{percentile}%" if percentile != "Custom" else percentile
             self.histogram_main_frame.grid_columnconfigure(col, weight=0)
             self.percentile_buttons[percentile] = tb.Button(
@@ -102,35 +104,33 @@ class RendererWidget(BaseWidget):
         self.histogram_frame.grid_rowconfigure(0, weight=1)
         self.histogram_frame.grid_columnconfigure(0, weight=1)
 
-        self.histo_fig = Render.create_histogram_graph()
+        self.histo_fig = histogram.create_histogram_graph()
         self.canvas = HistogramCanvasTkAgg(self.histo_fig, master=self.histogram_frame)
         self.canvas.get_tk_widget().grid(column=0, row=0, sticky=tk.NSEW)
         self.canvas.mpl_connect("button_press_event", self.on_histo_click)
         self.canvas.draw()
 
-        self.toolbar = HistoToolbar(self.canvas, self.histogram_frame, pack=False)
+        self.toolbar = HistogramToolbar(self.canvas, self.histogram_frame, pack=False)
         self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
         self.toolbar.update()
 
         self.root.update()
 
-        self.histo_fig.set_size_inches(
-            *Render.get_size_inches(self.canvas.get_tk_widget())
-        )
+        self.histo_fig.set_size_inches(*get_size_inches(self.canvas.get_tk_widget()))
 
     def update_histogram_graph(self):
         if not self.check_if_image_selected():
             self.histogram_frame.grid_forget()
             return
 
-        c = len(Render.PERCENTILES) + 1
+        c = len(constants.PERCENTILES) + 1
         self.histogram_frame.grid(
             column=0, columnspan=c, row=1, sticky=tk.NSEW, padx=10, pady=(10, 0)
         )
 
         image_selected = ic.get_selected_image()
 
-        self.histo_fig = Render.draw_histogram_graph(
+        self.histo_fig = histogram.draw_histogram_graph(
             self.histo_fig,
             image_selected.histo_counts,
             image_selected.histo_bins,
@@ -145,7 +145,7 @@ class RendererWidget(BaseWidget):
 
         image_selected = ic.get_selected_image()
 
-        self.histo_fig = Render.draw_histogram_lines(
+        self.histo_fig = histogram.draw_histogram_lines(
             self.histo_fig,
             image_selected.vmin,
             image_selected.vmax,

@@ -2,6 +2,11 @@ import os
 import sys
 import tkinter as tk
 
+PERCENTILES = [90, 95, 99, 99.5, 99.9, 100]
+DPI = 150
+
+# loading images and such
+
 # https://stackoverflow.com/questions/22472124/what-is-sys-meipass-in-python
 if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
     # Running from a compiled executable

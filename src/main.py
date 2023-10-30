@@ -24,13 +24,12 @@ class MainWindow(tb.Window):
         self.geometry("800x800")
 
         self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=0)
-        self.grid_columnconfigure(1, weight=1)
+        self.grid_columnconfigure(0, weight=1)
 
         self.menu_controller = menu_bar.MenuBar(self)
 
         self.main_image_container = tb.Frame(self, bootstyle="dark")
-        self.main_image_container.grid(column=1, row=0, sticky=tk.NSEW)
+        self.main_image_container.grid(column=0, row=0, sticky=tk.NSEW)
         self.main_image_container.rowconfigure(0, weight=1)
         self.main_image_container.columnconfigure(0, weight=1)
 

@@ -5,13 +5,16 @@ from typing import Optional
 import numpy.typing as npt
 import ttkbootstrap as tb
 from astropy import wcs
+from astropy.io import fits
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.collections import PathCollection
+from matplotlib.contour import QuadContourSet
 
-import src.lib.render as Render
+from src._overrides.matplotlib.ImageToolbar import ImageToolbar
 from src.controllers import image_controller as ic
 from src.controllers import widget_controller as wc
 from src.enums import DataType, Matching
-from src.lib.tool import NavigationToolbar
+from src.lib import catalogue, contour, fits_handler, histogram, png_handler
 from src.lib.util import index_default
 
 warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
@@ -25,7 +28,7 @@ class ImageFrame(tb.Frame):
         parent: tk.Widget,
         root: tb.Window,
         image_data: npt.ArrayLike,
-        image_data_header,  # TODO type?
+        image_data_header: fits.Header,
         file_name: str,
         data_type: DataType,
     ):
@@ -59,7 +62,7 @@ class ImageFrame(tb.Frame):
         # Default render config
         self.colour_map = "inferno"
         self.stretch = "Linear"
-        self.cached_percentiles = Render.get_percentiles(image_data)
+        self.cached_percentiles = fits_handler.get_percentiles(image_data)
         self.selected_percentile = "99.5"
         self.set_selected_percentile(self.selected_percentile)
         self.grid_lines = False
@@ -69,17 +72,17 @@ class ImageFrame(tb.Frame):
         if self.image_data_header is not None:
             self.image_wcs = wcs.WCS(self.image_data_header).celestial
 
-        self.catalogue_set = None
-        self.contour_levels = self.contour_set = None
+        self.catalogue_set: Optional[PathCollection] = None
+        self.contour_set: Optional[QuadContourSet] = None
+
         if data_type == DataType.FITS:
-            self.fig, self.image, self.limits = Render.create_figure(
+            self.fig, self.image, self.limits = fits_handler.create_figure_fits(
                 self.image_data,
                 self.image_wcs,
                 self.colour_map,
                 self.vmin,
                 self.vmax,
                 self.stretch,
-                self.contour_levels,
             )
 
             self.original_limits = self.limits
@@ -89,14 +92,14 @@ class ImageFrame(tb.Frame):
 
             min_value, max_value = self.cached_percentiles["100"]
 
-            self.histo_counts, self.histo_bins = Render.create_histogram_data(
+            self.histo_counts, self.histo_bins = histogram.create_histogram_data(
                 self.image_data, min_value, max_value
             )
 
             self.fig.canvas.mpl_connect("button_press_event", self.on_click)
             self.coord_matching_cid = None
         else:
-            self.fig, self.image = Render.create_figure_png(self.image_data)
+            self.fig, self.image = png_handler.create_figure_png(self.image_data)
 
         self.create_image()
 
@@ -110,33 +113,33 @@ class ImageFrame(tb.Frame):
         )
         self.canvas.draw()
 
-        self.toolbar = NavigationToolbar(self.canvas, self, False)
+        self.toolbar = ImageToolbar(self.canvas, self, False)
         self.toolbar.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=10)
 
         self.toolbar.update()
 
-    def is_matched(self, Matching: Matching) -> bool:
+    def is_matched(self, matching: Matching) -> bool:
         """Is the image currently being matched on this dimension?"""
 
-        return self.matched[Matching.value]
+        return self.matched[matching.value]
 
     def is_selected(self) -> bool:
         """Is the image that is currently selected this one?"""
 
         return ic.get_selected_image() == self
 
-    def toggle_match(self, Matching: Matching):
+    def toggle_match(self, matching: Matching):
         """Toggles whether or not this image is matching on the given matching.
 
         :param matching: the matching to toggle this image on
         """
 
         # are we matching or unmatching
-        is_matching = not self.matched[Matching.value]
+        is_matching = not self.matched[matching.value]
 
-        if Matching == Matching.COORD:
+        if matching == Matching.COORD:
             if is_matching:
-                self.limits = Render.get_limits(self.fig, self.image_wcs)
+                self.limits = fits_handler.get_limits(self.fig, self.image_wcs)
                 # update our current limits + watch for when our limits change
                 limits = ic.get_coord_matched_limits(self)
                 self.set_limits(limits)
@@ -144,15 +147,15 @@ class ImageFrame(tb.Frame):
             else:
                 self.set_limits(self.original_limits)
                 self.remove_coords_event()
-        elif Matching == Matching.RENDER:
+        elif matching == Matching.RENDER:
             if is_matching:
                 self.match_render()
-        elif Matching == Matching.ANNOTATION:
+        elif matching == Matching.ANNOTATION:
             # TODO implement #
             pass
 
         # then update our matching status
-        self.matched[Matching.value] = is_matching
+        self.matched[matching.value] = is_matching
         self.root.update()
 
     def set_vmin_vmax_custom(self, vmin, vmax):
@@ -178,7 +181,7 @@ class ImageFrame(tb.Frame):
         self.colour_map = colour_map
 
     def update_norm(self):
-        self.image = Render.update_image_norm(
+        fits_handler.update_image_norm(
             self.image,
             self.image_data,
             self.vmin,
@@ -188,7 +191,7 @@ class ImageFrame(tb.Frame):
         self.canvas.draw()
 
     def update_colour_map(self):
-        self.image = Render.update_image_cmap(self.image, self.colour_map)
+        fits_handler.update_image_cmap(self.image, self.colour_map)
         self.canvas.draw()
 
     def match_render(self, source_image=None):
@@ -207,49 +210,31 @@ class ImageFrame(tb.Frame):
         self.set_vmin_vmax_custom(source_image.vmin, source_image.vmax)
         self.update_norm()
 
-    def draw_catalogue(self, ra_coords, dec_coords, size, colour_outline, colour_fill):
-        self.fig, self.catalogue_set = Render.draw_catalogue(
-            self.fig,
-            self.catalogue_set,
-            ra_coords,
-            dec_coords,
-            size,
-            colour_outline,
-            colour_fill,
+    def draw_catalogue(self, options: catalogue.RenderCatalogueOptions):
+        """Draw the catalogue on this image with the given options and data.
+
+        :param options: the options for the catalogue drawing
+        """
+        self.catalogue_set = catalogue.draw_catalogue(
+            self.fig, self.catalogue_set, options
         )
         self.canvas.draw()
 
-    def reset_catalogue(self):
-        self.catalogue_set = Render.reset_catalogue(self.catalogue_set)
+    def clear_catalogue(self):
+        """Clear the catalogue on this image."""
+        self.catalogue_set = catalogue.clear_catalogue(self.catalogue_set)
         self.canvas.draw()
 
-    def update_contours(
-        self,
-        data_source,
-        data_source_wcs,
-        new_contours,
-        gaussian_factor,
-        line_colour,
-        line_opacity,
-        line_width,
-    ):
-        self.contour_levels = new_contours
+    def update_contours(self, options: contour.RenderContourOptions):
+        """Draw the contours on this image with the given options and data.
 
-        self.contour_set = Render.update_contours(
-            self.fig,
-            data_source,
-            data_source_wcs,
-            self.contour_levels,
-            self.contour_set,
-            gaussian_factor,
-            line_colour,
-            line_opacity,
-            line_width,
-        )
+        :param options: the options for the contour drawing"""
+        self.contour_set = contour.update_contours(self.fig, self.contour_set, options)
         self.canvas.draw()
 
     def clear_contours(self):
-        self.contour_set = Render.clear_contours(self.contour_set)
+        """Clear the contours on this image."""
+        self.contour_set = contour.clear_contours(self.contour_set)
         self.canvas.draw()
 
     def set_limits(self, limits):
@@ -259,7 +244,7 @@ class ImageFrame(tb.Frame):
         self.limits = limits
         self.toolbar.update_stack()
 
-        self.fig = Render.set_limits(self.fig, self.image_wcs, self.limits)
+        fits_handler.set_limits(self.fig, self.image_wcs, self.limits)
         self.canvas.draw()
 
     def add_coords_event(self):
@@ -278,7 +263,7 @@ class ImageFrame(tb.Frame):
             self.update_matched_images()
 
     def update_matched_images(self):
-        self.limits = Render.get_limits(self.fig, self.image_wcs)
+        self.limits = fits_handler.get_limits(self.fig, self.image_wcs)
 
         for image in ic.get_images_matched_to(Matching.COORD):
             if image == self:
@@ -289,7 +274,7 @@ class ImageFrame(tb.Frame):
     def toggle_grid_lines(self):
         self.grid_lines = not self.grid_lines
 
-        Render.set_grid_lines(self.fig, self.grid_lines)
+        fits_handler.set_grid_lines(self.fig, self.grid_lines)
         self.canvas.draw()
 
         return self.grid_lines
