@@ -1,3 +1,4 @@
+import platform
 from functools import partial
 from tkinter import filedialog
 from typing import TYPE_CHECKING, Optional
@@ -30,7 +31,7 @@ class MenuBar(tb.Menu):
         self.add_cascade(label="File", menu=self.file_menu)
         self.file_menu.add_command(label="Open Image", command=self.open_file)
         self.file_menu.add_command(
-            label="Open Hips Survey",
+            label="Open HiPs Survey",
             command=partial(self.open_widget, wc.Widget.HIPS_SELECT),
         )
         self.file_menu.add_command(label="Close All Images", command=self.close_images)
@@ -104,6 +105,10 @@ class MenuBar(tb.Menu):
             activeforeground = "#BABABA"
             background = "#2B3E50"
             activebackground = "#2B3E50"
+
+            # looks fine on mac in the disabled state
+            if platform.system() == "Darwin":
+                self.file_menu.entryconfigure("Save .hips as .fits", state="disabled")
         else:
             self.hips_is_disabled = False
 
@@ -111,6 +116,10 @@ class MenuBar(tb.Menu):
             activeforeground = self.file_menu.entrycget(0, "activeforeground")
             background = self.file_menu.entrycget(0, "background")
             activebackground = self.file_menu.entrycget(0, "activebackground")
+
+            # looks fine on mac in the disabled state
+            if platform.system() == "Darwin":
+                self.file_menu.entryconfigure("Save .hips as .fits", state="normal")
 
         self.file_menu.entryconfigure(
             "Save .hips as .fits",

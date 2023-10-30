@@ -190,7 +190,7 @@ def open_png(file_path: str):
 
 def open_hips(
     box_parent,
-    hips_survey: hips_handler.HipsSurvey,
+    hips_survey: hips_handler.HiPsSurvey,
     image_wcs: Optional[wcs.WCS] = None,
 ):
     """Open a HiPs survey from a survey name, and optionally a WCS.

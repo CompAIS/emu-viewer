@@ -10,7 +10,7 @@ from src.enums import DataType
 
 
 @dataclass
-class HipsSurvey:
+class HiPsSurvey:
     """Dataclass provides all options to open a selected survey"""
 
     ra: float = 0.0
@@ -21,8 +21,8 @@ class HipsSurvey:
     data_type: Optional[DataType] = None
 
 
-def open_hips(hips_survey: HipsSurvey, wcs: Optional[wcs.WCS] = None):
-    """Opens a HiPs survey with specified options provided by the HipsSurvey dataclass, currently only supports opening
+def open_hips(hips_survey: HiPsSurvey, wcs: Optional[wcs.WCS] = None):
+    """Opens a HiPs survey with specified options provided by the HiPsSurvey dataclass, currently only supports opening
     a survey with the RA and DEC in degrees
 
     :param hips_survey: options for the survey

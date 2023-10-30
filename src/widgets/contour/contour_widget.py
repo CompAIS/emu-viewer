@@ -247,11 +247,13 @@ class ContourWidget(BaseWidget):
         self.data_source = image
         self.data_source_dropdown["text"] = image.file_name
 
-        # TODO Potentially remember these between data sources so that you don't lose information?
-        # TODO I guess I'm more curious what behaviour we expect here. CARTA maintains it when switching
-        self.mean_entry.insert(0, str(np.nanmean(self.data_source.image_data)))
-        self.sigma_entry.insert(0, str(contour.get_sigma(self.data_source.image_data)))
-        # TODO better default? this is the default from carta
+        self.mean_entry.insert(
+            0, np.format_float_positional(np.nanmean(self.data_source.image_data))
+        )
+        self.sigma_entry.insert(
+            0,
+            np.format_float_positional(contour.get_sigma(self.data_source.image_data)),
+        )
         self.sigmas_entry.insert(0, "-5,5,9,13,17")
         self.generate_levels()
 
@@ -309,7 +311,9 @@ class ContourWidget(BaseWidget):
 
         levels = contour.generate_levels(mean, sigma, sigma_list)
         self.levels_entry.delete(0, tk.END)
-        self.levels_entry.insert(0, ",".join(str(x) for x in levels))
+        self.levels_entry.insert(
+            0, ",".join(np.format_float_positional(x) for x in levels)
+        )
 
     def apply_contours(self, selected):
         """
