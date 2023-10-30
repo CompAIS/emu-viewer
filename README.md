@@ -55,7 +55,7 @@ The lints will also be run in pre-commit hooks and automatically fixed.
 
 See the following example run:
 ```
->git cam "Test pre-commit"
+>git commit -am "Test pre-commit"
 black....................................................................Failed
 - hook id: black
 - files were modified by this hook
@@ -67,6 +67,17 @@ All done! ✨ 🍰 ✨
 ```
 
 You would need to re-run the commit in this instance.
+
+### Releases
+
+To create a release, we have a [`release.yml`](./.github/workflows/release.yml) GitHub workflow. It will automatically run `make build` on three
+different GitHub job runners (macOS, Ubuntu, Windows) and upload the artefacts to a new GitHub release. This
+release will be marked as a draft until someone publishes that release.
+
+If you have forked this repository, please use that functionality to compile and build the releases! It is all
+automatic.
+
+Of course, you can still run `make build` locally to test.
 
 ## Troubleshooting
 
