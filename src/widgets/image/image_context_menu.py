@@ -8,9 +8,19 @@ if TYPE_CHECKING:
 
 
 class ImageContextMenu(tk.Menu):
+    """The context memnu that appears when you right click the image."""
+
     def __init__(
         self, image_frame: "ImageFrame", xdata: float, ydata: float, value: float
     ):
+        """Construct an ImageContextMenu.
+
+        :param image_frame: the image frame this context menu is for
+        :param xdata: the x position of the cursor relative to the image_data
+        :param ydata: the y position of the cursor relative to the image_data
+        :param value: the value of the point where the cursor is
+        """
+
         super().__init__(image_frame, tearoff=0)
         self.image_frame = image_frame
         self.xdata = xdata
@@ -48,6 +58,10 @@ class ImageContextMenu(tk.Menu):
         self.copy_to_clipboard(str(self.value))
 
     def copy_to_clipboard(self, text):
+        """Copy text to the clipboard.
+
+        :param text: what to copy
+        """
         self.image_frame.clipboard_clear()
         self.image_frame.clipboard_append(text)
         self.image_frame.update()

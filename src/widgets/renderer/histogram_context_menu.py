@@ -6,7 +6,14 @@ if TYPE_CHECKING:
 
 
 class HistogramContextMenu(tk.Menu):
+    """The context menu that appears when you right click the histogram in the Render Configuration."""
+
     def __init__(self, render_widget: "RendererWidget", xdata: float):
+        """Construct a HistogramContextMenu.
+
+        :param render_widget: the owning render widget
+        :param xdata: the x position of the cursor at the click relative to the axes
+        """
         super().__init__(render_widget, tearoff=0)
         self.render_widget = render_widget
         self.xdata = xdata
@@ -29,6 +36,10 @@ class HistogramContextMenu(tk.Menu):
         self.render_widget.on_entry_focusout(None)
 
     def copy_to_clipboard(self, text):
+        """Copy text to the clipboard.
+
+        :param text: what to copy
+        """
         self.render_widget.clipboard_clear()
         self.render_widget.clipboard_append(text)
         self.render_widget.update()
