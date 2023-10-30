@@ -11,14 +11,14 @@ from matplotlib.collections import PathCollection
 from matplotlib.contour import QuadContourSet
 
 from src._overrides.matplotlib.ImageToolbar import ImageToolbar
-from src.enums import DataType, Matching
+from src.enums import DataType, Matching, Scaling
 from src.lib.util import index_default
-from src.widgets import widget_controller as wc
 from src.widgets.catalogue import catalogue
 from src.widgets.contour import contour
 from src.widgets.image import fits_handler
 from src.widgets.image import image_controller as ic
 from src.widgets.image import png_handler
+from src.widgets.image.image_context_menu import ImageContextMenu
 from src.widgets.renderer import histogram
 
 warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
@@ -65,13 +65,13 @@ class ImageFrame(tb.Frame):
 
         # Default render config
         self.colour_map = "inferno"
-        self.stretch = "Linear"
+        self.scaling = Scaling.LINEAR
         self.cached_percentiles = fits_handler.get_percentiles(image_data)
         self.selected_percentile = "99.5"
         self.set_selected_percentile(self.selected_percentile)
         self.grid_lines = False
 
-        self.matched = {Matching.value: False for Matching in Matching}
+        self.matched = {matching.value: False for matching in Matching}
 
         if self.image_data_header is not None:
             self.image_wcs = wcs.WCS(self.image_data_header).celestial
@@ -86,13 +86,10 @@ class ImageFrame(tb.Frame):
                 self.colour_map,
                 self.vmin,
                 self.vmax,
-                self.stretch,
+                self.scaling,
             )
 
             self.original_limits = self.limits
-
-            self.vmin_line = None
-            self.vmax_line = None
 
             min_value, max_value = self.cached_percentiles["100"]
 
@@ -105,12 +102,6 @@ class ImageFrame(tb.Frame):
         else:
             self.fig, self.image = png_handler.create_figure_png(self.image_data)
 
-        self.create_image()
-
-    def create_image(self):
-        """Handles the creation of the base matplotlib canvas and the
-        associated toolbar.
-        """
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.canvas.get_tk_widget().grid(
             column=0, row=0, sticky=tk.NSEW, padx=10, pady=10
@@ -178,8 +169,8 @@ class ImageFrame(tb.Frame):
 
         self.vmin, self.vmax = self.cached_percentiles[self.selected_percentile]
 
-    def set_scaling(self, scaling):
-        self.stretch = scaling
+    def set_scaling(self, scaling: Scaling):
+        self.scaling = scaling
 
     def set_colour_map(self, colour_map):
         self.colour_map = colour_map
@@ -190,7 +181,7 @@ class ImageFrame(tb.Frame):
             self.image_data,
             self.vmin,
             self.vmax,
-            self.stretch,
+            self.scaling,
         )
         self.canvas.draw()
 
@@ -210,7 +201,7 @@ class ImageFrame(tb.Frame):
 
         self.set_colour_map(source_image.colour_map)
         self.update_colour_map()
-        self.set_scaling(source_image.stretch)
+        self.set_scaling(source_image.scaling)
         self.set_vmin_vmax_custom(source_image.vmin, source_image.vmax)
         self.update_norm()
 
@@ -312,54 +303,3 @@ class ImageFrame(tb.Frame):
     def show_context_menu(self, event, image_x, image_y, window_x, window_y, value):
         self.context_menu = ImageContextMenu(self, image_x, image_y, value)
         self.context_menu.post(window_x, window_y)
-
-
-class ImageContextMenu(tk.Menu):
-    def __init__(self, image_frame, xdata, ydata, value):
-        super().__init__(image_frame, tearoff=0)
-        self.image_frame = image_frame
-        self.xdata = xdata
-        self.ydata = ydata
-        self.coord = image_frame.image_wcs.pixel_to_world(xdata, ydata)
-        self.value = value
-
-        self.add_command(
-            label="Copy WCS Coords (Decimal)", command=self.copy_decimal_coords
-        )
-        self.add_command(
-            label="Copy WCS Coords (HMSDMS)", command=self.copy_hmsdms_coords
-        )
-        self.add_command(label="Copy Image Coords", command=self.copy_image_coords)
-        self.add_command(label="Copy Value at Coords", command=self.copy_coord_value)
-        self.add_separator()
-        self.add_command(
-            label="Set RA/DEC in HiPs Survey Selector", command=self.set_ra_dec
-        )
-
-    def copy_decimal_coords(self):
-        decimal = self.coord.to_string(style="decimal").replace(" ", ", ")
-        self.copy_to_clipboard(f"WCS: ({decimal})")
-
-    def copy_hmsdms_coords(self):
-        hmsdms = self.coord.to_string(style="hmsdms", sep=":", pad=True).replace(
-            " ", ", "
-        )
-        self.copy_to_clipboard(f"WCS: ({hmsdms})")
-
-    def copy_image_coords(self):
-        self.copy_to_clipboard(f"Image: ({self.xdata}, {self.ydata})")
-
-    def copy_coord_value(self):
-        self.copy_to_clipboard(str(self.value))
-
-    def copy_to_clipboard(self, text):
-        self.image_frame.clipboard_clear()
-        self.image_frame.clipboard_append(text)
-        self.image_frame.update()
-
-    def set_ra_dec(self):
-        wc.open_widget(wc.Widget.HIPS_SELECT)
-
-        decimal = self.coord.to_string(style="decimal")
-        coords = decimal.split()
-        wc.get_widget(wc.Widget.HIPS_SELECT).set_ra_dec_entries(coords[0], coords[1])

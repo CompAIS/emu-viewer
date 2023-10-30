@@ -1,6 +1,6 @@
 import tkinter as tk
 from functools import partial
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import ttkbootstrap as tb
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -9,16 +9,17 @@ import src.widgets.image.image_controller as ic
 import src.widgets.renderer.histogram_context_menu as hcm
 from src import constants
 from src._overrides.matplotlib.HistogramToolbar import HistogramToolbar
-from src.enums import DataType, Matching
+from src.enums import DataType, Matching, Scaling
 from src.lib.util import get_size_inches
 from src.widgets.base_widget import BaseWidget
 from src.widgets.renderer import histogram
 
-scaling_options = [
-    "Linear",
-    "Log",
-    "Sqrt",
-]
+if TYPE_CHECKING:
+    from src.widgets.image.image_frame import ImageFrame
+
+# The options in the Scaling dropdown. Add to the Scaling enum
+#   if you'd like more options.
+scaling_options = [x.value for x in Scaling]
 
 colour_map_options = [
     "viridis",
@@ -219,12 +220,13 @@ class RendererWidget(BaseWidget):
 
     # These four functions update state of the UI with the new elements,
     #   and will update the image data, but will not re-render the image
-    def set_scaling(self, option):
+    def set_scaling(self, option: Optional[Scaling]):
+        """Update the current selected scaling in the dropdown, and update the image."""
         if option is None:
             self.scaling_dropdown["text"] = NO_IMAGE_OPEN
             return
 
-        self.scaling_dropdown["text"] = option
+        self.scaling_dropdown["text"] = option.label
 
         if not self.check_if_image_selected():
             return
@@ -297,11 +299,11 @@ class RendererWidget(BaseWidget):
         self.set_grid_lines_box_state(state)
 
     # These functions listen to events and behave accordingly
-    def on_select_scaling(self, option):
+    def on_select_scaling(self, option: str):
         if not self.check_if_image_selected():
             return
 
-        self.set_scaling(option)
+        self.set_scaling(Scaling.from_str(option))
         ic.get_selected_image().update_norm()
 
         self.update_matched_images()
@@ -332,7 +334,7 @@ class RendererWidget(BaseWidget):
         self.update_histogram_lines()
         self.root.update()
 
-    def on_image_change(self, image):
+    def on_image_change(self, image: "ImageFrame"):
         if image is None or image.data_type != DataType.FITS:
             self.set_scaling(None)
             self.set_colour_map(None)
@@ -345,7 +347,7 @@ class RendererWidget(BaseWidget):
 
         self.update_percentile_buttons()
         self.set_vmin_vmax(image)
-        self.set_scaling(image.stretch)
+        self.set_scaling(image.scaling)
         self.set_colour_map(image.colour_map)
         self.update_histogram_graph()
         self.set_grid_lines_box_state(image.grid_lines)
@@ -371,7 +373,7 @@ class RendererWidget(BaseWidget):
             self.show_context_menu(event, image_x, window_x, window_y)
 
     def show_context_menu(self, _event, image_x: float, window_x: int, window_y: int):
-        self.context_menu = HistogramContextMenu(self, image_x)
+        self.context_menu = hcm.HistogramContextMenu(self, image_x)
         self.context_menu.post(window_x, window_y)
 
     def check_if_image_selected(self):
