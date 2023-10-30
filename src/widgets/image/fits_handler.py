@@ -104,13 +104,17 @@ def create_figure_fits(
         sexigesimal = c.to_string(
             style="hmsdms", sep=":", pad=True, precision=2
         ).replace(" ", ", ")
+
         # Yes, round, not floor.
-        pix = f"{round(x)}, {round(y)}"
+        roundx = round(x)
+        roundy = round(y)
+
+        pix = f"{roundx}, {roundy}"
 
         prefix = f"WCS: ({decimal});\n WCS: ({sexigesimal});\n Image: ({pix})"
 
-        if 0 <= y < image_data.shape[1] and 0 <= x < image_data.shape[0]:
-            image_value = image_data[round(y)][round(x)]
+        if 0 <= roundx < image_data.shape[1] and 0 <= roundy < image_data.shape[0]:
+            image_value = image_data[roundy][roundx]
             return f"{prefix}\n Value: ({image_value:.3e})"
 
         return prefix
@@ -154,12 +158,12 @@ def set_grid_lines(fig: Figure, visible: bool):
     """Set the status of the grid lines on the plot.
 
     :param fig: the figure to update the grid lines on
-    :param visible: whether or not to show the grid lines
+    :param visible: whether to show the grid lines
     """
     if visible:
         fig.axes[0].grid(linestyle="-", linewidth=0.2)
     else:
-        fig.axes[0].grid(False)
+        fig.axes[0].grid(b=False, linewidth=0)
 
 
 def get_percentiles(image_data: npt.ArrayLike) -> Dict[str, Tuple[float, float]]:

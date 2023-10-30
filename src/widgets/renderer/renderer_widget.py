@@ -277,17 +277,18 @@ class RendererWidget(BaseWidget):
 
         self.update_matched_images()
 
-    def set_grid_lines_box_state(self, state):
+    def set_grid_lines_box_state(self, state: Optional[bool]):
         """
         Set the state of the checkbox to the given state.
+
+        :param state: the state to set it to
         """
 
+        self.grid_lines_cbtn.configure(state="enabled")
+        self.grid_lines_state.set(True if state else False)
+
         if state is None:
-            self.grid_lines_state.set(False)
             self.grid_lines_cbtn.configure(state="disabled")
-        else:
-            self.grid_lines_cbtn.configure(state="enabled")
-            self.grid_lines_state.set(state)
 
     def on_grid_lines(self):
         image = ic.get_selected_image()
@@ -297,6 +298,8 @@ class RendererWidget(BaseWidget):
 
         state = image.toggle_grid_lines()
         self.set_grid_lines_box_state(state)
+
+        self.update_matched_images()
 
     # These functions listen to events and behave accordingly
     def on_select_scaling(self, option: str):
@@ -381,6 +384,9 @@ class RendererWidget(BaseWidget):
         return image is not None and image.data_type == DataType.FITS
 
     def update_matched_images(self):
+        if not ic.get_selected_image().is_matched(Matching.RENDER):
+            return
+
         for image in ic.get_images_matched_to(Matching.RENDER):
             if image == ic.get_selected_image():
                 continue
