@@ -23,8 +23,7 @@ If you're on WSL, you will probably need to do what this answer says: https://st
 
 ### Setup the project
 
-For the purposes of the below, using Windows Subsystem for Linux does *not*
-count as being "on windows".
+For the purposes of the below, using Windows Subsystem for Linux does *not* count as being "on windows".
 
 1. If you have Python 3.11.4 already installed and you are not on windows, you should first uninstall that version. If you are on Windows, skip to step 3.
 2. Install the tk headers with `make setup-tk`. Python needs to install after these headers are installed so it can compile with them. It's weird, I don't know.

@@ -1,21 +1,18 @@
-import sys
 import tkinter as tk
-import weakref
 from functools import partial
+from typing import Optional
 
 import ttkbootstrap as tb
-from matplotlib.backend_bases import CloseEvent
-from matplotlib.backends import _backend_tk
-from matplotlib.backends._backend_tk import FigureCanvasTk
-from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-import src.controllers.image_controller as ic
+import src.widgets.image.image_controller as ic
+import src.widgets.renderer.histogram_context_menu as hcm
 from src import constants
 from src._overrides.matplotlib.HistogramToolbar import HistogramToolbar
 from src.enums import DataType, Matching
-from src.lib import histogram
 from src.lib.util import get_size_inches
 from src.widgets.base_widget import BaseWidget
+from src.widgets.renderer import histogram
 
 scaling_options = [
     "Linear",
@@ -49,7 +46,9 @@ class RendererWidget(BaseWidget):
     def __init__(self, root):
         super().__init__(root)
 
-        self.canvas = self.toolbar = None
+        self.canvas: Optional[FigureCanvasTkAgg] = None
+        self.toolbar: Optional[HistogramToolbar] = None
+        self.context_menu: Optional[hcm.HistogramContextMenu] = None
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -105,7 +104,7 @@ class RendererWidget(BaseWidget):
         self.histogram_frame.grid_columnconfigure(0, weight=1)
 
         self.histo_fig = histogram.create_histogram_graph()
-        self.canvas = HistogramCanvasTkAgg(self.histo_fig, master=self.histogram_frame)
+        self.canvas = FigureCanvasTkAgg(self.histo_fig, master=self.histogram_frame)
         self.canvas.get_tk_widget().grid(column=0, row=0, sticky=tk.NSEW)
         self.canvas.mpl_connect("button_press_event", self.on_histo_click)
         self.canvas.draw()
@@ -371,8 +370,8 @@ class RendererWidget(BaseWidget):
             image_x, _ = ax.transData.inverted().transform((event.x, event.y))
             self.show_context_menu(event, image_x, window_x, window_y)
 
-    def show_context_menu(self, event, image_x, window_x, window_y):
-        self.context_menu = HistogramContextMenu(self, self.histo_fig, image_x)
+    def show_context_menu(self, _event, image_x: float, window_x: int, window_y: int):
+        self.context_menu = HistogramContextMenu(self, image_x)
         self.context_menu.post(window_x, window_y)
 
     def check_if_image_selected(self):
@@ -390,122 +389,3 @@ class RendererWidget(BaseWidget):
         ic.selected_image_eh.remove(self.on_image_change)
 
         super().close()
-
-
-class HistogramContextMenu(tk.Menu):
-    def __init__(self, render_widget, histogram, xdata):
-        super().__init__(render_widget, tearoff=0)
-        self.render_widget = render_widget
-        self.xdata = xdata
-
-        self.add_command(label="Copy value", command=self.copy_value)
-        self.add_command(label="Set Min to this value", command=self.set_min)
-        self.add_command(label="Set Max to this value", command=self.set_max)
-
-    def copy_value(self):
-        self.copy_to_clipboard(str(self.xdata))
-
-    def set_min(self):
-        self.render_widget.min_entry.delete(0, tk.END)
-        self.render_widget.min_entry.insert(0, str(self.xdata))
-        self.render_widget.on_entry_focusout(None)
-
-    def set_max(self):
-        self.render_widget.max_entry.delete(0, tk.END)
-        self.render_widget.max_entry.insert(0, str(self.xdata))
-        self.render_widget.on_entry_focusout(None)
-
-    def copy_to_clipboard(self, text):
-        self.render_widget.clipboard_clear()
-        self.render_widget.clipboard_append(text)
-        self.render_widget.update()
-
-
-# overriding internals again because YAY matplotlib!!!
-# (don't tell anybody this but I'm actually ANGRY!)
-class HistrogramFigureCanvasTk(FigureCanvasTk):
-    def __init__(self, figure=None, master=None):
-        super().__init__(figure)
-        self._idle_draw_id = None
-        self._event_loop_id = None
-        w, h = self.get_width_height(physical=True)
-        self._tkcanvas = tk.Canvas(
-            master=master,
-            background="white",
-            width=w,
-            height=h,
-            borderwidth=0,
-            highlightthickness=0,
-        )
-        self._tkphoto = tk.PhotoImage(master=self._tkcanvas, width=w, height=h)
-        self._tkcanvas.create_image(w // 2, h // 2, image=self._tkphoto)
-        self._tkcanvas.bind("<Configure>", self.resize)
-        if sys.platform == "win32":
-            self._tkcanvas.bind("<Map>", self._update_device_pixel_ratio)
-        self._tkcanvas.bind("<Key>", self.key_press)
-        self._tkcanvas.bind("<Motion>", self.motion_notify_event)
-        self._tkcanvas.bind("<Enter>", self.enter_notify_event)
-        self._tkcanvas.bind("<Leave>", self.leave_notify_event)
-        self._tkcanvas.bind("<KeyRelease>", self.key_release)
-        for name in ["<Button-1>", "<Button-2>", "<Button-3>"]:
-            self._tkcanvas.bind(name, self.button_press_event)
-        for name in ["<Double-Button-1>", "<Double-Button-2>", "<Double-Button-3>"]:
-            self._tkcanvas.bind(name, self.button_dblclick_event)
-        for name in ["<ButtonRelease-1>", "<ButtonRelease-2>", "<ButtonRelease-3>"]:
-            self._tkcanvas.bind(name, self.button_release_event)
-
-        # Mouse wheel on Linux generates button 4/5 events
-        for name in "<Button-4>", "<Button-5>":
-            self._tkcanvas.bind(name, self.scroll_event)
-        # Mouse wheel for windows goes to the window with the focus.
-        # Since the canvas won't usually have the focus, bind the
-        # event to the window containing the canvas instead.
-        # See https://wiki.tcl-lang.org/3893 (mousewheel) for details
-        root = self._tkcanvas.winfo_toplevel()
-
-        # Prevent long-lived references via tkinter callback structure GH-24820
-        weakself = weakref.ref(self)
-        weakroot = weakref.ref(root)
-
-        def scroll_event_windows(event):
-            self = weakself()
-            if self is None:
-                root = weakroot()
-                if root is not None:
-                    root.unbind("<MouseWheel>", scroll_event_windows_id)
-                return
-            return self.scroll_event_windows(event)
-
-        scroll_event_windows_id = root.bind("<MouseWheel>", scroll_event_windows, "+")
-
-        # Can't get destroy events by binding to _tkcanvas. Therefore, bind
-        # to the window and filter.
-        def filter_destroy(event):
-            self = weakself()
-            if self is None:
-                root = weakroot()
-                if root is not None:
-                    root.unbind("<Destroy>", filter_destroy_id)
-                return
-            if event.widget is self._tkcanvas:
-                CloseEvent("close_event", self)._process()
-
-        filter_destroy_id = root.bind("<Destroy>", filter_destroy, "+")
-
-        # THIS IS THE THING WE CHANGED
-        # COMMENTING OUT A SINGLE LINE
-        # self._tkcanvas.focus_set()
-
-        self._rubberband_rect_black = None
-        self._rubberband_rect_white = None
-
-
-class HistogramCanvasTkAgg(FigureCanvasAgg, HistrogramFigureCanvasTk):
-    def draw(self):
-        super().draw()
-        self.blit()
-
-    def blit(self, bbox=None):
-        _backend_tk.blit(
-            self._tkphoto, self.renderer.buffer_rgba(), (0, 1, 2, 3), bbox=bbox
-        )

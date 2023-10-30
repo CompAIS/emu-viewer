@@ -1,10 +1,10 @@
 import tkinter as tk
 from functools import partial
 
-import src.controllers.image_controller as ic
+import src.widgets.image.image_controller as ic
 from src import constants
-from src.components import image_frame
 from src.enums import DataType
+from src.widgets.image import image_frame
 
 
 class StandaloneImage(tk.Toplevel):

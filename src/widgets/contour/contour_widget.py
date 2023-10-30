@@ -6,8 +6,8 @@ from tkinter import messagebox
 import numpy as np
 import ttkbootstrap as tb
 
-import src.controllers.image_controller as ic
-import src.lib.contour as contour
+import src.widgets.contour.contour as contour
+import src.widgets.image.image_controller as ic
 from src.components.color_chooser import ColourChooserButton
 from src.enums import DataType
 from src.widgets.base_widget import BaseWidget

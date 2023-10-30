@@ -4,7 +4,7 @@ from tkinter import ttk
 
 import ttkbootstrap as tb
 
-import src.controllers.image_controller as ic
+import src.widgets.image.image_controller as ic
 from src.widgets.base_widget import BaseWidget
 
 

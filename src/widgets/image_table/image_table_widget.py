@@ -3,7 +3,7 @@ from functools import partial
 
 import ttkbootstrap as tb
 
-import src.controllers.image_controller as ic
+import src.widgets.image.image_controller as ic
 from src.components.table_widget import TableWidget
 from src.enums import DataType, Matching
 from src.widgets.base_widget import BaseWidget

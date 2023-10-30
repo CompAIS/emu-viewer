@@ -9,8 +9,8 @@ import ttkbootstrap as tb
 from PIL import Image, ImageTk
 from ttkbootstrap.tableview import Tableview
 
-import src.controllers.image_controller as ic
-import src.lib.catalogue as catalogue
+import src.widgets.catalogue.catalogue as catalogue
+import src.widgets.image.image_controller as ic
 from src.components.color_chooser import ColourChooserButton
 from src.constants import ASSETS_FOLDER
 from src.widgets.base_widget import BaseWidget

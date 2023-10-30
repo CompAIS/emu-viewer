@@ -3,8 +3,8 @@ from tkinter import filedialog
 
 import ttkbootstrap as tb
 
-from src.controllers import image_controller as ic
-from src.controllers import widget_controller as wc
+from src.widgets import widget_controller as wc
+from src.widgets.image import image_controller as ic
 
 
 class MenuBar(tb.Frame):
