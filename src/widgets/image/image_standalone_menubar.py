@@ -37,10 +37,6 @@ class StandaloneImageMenuBar(tb.Menu):
             command=self.save_hips,
         )
 
-        # looks fine on mac
-        if platform.system() == "Darwin":
-            self.file_menu.entryconfigure("Save .hips as .fits", state="disabled")
-
         self.hips_is_disabled = (
             not self.root.image_frame.from_hips
             or self.root.image_frame.data_type != DataType.FITS
@@ -54,6 +50,10 @@ class StandaloneImageMenuBar(tb.Menu):
                 background="#2B3E50",
                 activebackground="#2B3E50",
             )
+
+            # looks fine on mac
+            if platform.system() == "Darwin":
+                self.file_menu.entryconfigure("Save .hips as .fits", state="disabled")
 
         self.file_menu.add_command(label="Close Image", command=self.close_image)
 

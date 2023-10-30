@@ -2,6 +2,7 @@ import tkinter as tk
 from functools import partial
 from typing import TYPE_CHECKING, Optional
 
+import numpy as np
 import ttkbootstrap as tb
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -253,8 +254,8 @@ class RendererWidget(BaseWidget):
         if image is not None:
             self.min_entry.configure(state="enabled")
             self.max_entry.configure(state="enabled")
-            self.min_entry.insert(0, str(image.vmin))
-            self.max_entry.insert(0, str(image.vmax))
+            self.min_entry.insert(0, np.format_float_positional(image.vmin))
+            self.max_entry.insert(0, np.format_float_positional(image.vmax))
         else:
             self.min_entry.configure(state="disabled")
             self.max_entry.configure(state="disabled")
