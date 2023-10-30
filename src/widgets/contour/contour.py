@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import List
 
 import numpy as np
 import numpy.typing as npt
@@ -9,7 +8,7 @@ from matplotlib.figure import Figure
 from scipy.ndimage.filters import gaussian_filter
 
 
-def generate_levels(mean: float, sigma: float, sigma_list: List[float]):
+def generate_levels(mean: float, sigma: float, sigma_list: list[float]):
     """Generate levels to draw the contours at.
 
     Based on `sigma_list`, which is a multiplier on `sigma`, offset by mean.
@@ -54,7 +53,7 @@ class RenderContourOptions:
 
     data_source: npt.ArrayLike
     data_source_wcs: wcs.WCS
-    contour_levels: List[float]
+    contour_levels: list[float]
     gaussian_factor: float
     line_colour: str
     line_opacity: float

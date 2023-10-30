@@ -31,8 +31,8 @@ class CatalogueWidget(BaseWidget):
         self.rowconfigure(1, weight=0)
 
         self.catalogue: Optional[Votable.tree.Table] = None
-        self.fields: Optional[List[Votable.tree.Field]] = None
-        self.field_names: Optional[List[str]] = None
+        self.fields: Optional[list[Votable.tree.Field]] = None
+        self.field_names: Optional[list[str]] = None
         self.row_data = None
 
         self.selected_ra = ""

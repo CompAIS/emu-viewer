@@ -1,7 +1,7 @@
 import os
 from multiprocessing.pool import ThreadPool
 from tkinter import messagebox
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, Optional, Tuple
 
 import ttkbootstrap.dialogs as dialogs
 from astropy import wcs
@@ -71,7 +71,7 @@ def set_selected_image(image: Optional[image_frame.ImageFrame]):
     selected_image_eh.invoke(image)
 
 
-def get_images() -> List[image_frame.ImageFrame]:
+def get_images() -> list[image_frame.ImageFrame]:
     """Get all the currently open ImageFrames.
 
     :return: a list of ImageFrames
@@ -90,7 +90,7 @@ def get_images() -> List[image_frame.ImageFrame]:
     return images
 
 
-def get_images_matched_to(match: Matching) -> List[image_frame.ImageFrame]:
+def get_images_matched_to(match: Matching) -> list[image_frame.ImageFrame]:
     """Get the images matched to a certain Matching.
 
     Wrapper function to get_images which filters open images on whether
