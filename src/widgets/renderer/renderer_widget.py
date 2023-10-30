@@ -295,8 +295,10 @@ class RendererWidget(BaseWidget):
             self.set_grid_lines_box_state(None)
             return
 
-        state = image.toggle_grid_lines()
+        state = image.update_grid_lines()
         self.set_grid_lines_box_state(state)
+
+        self.update_matched_images()
 
     # These functions listen to events and behave accordingly
     def on_select_scaling(self, option: str):

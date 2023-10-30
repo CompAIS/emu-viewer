@@ -208,6 +208,12 @@ class ImageFrame(tb.Frame):
         self.set_vmin_vmax_custom(source_image.vmin, source_image.vmax)
         self.update_norm()
 
+        self.grid_lines = source_image.grid_lines
+        if self.grid_lines:
+            self.set_grid_lines()
+        else:
+            self.hide_grid_lines()
+
     def draw_catalogue(self, options: catalogue.RenderCatalogueOptions):
         """Draw the catalogue on this image with the given options and data.
 
@@ -269,13 +275,25 @@ class ImageFrame(tb.Frame):
 
             image.set_limits(self.limits)
 
-    def toggle_grid_lines(self):
+    def update_grid_lines(self):
         self.grid_lines = not self.grid_lines
 
-        fits_handler.set_grid_lines(self.fig, self.grid_lines)
+        if self.grid_lines:
+            fits_handler.set_grid_lines(self.fig)
+        else:
+            fits_handler.hide_grid_lines(self.fig)
+
         self.canvas.draw()
 
         return self.grid_lines
+
+    def set_grid_lines(self):
+        fits_handler.set_grid_lines(self.fig)
+        self.canvas.draw()
+
+    def hide_grid_lines(self):
+        fits_handler.hide_grid_lines(self.fig)
+        self.canvas.draw()
 
     def on_click(self, event):
         if self.fig.canvas.toolbar.mode != "" or self.data_type != DataType.FITS:

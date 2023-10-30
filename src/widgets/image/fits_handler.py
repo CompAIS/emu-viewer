@@ -1,3 +1,4 @@
+import math
 from tkinter import filedialog
 from typing import Dict, Tuple
 
@@ -110,7 +111,7 @@ def create_figure_fits(
         prefix = f"WCS: ({decimal});\n WCS: ({sexigesimal});\n Image: ({pix})"
 
         if 0 <= y < image_data.shape[1] and 0 <= x < image_data.shape[0]:
-            image_value = image_data[round(y)][round(x)]
+            image_value = image_data[math.floor(y)][math.floor(x)]
             return f"{prefix}\n Value: ({image_value:.3e})"
 
         return prefix
@@ -150,16 +151,20 @@ def update_image_cmap(image: AxesImage, colour_map: str):
     image.set_cmap(colour_map)
 
 
-def set_grid_lines(fig: Figure, visible: bool):
-    """Set the status of the grid lines on the plot.
+def set_grid_lines(fig: Figure):
+    """Set the grid lines on the plot.
 
     :param fig: the figure to update the grid lines on
-    :param visible: whether or not to show the grid lines
     """
-    if visible:
-        fig.axes[0].grid(linestyle="-", linewidth=0.2)
-    else:
-        fig.axes[0].grid(False)
+    fig.axes[0].grid(linestyle="-", linewidth=0.2)
+
+
+def hide_grid_lines(fig: Figure):
+    """Hide the grid lines on the plot.
+
+    :param fig: the figure to update the grid lines on
+    """
+    fig.axes[0].grid(False)
 
 
 def get_percentiles(image_data: npt.ArrayLike) -> Dict[str, Tuple[float, float]]:
