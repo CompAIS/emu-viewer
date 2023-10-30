@@ -5,10 +5,10 @@ from functools import partial
 import ttkbootstrap as tb
 import ttkbootstrap.dialogs as dialogs
 
-import src.controllers.image_controller as ic
+import src.widgets.image.image_controller as ic
 from src.enums import DataType
-from src.lib.hips_handler import HipsSurvey
 from src.widgets.base_widget import BaseWidget
+from src.widgets.hips_survey_selector.hips_handler import HipsSurvey
 
 # All projection options available, can be edited to add more
 projection_options = ["TAN", "ARC", "AIT", "SIN"]

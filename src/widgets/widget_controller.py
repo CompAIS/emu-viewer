@@ -45,7 +45,7 @@ class Widget(Enum):
 
     HIPS_SELECT = ("src.widgets.hips_selector_widget", "HipsSelectorWidget")
 
-    def __init__(self, module_path, class_name):
+    def __init__(self, module_path: str, class_name: str):
         self._value = None
         self.module_path = module_path
         self.class_name = class_name

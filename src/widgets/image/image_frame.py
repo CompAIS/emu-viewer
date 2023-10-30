@@ -11,11 +11,15 @@ from matplotlib.collections import PathCollection
 from matplotlib.contour import QuadContourSet
 
 from src._overrides.matplotlib.ImageToolbar import ImageToolbar
-from src.controllers import image_controller as ic
-from src.controllers import widget_controller as wc
 from src.enums import DataType, Matching
-from src.lib import catalogue, contour, fits_handler, histogram, png_handler
 from src.lib.util import index_default
+from src.widgets import widget_controller as wc
+from src.widgets.catalogue import catalogue
+from src.widgets.contour import contour
+from src.widgets.image import fits_handler
+from src.widgets.image import image_controller as ic
+from src.widgets.image import png_handler
+from src.widgets.renderer import histogram
 
 warnings.simplefilter(action="ignore", category=wcs.FITSFixedWarning)
 

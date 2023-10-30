@@ -1,25 +1,36 @@
 import os
+import tkinter
 from multiprocessing.pool import ThreadPool
 from tkinter import messagebox
 from typing import List, Optional, Tuple
 
+import ttkbootstrap as tb
 import ttkbootstrap.dialogs as dialogs
 from astropy import wcs
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from numpy import typing as npt
 
-from src.components import image_frame
 from src.enums import DataType, Matching
-from src.lib import fits_handler, hips_handler, png_handler
 from src.lib.event_handler import EventHandler
 from src.lib.util import index_default
-from src.widgets.image_standalone_toplevel import StandaloneImage
+from src.widgets.hips_survey_selector import hips_handler
+from src.widgets.image import fits_handler, image_frame, png_handler
+from src.widgets.image.image_frame import ImageFrame
+from src.widgets.image.image_standalone_toplevel import StandaloneImage
 
 CLOSE_CONFIRM = "Are you sure you want to close all currently open images? Changes will not be saved."
 
+
+class DummyMainWindow(tb.Window):
+    """A shell of the MainWindow with appropriate types so we don't have to import"""
+
+    main_image: ImageFrame
+    main_image_container: tkinter.Frame
+
+
 # reference to the main window to avoid circular imports, see register_main
-_main_window = None
+_main_window: Optional[DummyMainWindow] = None
 _standalone_windows = []
 
 _selected_image = None
@@ -121,7 +132,7 @@ def get_coord_matched_limits(
 
 def _open_image(
     image_data: npt.ArrayLike,
-    image_data_header: fits.Header,
+    image_data_header: Optional[fits.Header],
     file_name: str,
     data_type: DataType,
 ):
@@ -183,25 +194,28 @@ def open_png(file_path: str):
 
 
 def open_hips(
-    box_parent, hips_survey: hips_handler.HipsSurvey, wcs: Optional[wcs.WCS] = None
+    box_parent,
+    hips_survey: hips_handler.HipsSurvey,
+    image_wcs: Optional[wcs.WCS] = None,
 ):
     """Open a HiPs survey from a survey name, and optionally a WCS.
 
     Will download the survey at once with the given configuration and convert it to it's
     underlying type. This is currently slow, but unfortunately the best we have.
 
-    Note that the surveys must be contactable by the [hips2fits](https://astroquery.readthedocs.io/en/latest/hips2fits/hips2fits.html)
-    service. The list of valid survey names is available [here](https://aladin.cds.unistra.fr/hips/list).
+    Note that the surveys must be contactable by the
+    [hips2fits](https://astroquery.readthedocs.io/en/latest/hips2fits/hips2fits.html) service. The list of valid survey
+    names is available [here](https://aladin.cds.unistra.fr/hips/list).
 
     :param box_parent: a tk widget to own the message box which appears
     :param hips_survey: the hips survey to open with the respective information about where to open it
-    :param Optional[wcs.WCS] wcs: a WCS to open the survey at
+    :param Optional[wcs.WCS] image_wcs: a WCS to open the survey at
     """
 
     # so the message box doesn't block the downloading of the survey
     # i imagine that could be quite frustrating
     pool = ThreadPool(processes=1)
-    r = pool.apply_async(hips_handler.open_hips, (hips_survey, wcs))
+    r = pool.apply_async(hips_handler.open_hips, (hips_survey, image_wcs))
 
     dialogs.Messagebox.show_info(
         "Attempting to download HiPs survey - close this box so image can open once done",

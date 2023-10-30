@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-import src.widgets.contour_widget as contour_widget
+import src.widgets.contour.contour_widget as contour_widget
 
 
 class ValidateTest(TestCase):
