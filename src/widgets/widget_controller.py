@@ -16,8 +16,8 @@ class Widget(Enum):
     tells the widget controller what to do with it.
 
     ```py
-    class HipsSelectorWidget(BaseWidget):
-        label = "Hips Survey Selector"
+    class HiPsSelectorWidget(BaseWidget):
+        label = "HiPs Survey Selector"
         dropdown = False
     ```
 
@@ -45,7 +45,7 @@ class Widget(Enum):
 
     HIPS_SELECT = (
         "src.widgets.hips_survey_selector.hips_selector_widget",
-        "HipsSelectorWidget",
+        "HiPsSelectorWidget",
     )
 
     def __init__(self, module_path: str, class_name: str):

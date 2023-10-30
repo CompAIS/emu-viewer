@@ -8,7 +8,7 @@ import ttkbootstrap.dialogs as dialogs
 import src.widgets.image.image_controller as ic
 from src.enums import DataType
 from src.widgets.base_widget import BaseWidget
-from src.widgets.hips_survey_selector.hips_handler import HipsSurvey
+from src.widgets.hips_survey_selector.hips_handler import HiPsSurvey
 
 # All projection options available, can be edited to add more
 projection_options = ["TAN", "ARC", "AIT", "SIN"]
@@ -65,11 +65,11 @@ ERROR_GENERATING = "Error generating image, either incorrect survey has been ent
 COL_WIDTHS = [37, 23]
 
 
-class HipsSelectorWidget(BaseWidget):
-    """The HipsSelectorWidget is used to open a HiPs survey with specified parameters that can be selected manually or
+class HiPsSelectorWidget(BaseWidget):
+    """The HiPsSelectorWidget is used to open a HiPs survey with specified parameters that can be selected manually or
     with a valid image"""
 
-    label = "Hips Survey Selector"
+    label = "HiPs Survey Selector"
     dropdown = False
 
     def __init__(self, root):
@@ -89,7 +89,7 @@ class HipsSelectorWidget(BaseWidget):
         self.selected_data_type = None
         self.selected_wcs = None
 
-        self.hips_survey = HipsSurvey()
+        self.hips_survey = HiPsSurvey()
 
         self.setup()
 
@@ -110,7 +110,7 @@ class HipsSelectorWidget(BaseWidget):
         # Creates the optical label and dropdown with the specified optical survey options
         self.optical_dropdown = self.dropdown_options(
             frame,
-            "Optical Hips Surveys",
+            "Optical HiPs Surveys",
             NO_SURVEY_SELECTED,
             optical_survey_options,
             self.select_survey_option,
@@ -122,7 +122,7 @@ class HipsSelectorWidget(BaseWidget):
         # Creates the infrared label and dropdown with the specified infrared survey options
         self.infrared_dropdown = self.dropdown_options(
             frame,
-            "Infrared Hips Surveys",
+            "Infrared HiPs Surveys",
             NO_SURVEY_SELECTED,
             infrared_survey_options,
             self.select_survey_option,
@@ -134,7 +134,7 @@ class HipsSelectorWidget(BaseWidget):
         # Creates the radio label and dropdown with the specified radio survey options
         self.radio_dropdown = self.dropdown_options(
             frame,
-            "Radio Hips Surveys",
+            "Radio HiPs Surveys",
             NO_SURVEY_SELECTED,
             radio_survey_options,
             self.select_survey_option,
@@ -146,7 +146,7 @@ class HipsSelectorWidget(BaseWidget):
         # Creates the x-ray label and dropdown with the specified x-ray survey options
         self.xray_dropdown = self.dropdown_options(
             frame,
-            "X-Ray Hips Surveys",
+            "X-Ray HiPs Surveys",
             NO_SURVEY_SELECTED,
             xray_survey_options,
             self.select_survey_option,

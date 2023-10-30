@@ -1,3 +1,4 @@
+import platform
 from typing import TYPE_CHECKING
 
 import ttkbootstrap as tb
@@ -35,6 +36,11 @@ class StandaloneImageMenuBar(tb.Menu):
             label="Save .hips as .fits",
             command=self.save_hips,
         )
+
+        # looks fine on mac
+        if platform.system() == "Darwin":
+            self.file_menu.entryconfigure("Save .hips as .fits", state="disabled")
+
         self.hips_is_disabled = (
             not self.root.image_frame.from_hips
             or self.root.image_frame.data_type != DataType.FITS

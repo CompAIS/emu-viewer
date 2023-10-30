@@ -106,6 +106,9 @@ class ImageToolbar(NavigationToolbar2Tk):
             width=int(canvas.figure.bbox.width),
             height=50,
         )
+        # needs to be after the above init
+        self._line_colour = tk.StringVar(master=self, value="red")
+        self._text_colour = tk.StringVar(master=self, value="red")
 
         self._buttons = {}
         for text, tooltip_text, image_file, callback in self.toolitems:
@@ -379,6 +382,7 @@ class ImageToolbar(NavigationToolbar2Tk):
             height=24,
             window_title="Choose Annotation Line Colour",
             default="red",
+            variable=self._line_colour,
         )
         self.line_button.grid(column=1, row=2, sticky=tk.W, padx=10, pady=10)
 
@@ -408,6 +412,7 @@ class ImageToolbar(NavigationToolbar2Tk):
             height=24,
             window_title="Choose Annotation Text Colour",
             default="red",
+            variable=self._text_colour,
         )
         self.text_button.grid(column=1, row=4, sticky=tk.W, padx=10, pady=10)
 
@@ -450,11 +455,11 @@ class ImageToolbar(NavigationToolbar2Tk):
 
     @property
     def line_colour(self):
-        return self.line_button.get()
+        return self._line_colour.get()
 
     @property
     def text_colour(self):
-        return self.text_button.get()
+        return self._text_colour.get()
 
     def set_erase_size(self, size_label, value):
         value = float(value)

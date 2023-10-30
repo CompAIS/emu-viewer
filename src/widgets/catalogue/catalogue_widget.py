@@ -41,7 +41,7 @@ class CatalogueWidget(BaseWidget):
         self.selected_dec = ""
 
         self.size = 25
-        self.outline_colour = tk.StringVar()
+        self.outline_colour = tk.StringVar(master=self, value="green")
         self.colour_fill = "none"
 
         chked_image_path = os.path.join(ASSETS_FOLDER, "checked_box.png")
