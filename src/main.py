@@ -5,6 +5,7 @@ import tkinter as tk
 import ttkbootstrap as tb
 
 import src.constants as constants
+import platform
 from src.menu_bar import MenuBar
 from src.widgets import widget_controller as wc
 from src.widgets.image import image_controller as ic
@@ -20,7 +21,12 @@ class MainWindow(tb.Window):
 
         self.title("EMU Viewer")
         self.iconphoto(True, constants.ICONPNG)
-        self.iconbitmap(constants.FAVICON_PATH)  # windows title icon
+
+        if platform.system() == "Linux":
+            self.iconphoto(True, constants.FAVICON)
+        else:
+            self.iconbitmap(constants.FAVICON)  # windows title icon
+
         self.geometry("800x800")
 
         self.grid_rowconfigure(0, weight=1)

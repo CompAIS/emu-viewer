@@ -1,3 +1,4 @@
+import platform
 import tkinter as tk
 from functools import partial
 from typing import TYPE_CHECKING, Optional
@@ -46,7 +47,11 @@ class StandaloneImage(tk.Toplevel):
 
         self.title(file_name)
         self.geometry("800x600")
-        self.iconbitmap(constants.FAVICON_PATH)  # windows title icon
+
+        if platform.system() == "Linux":
+            self.iconphoto(True, constants.FAVICON)
+        else:
+            self.iconbitmap(constants.FAVICON)  # windows title icon
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
