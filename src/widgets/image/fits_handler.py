@@ -1,6 +1,7 @@
 from tkinter import filedialog
 from typing import Dict, Tuple
 
+import astropy.visualization as vis
 import astropy.wcs.utils as sc
 import numpy as np
 import numpy.typing as npt
@@ -122,10 +123,19 @@ def create_figure_fits(
     # https://matplotlib.org/stable/gallery/images_contours_and_fields/image_zcoord.html
     ax.format_coord = format_coord
 
-    data = scaling.stretch(image_data, vmin, vmax)
+    # Manually scaling the data leads to an issue where the colour bar does not update with correct values but this does
+    # fix the history buttons changing the render config
+    # data = scaling.stretch(image_data, vmin, vmax)
+    # image = ax.imshow(data, cmap=colour_map, origin="lower", interpolation="nearest")
+
+    norm = vis.ImageNormalize(
+        stretch=scaling.stretch(image_data, vmin, vmax), vmin=vmin, vmax=vmax
+    )
 
     # Render the scaled image data onto the figure
-    image = ax.imshow(data, cmap=colour_map, origin="lower", interpolation="nearest")
+    image = ax.imshow(
+        image_data, cmap=colour_map, norm=norm, origin="lower", interpolation="nearest"
+    )
 
     cbar = fig.colorbar(image, shrink=0.5)
     tick_locator = ticker.MaxNLocator(nbins=10)
@@ -140,9 +150,15 @@ def create_figure_fits(
 def update_image_norm(image: AxesImage, image_data, vmin, vmax, scaling: Scaling):
     """Update the norm on the given image based on the provided options."""
 
-    data = scaling.stretch(image_data, vmin, vmax)
+    norm = vis.ImageNormalize(
+        stretch=scaling.stretch(image_data, vmin, vmax), vmin=vmin, vmax=vmax
+    )
 
-    image.set_data(data)
+    image.set_norm(norm)
+
+    # Related to the colour bar/history button fix clash
+    # data = scaling.stretch(image_data, vmin, vmax)
+    # image.set_data(data)
 
 
 def update_image_cmap(image: AxesImage, colour_map: str):
