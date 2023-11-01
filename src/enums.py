@@ -1,13 +1,7 @@
 from enum import Enum
 from typing import TYPE_CHECKING, Type
 
-from astropy.visualization import (
-    LinearStretch,
-    LogStretch,
-    ManualInterval,
-    PowerStretch,
-    SqrtStretch,
-)
+from astropy.visualization import LinearStretch, LogStretch, PowerStretch, SqrtStretch
 
 if TYPE_CHECKING:
     import numpy.typing as npt
@@ -92,6 +86,8 @@ class Scaling(Enum):
         :param vmin: the minimum value - anything below will be clipped
         :param vmax: the maximum value - anything above will be clipped
         """
-        return (self.stretch_class(*self.stretch_args) + ManualInterval(vmin, vmax))(
-            image_data
-        )
+        return self.stretch_class(*self.stretch_args)
+        # This change will return manually scaled data but will change the data that the colour bar will display
+        # return (self.stretch_class(*self.stretch_args) + ManualInterval(vmin, vmax))(
+        #     image_data
+        # )

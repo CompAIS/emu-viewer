@@ -86,6 +86,7 @@ def update_contours(
     clear_contours(contour_set)
 
     print("I'm trying to contour!")
+    options.contour_levels.sort()
 
     # https://stackoverflow.com/questions/12274529/how-to-smooth-matplotlib-contour-plot
     data_smooth = gaussian_filter(options.data_source, options.gaussian_factor)
