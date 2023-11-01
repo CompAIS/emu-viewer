@@ -1,5 +1,6 @@
 from functools import partial
 
+import platform
 import ttkbootstrap as tb
 
 from src import constants
@@ -23,7 +24,15 @@ class BaseWidget(tb.Toplevel):
 
         self.title(self.__class__.label)
         self.resizable(False, False)
-        self.iconbitmap(constants.FAVICON_PATH)  # windows title icon
+
+        if platform.system() == "Linux":
+            """
+            .ico file cannot be used as an icon file in Linux. 
+            iconphoto() method is needed instead of iconbitmap().
+            """
+            self.iconphoto(True, constants.FAVICON)
+        else:
+            self.iconbitmap(constants.FAVICON)  # windows title icon
 
         self.on_close_eh = EventHandler()
 
