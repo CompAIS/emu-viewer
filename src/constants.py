@@ -1,4 +1,5 @@
 import os
+import platform
 import sys
 import tkinter as tk
 
@@ -11,6 +12,8 @@ DPI = 150
 if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
     # Running from a compiled executable
     ASSETS_FOLDER = os.path.join(sys._MEIPASS, "resources", "assets")
+elif platform.system() == "Linux":
+    ASSETS_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "resources", "assets"))
 else:
     ASSETS_FOLDER = os.path.join(os.path.dirname(__file__), "..", "resources", "assets")
 
